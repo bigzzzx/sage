@@ -1,0 +1,28 @@
+{
+  "title": "Amazon EC2 访问 DynamoDB 因 VPC Gateway Endpoint 策略限制 Resource 导致访问受阻",
+  "service": "Amazon DynamoDB",
+  "capability_area": "网络架构与VPC集成",
+  "difficulty": "L1",
+  "summary": "客户在 Amazon EC2 上访问 DynamoDB 表 bhp_metadata_prd 时遇到报错，尽管该表在 IAM 角色上已正确授权。根因是 EC2 所在的 VPC 使用了 Gateway 类型的 VPC Endpoint 访问 DynamoDB，但该终端节点的策略（Endpoint Policy）对 Resource 进行了严格限制，未包含当前的表。解决方案是在 VPC Endpoint Policy 的 Resource 列表中添加该 DynamoDB 表的 ARN，从而成功恢复正常访问。",
+  "customer_symptom": "从 EC2 上访问 DynamoDB table 报错，bhp_metadata_prd 表上的权限已经赋权了但依然无法访问。",
+  "root_cause": "EC2 通过 Gateway 类型的 VPC 终端节点（VPC Endpoint）向 DynamoDB 发起请求。该 VPC Endpoint 关联的终端节点策略（Endpoint Policy）中对 Resource 字段进行了显式的白名单限制，未能包含客户新增或当前需要访问的 DynamoDB 表 `bhp_metadata_prd`，导致请求在 VPC 边界因 Endpoint Policy 鉴权失败而被拒绝。",
+  "resolution_steps": [
+    "步骤1：确认 EC2 实例关联的 IAM Role 已具备对目标 DynamoDB 表的读写权限。",
+    "步骤2：检查 EC2 所在子网的路由表，确认去往 DynamoDB 的流量路由到了指定的 Gateway VPC Endpoint（vpce-29a97940）。",
+    "步骤3：查看并编辑该 VPC Endpoint 的终端节点策略（Endpoint Policy）。",
+    "步骤4：在 Endpoint Policy 规则的 Resource 列表中，添加目标 DynamoDB 表 `bhp_metadata_prd`的 ARN，或根据业务需求合理放行。",
+    "步骤5：在 EC2 上重新执行客户端脚本，验证访问报错消失。"
+  ],
+  "key_knowledge_points": [
+    "VPC Gateway Endpoint（网关终端节点）与 Amazon DynamoDB 的集成与路由机制",
+    "VPC 终端节点策略（Endpoint Policy）与 IAM 策略的交集（Intersection）鉴权逻辑",
+    "Amazon DynamoDB 资源的 ARN 格式与策略粒度控制"
+  ],
+  "troubleshooting_clues": [
+    "配置项：客户端 IAM 权限配置无误，但从 VPC 内 EC2 访问依然报权限或连接类错误",
+    "配置项：VPC 路由表确认流量经由 vpce 转发",
+    "配置项：VPC Endpoint Policy 的 Statement.Resource 字段存在严格的表名白名单限制，且排查发现漏掉了 bhp_metadata_prd 表"
+  ],
+  "related_services": ["Amazon DynamoDB", "Amazon VPC", "Amazon EC2"],
+  "prevention_advice": "当 VPC 终端节点配置了自定义的精细化 Endpoint Policy 时，后续业务新增 DynamoDB 表或 S3 存储桶时，必须同步将新资源的 ARN 补写进终端节点策略中。"
+}

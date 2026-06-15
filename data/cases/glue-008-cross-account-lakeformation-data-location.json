@@ -1,0 +1,27 @@
+{
+  "title": "AWS Glue 因缺失 Lake Formation 数据位置权限导致跨账号建表 AccessDenied",
+  "service": "AWS Glue",
+  "capability_area": "安全与权限 / 跨账号数据共享",
+  "difficulty": "L2",
+  "summary": "客户尝试在账号B中使用特定角色在账号A共享的Glue数据库中创建表，遭遇AccessDenied错误。根因是该数据库底层的S3路径已注册至账号A的Lake Formation Data lake locations中，触发了底层数据位置保护，但账号A未向账号B授予该数据位置(Data location)的权限；同时账号B角色自身也缺少lakeformation:GetDataAccess及s3:ListBucket权限。通过补齐账号B的IAM权限并在账号A中向其授予Data location权限解决。",
+  "customer_symptom": "使用跨账号共享过来的 Glue 数据库创建表时，报 CreateTable AccessDenied 错误。",
+  "root_cause": "目标数据库底层的 Amazon S3 路径已被注册至源账号（账号A）的 Lake Formation Data lake locations 中。根据 Lake Formation 安全机制，在该路径下创建或修改 Data Catalog 资源必须拥有对应的数据位置权限（Data location permissions），而源账号未向目标账号（账号B）授予该路径的 Data location 权限。此外，目标账号建表角色在 IAM 策略中也缺失了 lakeformation:GetDataAccess 与 s3:ListBucket 权限。",
+  "resolution_steps": [
+    "步骤1：在目标账号（账号B）的建表 IAM 角色中附加允许 lakeformation:GetDataAccess 和 s3:ListBucket 的权限策略。",
+    "步骤2：登录源账号（账号A）的 AWS Lake Formation 管理控制台，找到该数据库对应已注册的 Amazon S3 存储桶路径。",
+    "步骤3：在源账号的 Lake Formation Data locations 中执行 Grant 操作，向目标账号（账号B）或其建表角色授予该 S3 路径的访问权限。",
+    "步骤4：在目标账号下重新调用 Glue CreateTable 接口验证表是否能成功创建。"
+  ],
+  "key_knowledge_points": [
+    "AWS Lake Formation 数据位置权限（Data location permissions）对 Data Catalog 资源增删改的限制机制",
+    "lakeformation:GetDataAccess 权限在第三方或跨账号主体获取底层 S3 临时凭证时的必要性",
+    "AWS Glue 跨账号共享场景下的多层级（IAM + Data Catalog + 底层 S3 存储）复合鉴权链路"
+  ],
+  "troubleshooting_clues": [
+    "CloudTrail 日志的 additionalEventData 字段中显式包含 'insufficientLakeFormationPermissions' 错误提示",
+    "CloudTrail 中记录的 lakeFormationPrincipal 指向了建表的 IAM 角色 ARN",
+    "控制台配置项检查：确认源账号的数据库 S3 路径已注册在 Data lake locations 中，但 Data locations 授权列表中缺失目标账号"
+  ],
+  "related_services": ["AWS Glue", "AWS Lake Formation", "Amazon S3", "AWS IAM"],
+  "prevention_advice": "在对已注册到 Lake Formation 的 S3 路径进行跨账号托管和数据共享建表时，除了配置 Glue 库表级权限外，必须在源账号中同步完成 Data location 权限的跨账号显式授予。"
+}

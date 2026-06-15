@@ -1,0 +1,176 @@
+{
+  "test_timestamp": "e2e_demo",
+  "choice_results": [
+    {
+      "question_id": "q01",
+      "dimension_id": "Glue 运行时计算引擎调优与故障诊断",
+      "user_answer": "C",
+      "correct_answer": "B",
+      "is_correct": false,
+      "score": 0
+    },
+    {
+      "question_id": "q02",
+      "dimension_id": "Glue 网络架构与 VPC 集成",
+      "user_answer": "B",
+      "correct_answer": "C",
+      "is_correct": false,
+      "score": 0
+    },
+    {
+      "question_id": "q03",
+      "dimension_id": "Glue 网络架构与 VPC 集成",
+      "user_answer": "B",
+      "correct_answer": "C",
+      "is_correct": false,
+      "score": 0
+    },
+    {
+      "question_id": "q04",
+      "dimension_id": "Glue 数据目录与元数据治理",
+      "user_answer": "C",
+      "correct_answer": "C",
+      "is_correct": true,
+      "score": 1
+    },
+    {
+      "question_id": "q05",
+      "dimension_id": "Glue 安全与权限模型深度实践",
+      "user_answer": "A",
+      "correct_answer": "B",
+      "is_correct": false,
+      "score": 0
+    }
+  ],
+  "open_results": [
+    {
+      "scores": {
+        "accuracy": 1,
+        "completeness": 1,
+        "diagnostic_approach": 1,
+        "depth": 1,
+        "practicality": 1
+      },
+      "total_score": 5,
+      "level": "L1",
+      "feedback": "完全偏离诊断核心：未识别GC OOM本质，忽略所有得分点；未提GC日志、Spark UI指标、内存调优或AQE等关键路径；建议无依据且与现象矛盾。",
+      "question_id": "q06",
+      "dimension_id": "Glue 运行时计算引擎调优与故障诊断"
+    },
+    {
+      "scores": {
+        "accuracy": 4,
+        "completeness": 2,
+        "diagnostic_approach": 3,
+        "depth": 2,
+        "practicality": 2
+      },
+      "total_score": 13,
+      "level": "L1",
+      "feedback": "需补全网络拓扑细节、路由配置、安全组规则、CloudTrail验证步骤及代码级验证示例，避免笼统表述。",
+      "question_id": "q07",
+      "dimension_id": "Glue 网络架构与 VPC 集成"
+    },
+    {
+      "scores": {
+        "accuracy": 2,
+        "completeness": 1,
+        "diagnostic_approach": 1,
+        "depth": 1,
+        "practicality": 1
+      },
+      "total_score": 6,
+      "level": "L1",
+      "feedback": "未识别题目已明确权限已配置，却重复建议加基础权限；完全忽略5个关键排查点（如Block Public Access、Trust Policy、Object Ownership等），缺乏诊断逻辑和实操指令。",
+      "question_id": "q08",
+      "dimension_id": "Glue 安全与权限模型深度实践"
+    }
+  ],
+  "radar_data": {
+    "Glue 运行时计算引擎调优与故障诊断": 0.5,
+    "Glue 网络架构与 VPC 集成": 1.3,
+    "Glue 数据目录与元数据治理": 5.0,
+    "Glue 安全与权限模型深度实践": 0.6
+  },
+  "overall_level": "L1",
+  "weak_dimensions": [
+    "Glue 运行时计算引擎调优与故障诊断",
+    "Glue 网络架构与 VPC 集成",
+    "Glue 安全与权限模型深度实践"
+  ],
+  "learning_plan": {
+    "plan_name": "针对Glue运行时调优与网络/VPC集成薄弱项的2周提升计划",
+    "overall_assessment": "当前处于L1入门级水平，元数据治理能力突出（5.0），但核心生产运维能力严重缺失：对Spark运行时内存机制、GC故障根因、VPC网络路径及细粒度安全策略缺乏诊断逻辑和实操能力。",
+    "priority_dimensions": [
+      "Glue 运行时计算引擎调优与故障诊断",
+      "Glue 网络架构与 VPC 集成"
+    ],
+    "weekly_plan": [
+      {
+        "week": 1,
+        "focus": "深度掌握Glue Spark运行时故障诊断与内存调优闭环",
+        "tasks": [
+          {
+            "day": "1-2",
+            "topic": "GC OOM本质解析与日志取证",
+            "resources": [
+              "https://docs.aws.amazon.com/glue/latest/dg/monitor-debug-job.html#monitor-debug-job-spark-ui",
+              "https://aws.amazon.com/blogs/big-data/troubleshooting-apache-spark-applications-on-amazon-emr-and-aws-glue/",
+              "实操：复现OOM场景（--conf spark.executor.memory=2g --conf spark.executor.memoryFraction=0.8），提取driver/executor GC日志并标注Full GC触发条件"
+            ],
+            "time_minutes": 45
+          },
+          {
+            "day": "3-4",
+            "topic": "Spark UI关键指标解读与AQE调优实战",
+            "resources": [
+              "https://spark.apache.org/docs/latest/web-ui.html",
+              "https://docs.aws.amazon.com/glue/latest/dg/release-notes.html#glue-4-0-aqe",
+              "实操：启用AQE（--conf spark.sql.adaptive.enabled=true），对比Shuffle Read/Write、Skew Join Detection指标变化；手动注入数据倾斜验证AQE动态优化效果"
+            ],
+            "time_minutes": 45
+          },
+          {
+            "day": "5",
+            "topic": "阶段验证：独立完成OOM故障诊断报告",
+            "resources": [],
+            "time_minutes": 20
+          }
+        ]
+      },
+      {
+        "week": 2,
+        "focus": "构建端到端VPC网络与安全组可验证拓扑",
+        "tasks": [
+          {
+            "day": "1-2",
+            "topic": "Glue网络路径全链路拆解：ENI→路由表→NAT/S3 Gateway Endpoint→安全组",
+            "resources": [
+              "https://docs.aws.amazon.com/glue/latest/dg/startup-networking.html",
+              "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html#nat-gateway-routing",
+              "实操：在私有子网部署Glue Job，通过VPC Flow Logs + CloudWatch Logs Insights查询ENI入站/出站流，定位被拒绝的S3 DNS请求（port 53）或S3 API请求（port 443）"
+            ],
+            "time_minutes": 45
+          },
+          {
+            "day": "3-4",
+            "topic": "安全组与路由策略代码级验证",
+            "resources": [
+              "https://docs.aws.amazon.com/glue/latest/dg/setup-vpc-for-glue-access.html",
+              "KB主题：'Glue Job无法访问S3 Bucket的5个必须验证点（含Block Public Access/Object Ownership/Trust Policy）'",
+              "实操：使用boto3编写验证脚本——检查Glue Job Role的AssumeRolePolicyDocument、Bucket的BlockPublicAccess状态、ObjectOwnership配置、VPC Endpoint策略、以及安全组Ingress规则是否允许443→S3 VPC Endpoint CIDR"
+            ],
+            "time_minutes": 45
+          },
+          {
+            "day": "5",
+            "topic": "阶段验证：提交一份含CloudTrail日志截图、Flow Logs查询语句、boto3验证输出的完整网络连通性诊断报告",
+            "resources": [],
+            "time_minutes": 25
+          }
+        ]
+      }
+    ],
+    "verification": "通过两项实操交付物验证：① Week1末提交一份结构化OOM诊断报告（含GC日志片段、Spark UI截图标注Executor Heap Usage/Off-Heap Memory/GC Time占比，并给出memoryFraction+offHeapMemory调优参数建议）；② Week2末提交一份VPC网络诊断报告（含CloudTrail中PutObject失败事件、VPC Flow Logs中REJECT记录、boto3脚本执行结果及对应修复操作）。两项报告均需体现对AI反馈中指出的5个关键排查点的覆盖。"
+  }
+}

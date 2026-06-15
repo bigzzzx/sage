@@ -1,0 +1,25 @@
+{
+  "title": "Amazon Athena 因切换角色缺少 Lake Formation 权限导致找不到库表",
+  "service": "Amazon Athena",
+  "capability_area": "安全与权限",
+  "difficulty": "L1",
+  "summary": "客户在 Amazon Athena 中更换 IAM 角色后无法看到原有的数据库和表，尽管新角色已附加 AdministratorAccess 策略。根因是该库表采用 AWS Lake Formation 权限模型管理，其安全机制独立于 IAM，而新角色在 Lake Formation 中缺少对该 Data Catalog 库表的显式授权。解决方案是通过 AWS Lake Formation 控制台为新角色授予对应的库表访问权限，使其在 Athena 中恢复可见。",
+  "customer_symptom": "更换角色后找不到库表，同样是管理员权限。",
+  "root_cause": "目标数据库和表的数据目录（Data Catalog）权限完全由 AWS Lake Formation 接管。虽然新角色拥有 IAM 的 AdministratorAccess 全限策略，但由于 Lake Formation 的安全鉴权独立于传统 IAM，新角色在 Lake Formation 内部没有被授予（Grant）该库表的资源权限，导致 Athena 无法检索到对应的元数据。",
+  "resolution_steps": [
+    "步骤1：登录 AWS Lake Formation 管理控制台。",
+    "步骤2：定位到受影响的 AWS Glue Data Catalog 数据库和表资源。",
+    "步骤3：针对客户更换后的新 IAM 角色，执行授权（Grant）操作，赋予其对该数据库和表的 Lake Formation 访问权限。"
+  ],
+  "key_knowledge_points": [
+    "AWS Lake Formation 权限模型与传统 IAM 策略的隔离与协作机制",
+    "AWS Glue Data Catalog 资源在 Lake Formation 中的授权机制（Grant/Revoke）",
+    "Amazon Athena 元数据检索与底层 Lake Formation 安全策略的依赖关系"
+  ],
+  "troubleshooting_clues": [
+    "配置项：确认两套 IAM 角色均拥有 AdministratorAccess，排除常规 IAM 策略拒绝的可能性",
+    "配置项：检查 AWS Lake Formation 控制台，确认该数据库的权限由 Lake Formation 托管，且权限列表中缺失新角色的显式授权"
+  ],
+  "related_services": ["Amazon Athena", "AWS Lake Formation", "AWS Glue", "AWS IAM"],
+  "prevention_advice": "在使用 AWS Lake Formation 管理数据湖时，任何新角色的启用或切换，都必须在 Lake Formation 控制台中同步配置显式的 Data Catalog 资源授权。"
+}

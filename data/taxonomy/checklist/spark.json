@@ -1,0 +1,25 @@
+{
+  "service_id": "emr",
+  "module": "Spark",
+  "questions": [
+    {"level": 100, "type": "概念", "question": "spark 组件与功能：driver，executor"},
+    {"level": 100, "type": "概念", "question": "作业提交流程"},
+    {"level": 100, "type": "概念", "question": "流数据作业与批处理作业区别"},
+    {"level": 100, "type": "概念", "question": "dataframe, dataSet, RDD 区别"},
+    {"level": 100, "type": "排查", "question": "如何排查driver/executor 资源分配失败"},
+    {"level": 100, "type": "排查", "question": "如何排查作业提交不成功"},
+    {"level": 100, "type": "排查", "question": "如何排查作业输出没有数据"},
+    {"level": 100, "type": "排查", "question": "如何排查作业数据schema不正确"},
+    {"level": 100, "type": "概念", "question": "spark 宽窄依赖与stage关系"},
+    {"level": 200, "type": "概念", "question": "spark shuffle 功能"},
+    {"level": 200, "type": "概念", "question": "spark executor 与 container 关系"},
+    {"level": 200, "type": "操作", "question": "spark driver executor 内存大小计算"},
+    {"level": 200, "type": "排查", "question": "如何排查spark 作业 No class 报错"},
+    {"level": 200, "type": "排查", "question": "如何排查spark 作业OOM"},
+    {"level": 200, "type": "调优", "question": "Spark数据倾斜问题处理"},
+    {"level": 200, "type": "排查", "question": "作业运行时间超常规的处理思路"},
+    {"level": 300, "type": "调优", "question": "JVM内存调优、堆外内存设置及storageFraction设置"},
+    {"level": 300, "type": "调优", "question": "Executor数量内存及CPU配置、设置合理的并行度、Task等待时长调优"},
+    {"level": 300, "type": "调优", "question": "数据本地性、复用RDD、BroadCast、Kryo序列化和CheckPoint"}
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "version": "2.0",
+  "tracks": [
+    {
+      "id": "big_data",
+      "name": "Big Data",
+      "icon": "📊",
+      "description": "数据工程、数据湖、数据仓库与大数据分析方向",
+      "services": [
+        { "id": "glue",           "name": "AWS Glue",           "icon": "🔧", "is_real": true,  "summary": "Serverless ETL、数据目录、Crawler" },
+        { "id": "emr",            "name": "Amazon EMR",         "icon": "⚡", "is_real": false, "summary": "Hadoop / Spark 托管集群" },
+        { "id": "athena",         "name": "Amazon Athena",      "icon": "🔍", "is_real": false, "summary": "Serverless 交互式 SQL 查询" },
+        { "id": "mwaa",           "name": "Amazon MWAA",        "icon": "🌬️", "is_real": false, "summary": "托管 Apache Airflow 工作流编排" },
+        { "id": "lake_formation", "name": "Lake Formation",     "icon": "🌊", "is_real": false, "summary": "数据湖治理与精细化权限" },
+        { "id": "sagemaker",      "name": "Amazon SageMaker",   "icon": "🤖", "is_real": false, "summary": "端到端机器学习平台" },
+        { "id": "dynamodb",       "name": "Amazon DynamoDB",    "icon": "🗄️", "is_real": false, "summary": "Serverless NoSQL 数据库" }
+      ]
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics",
+      "icon": "📈",
+      "description": "实时流处理、数据可视化、搜索与分析方向",
+      "services": [
+        { "id": "kinesis",        "name": "Amazon Kinesis",           "icon": "🌊", "is_real": false, "summary": "实时数据流采集与处理" },
+        { "id": "quicksight",     "name": "Amazon QuickSight",       "icon": "📊", "is_real": false, "summary": "云原生 BI 可视化与仪表盘" },
+        { "id": "managed_flink",  "name": "Managed Apache Flink",    "icon": "⚡", "is_real": false, "summary": "托管实时流计算（原 Kinesis Data Analytics）" },
+        { "id": "msk",            "name": "Amazon MSK",              "icon": "📨", "is_real": false, "summary": "托管 Apache Kafka" },
+        { "id": "opensearch",     "name": "Amazon OpenSearch",       "icon": "🔎", "is_real": false, "summary": "搜索、日志分析与可观测性" }
+      ]
+    }
+  ]
+}

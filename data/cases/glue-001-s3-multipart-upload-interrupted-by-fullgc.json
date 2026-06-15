@@ -1,0 +1,41 @@
+{
+  "id": "glue-001-s3-multipart-upload-interrupted-by-fullgc",
+  "service": "Glue",
+  "title": "Glue Spark Job 写 Parquet 到 S3 时 Multipart Upload 链路被中断",
+  "severity": "normal",
+  "tags": ["spark", "s3", "multipart-upload", "full-gc", "jvm", "memory", "iceberg", "parquet", "performance"],
+  "summary": "客户的 Glue Spark Job 在 Stage 3 向 S3 写 Parquet 文件时，S3 Multipart Upload 失败并报 SocketException: Unexpected end of file from server。根因是 Executor JVM 发生了严重的 Full GC（GC 时间占总运行时间 80.5%，Full GC 约 28 分 37 秒），导致与 S3 的连接超过 5 秒无响应被服务端关闭。后续并发上传的 Part 收到 404 NoSuchUpload。Spark Task 通过重试机制最终成功完成。建议客户提高 task 并行度（repartition），减少单个 Task 处理的数据量以降低 GC 压力。客户修改并行度后作业从 1 小时降至 9 分钟。",
+  "customer_problem": "<JOB_NAME> 任务的主要异常点出现在 Stage 3 向 S3 写 parquet 文件时。首个根因错误是：S3OutputStream: Failed to upload part java.net.SocketException: Unexpected end of file from server。说明在执行 S3 Multipart Upload 时，客户端与 S3 服务端的连接被异常中断，导致分片上传失败。",
+  "conversation": [
+    {
+      "role": "customer",
+      "content": "<JOB_NAME> 任务在写 Parquet 到 S3 时上传链路被中断，日志见附件。"
+    },
+    {
+      "role": "se",
+      "content": "我们一起检查了 Glue Job 运行时 Executor 的 JVM usage 指标，可以看到已经超过了 95% 以上，这是非常高的。我们判断由于 Executor 发生了 Full GC 导致整个 JVM 上的工作都被停止了，所以超过了 S3 Multipart Upload 的最大空闲时间导致上传链路被中断。\n\n在您上传了 Spark UI 的 Events log 后我们进行了分析，更加确认我们的判断：作业总运行时间为 37min，但是 GC 时间超过了 29min，Full GC 时间占比约 80.5%。一个 JVM heap 运行了一个 task 处理 2500 万 rows 会导致大量 UnsafeRow、byte[]、serializer buffer、Tungsten 等对象进入 Old Generation 从而触发 Full GC，容易出现恶性循环。\n\n另外，根据 Events log 来看性能瓶颈并不是完全在写 S3 阶段，而是数据被读到 Executor 后的计算操作时也有可能，请检查代码中是否有 collect、count、coalesce(1)、repartition(1) 等算子。\n\n建议提高 task 的并行度，例如 repartition(48) 或 repartition(64)。"
+    },
+    {
+      "role": "customer",
+      "content": "对于当前回答有几个疑问：\n1. 超过了 S3 Multipart Upload 的最大空闲时间导致上传链路被中断，那任务为什么没有失败？\n2. 判断 Full GC 导致上传链路中断的直接证据是什么？能否指出对应的 Spark UI / Events log / JVM GC 日志位置？\n3. GC time 29min 中，Full GC 与 Young GC 分别占比多少？\n4. 是否能确认是 Executor heap 内存不足，而不是 off-heap、shuffle spill、S3 connector 或网络本身的问题？\n5. \"超过 S3 Multipart Upload 最大空闲时间\"对应的具体默认值是多少？是否有日志明确显示该超时触发？"
+    },
+    {
+      "role": "se",
+      "content": "关于问题 1：虽然 S3 Multipart Upload 超时被中断了，但 SDK 层面会进行重试，并且 Spark Task 层面也会重试。日志显示 task 0 重试了一次后成功：Finished task 0.1 in stage 3.0 (TID 3)。Task 默认最多可运行 4 次。\n\n关于问题 2/3：Full GC 发生时 JVM 上所有工作停止，包括与 S3 交互的客户端。从 Events log 中可以看到：MinorGCCount: 660, MinorGCTime: 44914ms (约45秒), MajorGCCount: 64, MajorGCTime: 1717414ms (约28分37秒), TotalGCTime: 1762328ms。\n\n关于问题 4，使用排除法分析：\na. 排除 Off-heap：配置为 0（Maximum Offheap Memory: 0）\nb. 排除 shuffle spill：UI 显示 shuffle 数据很少\nc. 排除 S3 SDK：如果是 SDK 问题大概率重试无法解决\nd. 排除网络：网络抖动不会持续超过 1 小时，且会影响更多用户\ne. Executor JVM 确实经历了长时间 GC\n\n关于问题 5：S3 Multipart Upload 在上传某个 Part 时建立连接后 5s 没有响应，S3 服务端会关闭连接并抛出 EOF 错误。第一个 Part 失败后，为避免不完整的 multipart upload 占用存储，其他并发上传的 Part 会收到 404 NoSuchUpload。日志中 PartNumber 1 报 EOF，PartNumber 5/6/7/8/9 均报 404。"
+    }
+  ],
+  "resolution": "根因：单个 Task 处理 2500 万行数据，导致 Executor JVM Full GC 时间占比 80.5%（约 28 分 37 秒），Full GC 期间 JVM 所有线程停止，S3 上传连接超过 5 秒无响应被服务端关闭。\n\n解决方案：提高 Spark task 并行度（repartition），减少单个 Task 处理的数据量。客户修改并行度后，作业运行时间从 1 小时以上降至 9 分钟。\n\n补充说明：作业虽然遇到上传失败但最终成功，是因为 Spark Task 有重试机制（默认最多 4 次），重试后 GC 压力暂时缓解，Task 得以完成。",
+  "key_skills": [
+    "Spark GC 日志分析",
+    "JVM 内存问题诊断",
+    "S3 Multipart Upload 机制理解",
+    "Spark Task 重试机制",
+    "排除法定位根因",
+    "Spark 并行度调优",
+    "Spark UI / Events Log 解读"
+  ],
+  "references": [
+    "https://docs.aws.amazon.com/glue/latest/dg/monitor-debug-capacity.html",
+    "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "title": "Amazon MWAA 安全组因多项 AWS 服务依赖默认要求 0.0.0.0/0 出站规则的咨询与配置优化",
+  "service": "Amazon MWAA",
+  "capability_area": "网络架构与VPC集成",
+  "difficulty": "L1",
+  "summary": "客户咨询为什么 Amazon MWAA 的安全组必须配置 0.0.0.0/0 的出站规则。根因是 MWAA 运行时需要访问元数据库、SQS、S3、KMS、ECR、CloudWatch Logs 等大量底层依赖服务，且包含用户 DAG 定义的自定义出站流量。支持工程师解释了该机制，并指导客户若需收紧规则，可通过为这些服务创建 VPC 终端节点（VPCE）并将出站规则限制为指向相应 VPCE 安全组的 443 端口来解决。",
+  "customer_symptom": "安全组必须为所有流量（0.0.0.0/0）指定出站规则，想请问一下 Airflow 为什么要开放全 0 的出站规则，是需要访问什么资源？",
+  "root_cause": "Amazon MWAA 作为托管服务，其控制面与执行节点需要与多种 AWS 底层组件（如通过 VPCE 访问服务端 RDS 代理、WebServer VPCE、SQS、ECS、S3、CloudWatch Logs、KMS、ECR）以及客户 DAG/Task 指定的外部资源进行频繁通信。默认要求 0.0.0.0/0 是为了确保这些多路径流量的连通性。",
+  "resolution_steps": [
+    "步骤1：响应客户技术咨询，确认其关于 MWAA 安全组为何强制要求 0.0.0.0/0 出站规则的疑问。",
+    "步骤2：分析并向客户列举 MWAA 运行所需的底层依赖服务清单（包括 Metadata DB、SQS、ECS、S3、Logs、KMS、ECR 等）。",
+    "步骤3：向客户阐明替代优化方案，即可以通过为这些依赖项创建对应的 VPC 终端节点（VPCE）。",
+    "步骤4：指导客户将安全组的出站规则收紧为仅允许通过 443 端口访问这些 VPCE 关联的安全组。",
+    "步骤5：提供 MWAA 官方网络架构说明文档，供客户进行后续的安全合规性配置调整。"
+  ],
+  "key_knowledge_points": [
+    "Amazon MWAA 网络架构及托管环境的底层组件依赖关系",
+    "VPC 安全组出站规则（Outbound Rules）的流量控制机制",
+    "使用接口 VPC 终端节点（Interface VPC Endpoint / PrivateLink）收紧托管服务出站安全策略的方法"
+  ],
+  "troubleshooting_clues": [
+    "线索1：客户关于 MWAA 安全组出站方向必须配置 0.0.0.0/0 限制的合规性疑问",
+    "线索2：MWAA 架构文档中关于控制面与数据面所需访问的 AWS 服务端点（如 SQS, S3, RDS Proxy, ECR）的硬性要求"
+  ],
+  "related_services": ["Amazon MWAA", "Amazon VPC", "Amazon S3", "Amazon SQS", "AWS KMS", "Amazon ECR"],
+  "prevention_advice": "若企业安全合规要求严禁全 0 出站规则，应在创建 MWAA 前规划好完整的 VPC 终端节点架构，并将安全组出站规则精细化配置为指向这些终端节点。"
+}

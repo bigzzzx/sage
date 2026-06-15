@@ -1,0 +1,59 @@
+{
+  "id": "msk",
+  "name": "Amazon MSK",
+  "track_id": "analytics",
+  "description": "托管 Apache Kafka 服务，支持 MSK Provisioned 与 MSK Serverless 两种模式。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "msk_cluster",
+      "name": "集群架构与配置",
+      "description": "Broker 类型、AZ 分布、存储配置、MSK Serverless vs Provisioned 选型",
+      "levels": {
+        "L1": "了解 MSK 基本架构（Broker / ZooKeeper / KRaft）",
+        "L2": "能根据吞吐需求选择 Broker 类型、配置存储和多 AZ",
+        "L3": "能设计高可用集群架构，权衡 Serverless vs Provisioned 的成本与性能"
+      }
+    },
+    {
+      "id": "msk_topic",
+      "name": "Topic 管理与生产消费",
+      "description": "Topic 创建、分区策略、Producer/Consumer 配置、Consumer Group",
+      "levels": {
+        "L1": "能创建 Topic 并用 CLI 生产/消费消息",
+        "L2": "能设计分区策略，理解 Consumer Group Rebalance 机制",
+        "L3": "能排查消费延迟、Partition Skew、Rebalance Storm 等问题"
+      }
+    },
+    {
+      "id": "msk_connect",
+      "name": "MSK Connect",
+      "description": "Kafka Connect 托管、Connector 部署、Sink/Source Connector 配置",
+      "levels": {
+        "L1": "了解 MSK Connect 概念",
+        "L2": "能部署常见 Connector（S3 Sink / Debezium Source）",
+        "L3": "能排查 Connector 故障、优化吞吐、处理 Schema 演进"
+      }
+    },
+    {
+      "id": "msk_security",
+      "name": "安全与网络",
+      "description": "IAM 认证、SASL/SCRAM、TLS、VPC 配置、跨账号访问",
+      "levels": {
+        "L1": "能配置基本网络访问（Security Group）",
+        "L2": "能配置 IAM 或 SASL/SCRAM 认证，理解 TLS 加密",
+        "L3": "能设计跨 VPC / 跨账号安全访问方案"
+      }
+    },
+    {
+      "id": "msk_monitoring",
+      "name": "监控与运维",
+      "description": "CloudWatch 指标、Open Monitoring (Prometheus)、Broker 扩容、版本升级",
+      "levels": {
+        "L1": "能查看 CloudWatch 基础指标",
+        "L2": "能用 Prometheus 监控集群健康，理解关键指标（UnderReplicated / ActiveController）",
+        "L3": "能执行 Broker 扩容、版本升级并排查集群不稳定问题"
+      }
+    }
+  ]
+}

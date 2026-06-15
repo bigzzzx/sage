@@ -1,0 +1,26 @@
+{
+  "title": "Amazon MSK 从 3.5.1 升级至 3.9.x 的集群配置文件兼容性确认",
+  "service": "Amazon MSK",
+  "capability_area": "版本升级与生命周期管理",
+  "difficulty": "L1",
+  "summary": "客户咨询在将 Amazon MSK 集群从 3.5.1 升级到 3.9.x 版本时，原有的集群配置文件是否需要进行更新或额外操作。支持工程师通过审查客户提供的配置文件并进行兼容性测试，结合官方升级文档确认该版本跨度下无需修改自定义配置文件，MSK 升级时会自动处理，最终直接解答了客户的疑问。",
+  "customer_symptom": "集群配置文件在 MSK 升级时是否需要更新",
+  "root_cause": "此案例为技术咨询。Amazon MSK 的版本升级机制具备良好的参数向前兼容性，客户在 3.5.1 版本中使用的自定义集群配置项在 3.9.x 版本中依然有效且受支持，因此无需在升级期间手动更新或重构配置文件。",
+  "resolution_steps": [
+    "步骤1：获取并审查客户当前在 MSK 3.5.1 集群中使用的自定义配置文件参数。",
+    "步骤2：查阅 Amazon MSK 官方关于版本升级（version-upgrades）的说明文档，核对目标版本参数变化。",
+    "步骤3：在环境中使用客户提供的配置文件进行升级兼容性测试与查询验证。",
+    "步骤4：明确答复客户从 3.5.1 升级到 3.9.x 版本无需更新配置文件，正常执行升级即可。"
+  ],
+  "key_knowledge_points": [
+    "Amazon MSK 集群滚动升级（Rolling Upgrade）的生命周期与行为机制",
+    "Amazon MSK 自定义集群配置（Cluster Configuration）的创建与应用规则",
+    "Apache Kafka 跨版本升级时参数（Broker Configs）的向前兼容性与废弃演进"
+  ],
+  "troubleshooting_clues": [
+    "线索1：客户提供的 MSK 3.5.1 集群自定义配置文件参数列表",
+    "线索2：Amazon MSK 官方文档中关于版本升级（version-upgrades.html）的参数限制说明"
+  ],
+  "related_services": ["Amazon MSK"],
+  "prevention_advice": "在进行 MSK 跨版本升级前，建议提前对比当前自定义配置项与目标 Kafka 版本的官方参数列表，并在非生产环境的测试集群上验证升级流程。"
+}

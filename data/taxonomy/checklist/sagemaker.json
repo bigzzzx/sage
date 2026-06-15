@@ -1,0 +1,23 @@
+{
+  "service_id": "sagemaker",
+  "module": "SageMaker",
+  "questions": [
+    {"level": 100, "type": "概念", "question": "Studio和笔记本实例的区别"},
+    {"level": 100, "type": "概念", "question": "机器学习的流程和常见的机器学习框架"},
+    {"level": 100, "type": "操作", "question": "创建笔记本实例&笔记本实例中安装包"},
+    {"level": 100, "type": "概念", "question": "生命周期配置的使用"},
+    {"level": 100, "type": "概念", "question": "训练任务在SageMaker中的工作流程"},
+    {"level": 100, "type": "概念", "question": "SageMaker中训练任务需要提供什么"},
+    {"level": 100, "type": "操作", "question": "使用内置算法创建训练任务"},
+    {"level": 100, "type": "概念", "question": "推理任务在SageMaker中的工作流程"},
+    {"level": 100, "type": "概念", "question": "SageMaker中部署模型的选项"},
+    {"level": 200, "type": "概念", "question": "笔记本实例的网络配置"},
+    {"level": 200, "type": "操作", "question": "SageMaker SDK 创建ProcessingJob"},
+    {"level": 200, "type": "操作", "question": "SageMaker SDK 创建TrainingJob"},
+    {"level": 200, "type": "操作", "question": "SageMaker SDK 创建Model EndpointConfig/Endpoint"},
+    {"level": 200, "type": "操作", "question": "监控训练任务和推理任务的指标"},
+    {"level": 300, "type": "概念", "question": "SageMaker中的BYOS & BYOC"},
+    {"level": 300, "type": "概念", "question": "SageMaker进行大模型推理和模型并行化"},
+    {"level": 300, "type": "操作", "question": "BYOS & BYOC 执行训练任务和推理任务"}
+  ]
+}

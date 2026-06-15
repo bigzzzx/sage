@@ -1,0 +1,59 @@
+{
+  "id": "athena",
+  "name": "Amazon Athena",
+  "track_id": "big_data",
+  "description": "Serverless 交互式 SQL 查询服务，直接查询 S3 数据。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "athena_query_optimization",
+      "name": "查询执行与性能优化",
+      "description": "分区裁剪、列式存储、压缩、Bucketing、Result Reuse、执行计划分析",
+      "levels": {
+        "L1": "能写基础 SQL 查询并理解扫描数据量与成本的关系",
+        "L2": "能用分区、列式存储、压缩优化查询性能，理解 Result Reuse 机制",
+        "L3": "能对复杂查询做执行计划分析与系统级调优"
+      }
+    },
+    {
+      "id": "athena_workgroup_cost",
+      "name": "Workgroup 与成本管理",
+      "description": "Workgroup 配置、查询配额、扫描数据上限、成本归集与按团队隔离",
+      "levels": {
+        "L1": "了解 Workgroup 概念",
+        "L2": "能为不同团队配置 Workgroup、查询配额、扫描上限",
+        "L3": "能设计企业级成本治理方案与按团队/业务的成本可见性"
+      }
+    },
+    {
+      "id": "athena_security",
+      "name": "安全与权限",
+      "description": "IAM 策略、Lake Formation 列级/行级权限、查询结果加密、跨账号访问",
+      "levels": {
+        "L1": "能配置基础 IAM 权限",
+        "L2": "理解 Lake Formation 细粒度权限并能配置列级访问，排查权限缓存类问题",
+        "L3": "能设计企业级数据访问治理方案"
+      }
+    },
+    {
+      "id": "athena_federated",
+      "name": "数据源集成",
+      "description": "Federated Query、Lambda Connector、查询 RDS/DynamoDB、Glue Data Catalog 集成",
+      "levels": {
+        "L1": "了解 Federated Query 是什么",
+        "L2": "能配置并使用 Connector 查询 RDS/DynamoDB",
+        "L3": "能开发自定义 Connector 并优化跨源查询性能"
+      }
+    },
+    {
+      "id": "athena_quota_ops",
+      "name": "服务限额与运维",
+      "description": "并发 DML 限额、Service Quotas、CTAS、查询状态生命周期与排队机制",
+      "levels": {
+        "L1": "知道查询有并发限制",
+        "L2": "能通过 Service Quotas 提额，理解查询排队与限流机制",
+        "L3": "能做高并发场景下的容量规划与下游消费端优化"
+      }
+    }
+  ]
+}

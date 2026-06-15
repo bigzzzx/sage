@@ -1,0 +1,59 @@
+{
+  "id": "lake_formation",
+  "name": "AWS Lake Formation",
+  "track_id": "big_data",
+  "description": "数据湖治理服务，提供细粒度权限管理与跨账号数据共享。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "lf_permission_model",
+      "name": "权限模型",
+      "description": "LF-Tags、列级/行级/单元格级权限、IAM-only(legacy) vs Resource-based 模式、鉴权顺序",
+      "levels": {
+        "L1": "了解 Lake Formation 是什么，能配置数据库/表级权限",
+        "L2": "理解 LF 与 IAM 的鉴权协作关系，能配置列级/行级权限",
+        "L3": "能设计基于 LF-Tags 的大规模权限治理方案"
+      }
+    },
+    {
+      "id": "lf_cross_account",
+      "name": "跨账号数据共享",
+      "description": "RAM 集成、Resource Link、Catalog Settings 跨账号授权、消费者接受邀请",
+      "levels": {
+        "L1": "知道 LF 支持跨账号共享",
+        "L2": "能配置跨账号资源共享，理解 Resource Link 的作用",
+        "L3": "能排查跨账号共享中缺失 Resource Link、Glue/S3 多层权限等复杂问题"
+      }
+    },
+    {
+      "id": "lf_data_location",
+      "name": "Data Location 管理",
+      "description": "注册 S3 路径（Data lake locations）、Data location 权限、GetDataAccess 机制",
+      "levels": {
+        "L1": "了解 Data lake locations 与 Data locations 的区别",
+        "L2": "能注册 S3 路径并授予 Data location 权限",
+        "L3": "能排查因 Data location 权限缺失导致的跨账号建表 AccessDenied 等问题"
+      }
+    },
+    {
+      "id": "lf_engine_integration",
+      "name": "与查询引擎集成",
+      "description": "Athena/Glue/EMR/Redshift Spectrum/SageMaker 在 LF 管控下的访问机制",
+      "levels": {
+        "L1": "能在 Athena 中查询受 LF 管控的表",
+        "L2": "理解各引擎与 LF 的权限传递机制",
+        "L3": "能设计多引擎一致权限模型并排查异常"
+      }
+    },
+    {
+      "id": "lf_governance",
+      "name": "审计与治理",
+      "description": "Data Filter、Data Quality、CloudTrail 审计、数据治理体系",
+      "levels": {
+        "L1": "知道 LF 操作会被审计",
+        "L2": "能配置 Data Filter 实现行级权限，并查询 CloudTrail 审计日志",
+        "L3": "能搭建端到端数据治理体系，含质量监控"
+      }
+    }
+  ]
+}

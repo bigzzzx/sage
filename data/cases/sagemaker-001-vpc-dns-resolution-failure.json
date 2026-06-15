@@ -1,0 +1,28 @@
+{
+  "title": "SageMaker Notebook 绑定 VPC 后因默认 AmazonProvidedDNS 无法解析内网域名",
+  "service": "Amazon SageMaker",
+  "capability_area": "网络架构与VPC集成",
+  "difficulty": "L2",
+  "summary": "客户咨询 SageMaker Notebook 访问内网资源的网络配置，新建绑定 VPC 的实例后，发现无法解析内部域名。根因是该 VPC 默认使用 AmazonProvidedDNS (10.205.73.2)，无法识别自建内网域名。支持工程师指导客户通过修改 VPC 的 DHCP 选项集切换 DNS，或编写 Lifecycle Configuration 脚本在实例启动时重写 /etc/resolv.conf 指向自建 DNS 来解决该问题。",
+  "customer_symptom": "新建的绑定 VPC 的 SageMaker Notebook 实例可以正常访问互联网，但通过 nslookup 无法解析内部域名，导致无法访问内网服务。",
+  "root_cause": "SageMaker Notebook 实例绑定的 VPC 默认配置了 AmazonProvidedDNS（如 10.205.73.2），该 DNS 服务器不包含客户企业内部自建 DNS 的解析记录，且实例内置的 /etc/resolv.conf 默认指向了该 AWS DNS 地址。",
+  "resolution_steps": [
+    "步骤1：通过会议确认客户无法更改已创建实例的网络配置，且无 VPC 模式无法绑定固定 IP。",
+    "步骤2：指导客户新建绑定了 VPC 和子网的 Notebook 实例并测试网络连通性。",
+    "步骤3：在 Notebook 实例中运行 `cat /etc/resolv.conf` 命令，确认当前使用的 DNS 服务器为 AmazonProvidedDNS。",
+    "步骤4：提供方案一，指导客户修改该 VPC 的 DHCP 选项集（DHCP Options Set），将 DNS 服务器直接更改为企业自建 DNS。",
+    "步骤5：提供方案二，指导客户创建 SageMaker Lifecycle Configuration 脚本，在实例启动时自动重写 `/etc/resolv.conf` 文件以指向自建 DNS。"
+  ],
+  "key_knowledge_points": [
+    "SageMaker Notebook 实例的网络模式（无 VPC 模式与绑定 VPC 模式）及创建后不可更改的限制",
+    "VPC 默认 DNS（AmazonProvidedDNS）与自定义 DHCP 选项集（DHCP Options Set）的配置与作用域",
+    "SageMaker Lifecycle Configuration 脚本的编写与生命周期应用机制",
+    "Linux 系统下 `/etc/resolv.conf` 的 DNS 解析配置机制"
+  ],
+  "troubleshooting_clues": [
+    "线索1：新实例网络测试显示可正常访问互联网，但使用 nslookup 解析内部域名失败",
+    "线索2：在实例内部执行 `cat /etc/resolv.conf` 发现 DNS 地址为 AmazonProvidedDNS（如 10.205.73.2）"
+  ],
+  "related_services": ["Amazon SageMaker", "Amazon VPC"],
+  "prevention_advice": "在规划需要访问企业内网环境的 SageMaker 实例时，应提前配置好包含自建 DNS 的 VPC DHCP 选项集，或准备好用于网络初始化的 Lifecycle Configuration 脚本。"
+}

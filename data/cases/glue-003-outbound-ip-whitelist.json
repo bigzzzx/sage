@@ -1,0 +1,35 @@
+{
+  "id": "glue-003-outbound-ip-whitelist",
+  "service": "Glue",
+  "title": "Glue Job 出口 IP 白名单配置方案",
+  "severity": "low",
+  "tags": ["networking", "vpc", "nat-gateway", "eni", "public-ip", "whitelist", "connection"],
+  "summary": "客户需要获取 Glue Job 的出口 IP 或固定网段用于第三方系统白名单配置。SE 按三种场景给出方案：(1) 无 VPC 环境时 IP 随机无法固定；(2) Connection 配私有子网 + NAT 网关时，出口 IP 就是 NAT 的弹性 IP 可加白名单；(3) Connection 配公有子网时无法访问公网，因为 Glue ENI 只分配私有 IP 不分配公有 IP。最终建议客户使用方案 2（私有子网 + NAT）来固定出口 IP。",
+  "customer_problem": "我们需要在第三方系统上配置 IP 白名单，请问 Glue Job 的出口 IP 地址是什么？是否有固定网段可以加白名单？",
+  "conversation": [
+    {
+      "role": "customer",
+      "content": "我们的 Glue Job 需要访问一个外部数据库，对方要求提供出口 IP 加白名单。请问 Glue 有没有固定的出口 IP 或网段？"
+    },
+    {
+      "role": "se",
+      "content": "这个问题需要分三种情况讨论：\n\n1. 如果 Glue Job 没有配置 VPC 环境（即没有使用 Connection），这种情况下所有流量从 Glue Service 的托管网络出站，IP 地址是随机分配的，没有固定网段，无法用于白名单配置。\n\n2. 如果使用 Connection 连接数据库，Connection 配置的是私有子网，并且子网路由指向 NAT 网关，那么所有出站流量都经过 NAT 网关，出口 IP 就是 NAT 网关的弹性 IP（EIP）。这个 IP 是固定的，可以加入白名单。\n\n3. 如果使用 Connection 配置的是公有子网，这种情况下 Glue Job 实际上无法访问公网。因为 Glue 创建的 ENI 只会从子网中分配私有 IP 地址，不会获得公有 IP 地址。即使子网有 Internet Gateway 路由也无效，因为 IGW 要求实例本身有公有 IP 才能出站。\n\n所以如果您需要固定出口 IP，推荐方案是：创建一个私有子网 → 配置 NAT 网关（绑定 EIP）→ 私有子网路由表添加 0.0.0.0/0 指向 NAT → Glue Connection 选择该私有子网。这样出口 IP 就是 NAT 的 EIP，可以提供给对方加白名单。"
+    },
+    {
+      "role": "customer",
+      "content": "明白了，我们用方案 2 配置私有子网加 NAT 网关来固定出口 IP。谢谢。"
+    }
+  ],
+  "resolution": "Glue Job 出口 IP 方案取决于网络配置：\n\n- 无 VPC：IP 随机，无法固定，不适用白名单场景。\n- 私有子网 + NAT 网关：出口 IP = NAT 的弹性 IP，固定可控，推荐用于白名单场景。\n- 公有子网：Glue ENI 不分配公有 IP，无法直接访问公网。\n\n推荐架构：私有子网 + NAT 网关 + EIP，将 EIP 提供给第三方加白名单。",
+  "key_skills": [
+    "Glue 网络架构理解（托管 vs VPC）",
+    "VPC 子网类型与路由设计",
+    "NAT 网关与 EIP 配置",
+    "Glue ENI 行为特性",
+    "公有子网 vs 私有子网对 Glue 的影响",
+    "网络出站方案设计"
+  ],
+  "references": [
+    "https://docs.amazonaws.cn/glue/latest/dg/start-connecting.html"
+  ]
+}

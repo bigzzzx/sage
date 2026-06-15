@@ -1,0 +1,73 @@
+{
+  "answers_scored": [
+    {
+      "scores": {
+        "accuracy": 1,
+        "completeness": 1,
+        "diagnostic_approach": 1,
+        "depth": 1,
+        "practicality": 1
+      },
+      "total_score": 5,
+      "level": "L1",
+      "strengths": [
+        "识别到日志中存在异常信息",
+        "尝试提出基础排查动作（如查网络、查服务状态）"
+      ],
+      "weaknesses": [
+        "完全误判根因：将 Driver OOM + GC overhead 报错错误归因为 S3 SocketException，二者无因果关系；未提及任何 GC 日志、Spark UI 指标或内存配置",
+        "遗漏全部5个得分点，且混淆了 Driver 级 JVM 内存问题与网络层传输问题"
+      ],
+      "feedback": "需系统学习 JVM 内存模型与 Spark 内存管理机制。'GC overhead limit exceeded' 是 JVM GC 失控的明确信号，必须优先分析 GC 日志和 Spark UI Executors 页面的 GC Time 指标，而非跳转至网络层。建议精读 AWS Glue 最佳实践文档中关于内存调优与 AQE 的章节。",
+      "question_id": "q06",
+      "dimension_id": "Glue 运行时计算引擎调优与故障诊断",
+      "sub_skill_id": "Glue 运行时计算引擎调优与故障诊断_sk_01"
+    },
+    {
+      "scores": {
+        "accuracy": 4,
+        "completeness": 3,
+        "diagnostic_approach": 4,
+        "depth": 3,
+        "practicality": 3
+      },
+      "total_score": 17,
+      "level": "L2",
+      "strengths": [
+        "正确认识公有子网不适用于 Glue 出口 IP 固化的核心矛盾",
+        "准确指出 NAT 网关 + EIP 是唯一合规路径"
+      ],
+      "weaknesses": [
+        "未提及 NAT 网关必须部署在公有子网（含 IGW 路由），易导致部署失败",
+        "缺失安全组策略细节（如私有子网 SG 无需特殊配置，但公有子网 SG 需放行入站）及完整验证方法（如 CloudTrail 绑定状态校验）"
+      ],
+      "feedback": "需补充 NAT 网关所在公有子网的 IGW 路由依赖、公有子网安全组对私有 CIDR 的入站放行要求，并明确验证三要素：Job 实测出口 IP、EIP 一致性比对、CloudTrail CreateNatGateway 事件确认绑定状态。",
+      "question_id": "q07",
+      "dimension_id": "Glue 网络架构与 VPC 集成",
+      "sub_skill_id": "Glue 网络架构与 VPC 集成_sk_02"
+    },
+    {
+      "scores": {
+        "accuracy": 2,
+        "completeness": 1,
+        "diagnostic_approach": 2,
+        "depth": 1,
+        "practicality": 2
+      },
+      "total_score": 8,
+      "level": "L1",
+      "strengths": [
+        "识别出权限不足是根本原因",
+        "提及了 IAM 策略和 bucket policy 两个相关组件"
+      ],
+      "weaknesses": [
+        "完全遗漏题目已明确的前提（IAM Role 和 Bucket Policy 已配置正确）",
+        "未覆盖任一得分点（如 Block Public Access、Trust Policy、Object Ownership、SCP/Permissions Boundary、Lake Formation）"
+      ],
+      "feedback": "回答未审题——题目已声明IAM权限和Bucket Policy均配置正确，但该回答仍重复建议添加基础S3权限，暴露对排查逻辑链的缺失。应紧扣跨账号场景特有的信任链（STS AssumeRole）、S3安全控制层（Block Public Access/Object Ownership）及组织级策略（SCP）等深层维度展开。",
+      "question_id": "q08",
+      "dimension_id": "Glue 安全与权限模型深度实践",
+      "sub_skill_id": "Glue 安全与权限模型深度实践_sk_01"
+    }
+  ]
+}

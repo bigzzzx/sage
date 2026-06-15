@@ -1,0 +1,35 @@
+{
+  "id": "glue-004-crawler-csv-column-header-not-recognized",
+  "service": "Glue",
+  "title": "Glue Crawler 爬取 CSV 文件无法正确识别列名",
+  "severity": "low",
+  "tags": ["crawler", "csv", "classifier", "schema", "catalog", "header", "athena"],
+  "summary": "客户使用 Glue Crawler 爬取 CSV 文件时，第一行的列名未被正确识别，生成的表列名显示为 col1、col2、col3 等。根因是 Glue 内置 CSV 分类器使用启发式方法判断是否存在标头，对于某些格式（如分号分隔、列名不明显）无法自动识别。提供两种解决方案：(1) 使用 Athena DDL 手动创建表并指定 skip.header.line.count='1'；(2) 创建自定义 CSV 分类器并设置 'Has Column headings'，然后让 Crawler 使用该分类器。",
+  "customer_problem": "我们用 Glue Crawler 爬一个 CSV 文件，但是 Crawler 不能正确识别列名，生成的表列名全都是 col1、col2 这种自动编号，而不是 CSV 文件第一行的实际列名。",
+  "conversation": [
+    {
+      "role": "customer",
+      "content": "我们的 Crawler 爬一个 CSV 文件，不能正确识别列名，生成的表都是 col1、col2 这种。CSV 第一行明明是列名，为什么识别不了？"
+    },
+    {
+      "role": "se",
+      "content": "我们在本地复现了您的问题。Glue Crawler 中有内置的 CSV 分类器，它使用启发式方法来确定 CSV 文件是否存在标头行。要被分类为 CSV，表架构必须至少有两列和两行数据。如果分类器无法根据第一行数据确定标头（比如列名和数据内容格式相似、分隔符非标准等），列标题就会显示为 col1、col2、col3。\n\n针对您的情况，有两种解决方案：\n\n方案一：使用 Athena DDL 手动创建表，指定列名并跳过标头行：\n\nCREATE EXTERNAL TABLE `csvtest`(\n  `MANDT` string,\n  `VBELN` string\n)\nROW FORMAT DELIMITED\nFIELDS TERMINATED BY '\\;'\nSTORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'\nOUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\nLOCATION 's3://<BUCKET_NAME>/csvdata/'\nTBLPROPERTIES ('classification'='csv', 'skip.header.line.count'='1')\n\n方案二（推荐）：创建自定义 CSV 分类器，让 Crawler 自动识别标头。步骤如下：\n1. 打开 Glue 控制台 → Classifiers 选项卡\n2. 点击 Add classifier\n3. 输入 Classifier name\n4. Classifier type 选择 CSV\n5. Column delimiter 选择对应的分隔符（如分号 ;）\n6. Column headings 选择 'Has Column headings'\n7. 其他保持默认，点击 Create\n8. 创建 Crawler 时选择该自定义分类器\n9. 运行 Crawler，列名就能正确识别了"
+    },
+    {
+      "role": "customer",
+      "content": "用方案二创建了自定义分类器后，Crawler 能正确识别列名了，谢谢。"
+    }
+  ],
+  "resolution": "根因：Glue 内置 CSV 分类器使用启发式算法判断第一行是否为标头。当 CSV 使用非标准分隔符（如分号）或列名格式与数据格式相似时，启发式判断可能失败，导致列名显示为 col1、col2 等自动编号。\n\n解决方案：\n1. 方案一（适合一次性场景）：通过 Athena DDL 手动建表，明确指定列名，并设置 TBLPROPERTIES 中 skip.header.line.count='1' 跳过标头行。\n2. 方案二（推荐，适合需要反复爬取的场景）：创建自定义 CSV 分类器，设置 Column headings 为 'Has Column headings'，并指定正确的分隔符。将该分类器关联到 Crawler 后，Crawler 即可正确识别 CSV 标头。\n\n关键知识点：Glue 内置分类器和自定义分类器的优先级——自定义分类器优先于内置分类器执行，一旦匹配成功就不再尝试其他分类器。",
+  "key_skills": [
+    "Glue Crawler 分类器机制",
+    "自定义 CSV 分类器配置",
+    "内置分类器启发式行为理解",
+    "Athena DDL 建表",
+    "CSV 文件格式处理",
+    "Glue Catalog 表属性配置"
+  ],
+  "references": [
+    "https://docs.amazonaws.cn/glue/latest/dg/add-classifier.html#classifier-built-in"
+  ]
+}

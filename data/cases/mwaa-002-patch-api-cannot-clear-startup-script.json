@@ -1,0 +1,25 @@
+{
+  "title": "Amazon MWAA 因 UpdateEnvironment API 使用 PATCH 方法导致无法清除 StartupScriptS3Path 配置",
+  "service": "Amazon MWAA",
+  "capability_area": "环境管理与配置部署",
+  "difficulty": "L2",
+  "summary": "客户尝试在控制台或 CLI 中清除 MWAA 环境的 StartupScriptS3Path 启动脚本配置，但提交后旧配置依然生效。根因是 MWAA 的 UpdateEnvironment API 采用 PATCH 方法进行局部更新，当控制台清空或请求体省略该字段时，API 请求会直接忽略该键值对而非发送空值，导致现有值被保留。解决方案是采用变通方案，使用一个内容为空的启动脚本文件替换原 S3 路径下的脚本，从而使启动脚本失效。",
+  "customer_symptom": "无法在 MWAA 环境中移除 'Startup script file'（StartupScriptS3Path）配置，在控制台清除该字段并提交更新后，原有的启动脚本路径依然存在并处于活动状态。",
+  "root_cause": "MWAA 的 UpdateEnvironment API 采用 PATCH 请求机制，仅修改请求正文中显式包含的字段。当在控制台中清除 StartupScriptS3Path 字段或通过 CLI 更新时，生成的 PATCH 请求会完全省略该键值对，而非发送 null 或空值，导致后台持久化层直接保留了现有的 S3 脚本路径配置。",
+  "resolution_steps": [
+    "步骤1：在本地创建一个完全空白的启动脚本文件（如 empty_script.sh）。",
+    "步骤2：将该空白脚本文件上传到 MWAA 环境所引用的 Amazon S3 存储桶中。",
+    "步骤3：在更新环境时，将 StartupScriptS3Path 重新指向该空白脚本文件的 S3 路径，以覆盖并实质性使原启动脚本失效。"
+  ],
+  "key_knowledge_points": [
+    "Amazon MWAA 环境更新机制与 UpdateEnvironment API 的设计行为",
+    "RESTful API 中 PATCH 请求的局部更新逻辑与字段省略处理",
+    "MWAA 启动脚本（Startup Script）的作用机制与配置覆盖变通方案"
+  ],
+  "troubleshooting_clues": [
+    "配置项：在控制台清除 StartupScriptS3Path 后更新环境，刷新页面后发现原 S3 路径配置依然复现",
+    "API 行为：捕获并分析 UpdateEnvironment 的请求体，确认清除操作导致请求中完全缺失 StartupScriptS3Path 键值对，而非传递空值"
+  ],
+  "related_services": ["Amazon MWAA", "Amazon S3"],
+  "prevention_advice": "在官方 API 支持显式传空删除配置前，若需停用 MWAA 启动脚本，应通过提供空脚本文件或覆盖原 S3 对象的方式来实现。"
+}

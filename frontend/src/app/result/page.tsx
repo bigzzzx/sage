@@ -377,7 +377,7 @@ export default function ResultPage() {
                           depth: "深度",
                           practicality: "实操性",
                         };
-                        const detail = r.score_detail as Record<string, number>;
+                        const detail = r.score_detail as unknown as Record<string, number>;
                         return Object.entries(detail)
                           .filter(([k, v]) => typeof v === "number" && v > 0 && k in LABELS)
                           .map(([k, v]) => (

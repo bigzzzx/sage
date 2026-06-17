@@ -1,7 +1,7 @@
 /**
  * 后端 API 封装 (v3 - 三层 Track/Service/Capability)。
  */
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8000";
 
 // ---------- 题目类型 ----------
 

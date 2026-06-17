@@ -1,4 +1,4 @@
-"""测评 API 路由（v3 - 三层 Track/Service/Capability）。"""
+"""测评 API 路由（v4 - 异步任务模式）。"""
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
@@ -18,6 +18,7 @@ from app.services.assessment import (
     run_assessment,
 )
 from app.services.question_gen import generate_questions, get_session
+from app.services.tasks import create_task, get_task, cleanup_task
 from app.services.taxonomy import get_full_taxonomy, get_service, get_tracks
 
 router = APIRouter(prefix="/api/assessment", tags=["assessment"])
@@ -45,11 +46,59 @@ def service_detail(service_id: str):
     return svc
 
 
-# ---------- 出题 / 提交 ----------
+# ---------- 异步任务轮询 ----------
 
-@router.post("/generate", response_model=GenerateResponse)
+@router.get("/task/{task_id}")
+def task_status(task_id: str):
+    """轮询异步任务状态。done 时返回 result，error 时返回 error。"""
+    t = get_task(task_id)
+    if not t:
+        raise HTTPException(404, detail="任务不存在或已过期")
+    resp = {"status": t["status"]}
+    if t["status"] == "done":
+        resp["result"] = t["result"]
+        cleanup_task(task_id)
+    elif t["status"] == "error":
+        resp["error"] = t["error"]
+        cleanup_task(task_id)
+    return resp
+
+
+# ---------- 出题 / 提交（异步）----------
+
+def _do_post_test_generate(prev_assessment_id: str) -> dict:
+    """后测出题的实际逻辑（在后台线程执行）。"""
+    from app.db import SessionLocal
+    from app.models import Assessment
+
+    db = SessionLocal()
+    try:
+        prev = db.query(Assessment).filter_by(id=prev_assessment_id).first()
+        if not prev or not prev.service_id:
+            raise ValueError("前测记录不存在")
+        service_id = prev.service_id
+        diagnosis = prev.diagnosis or []
+        weak_caps = list({g.get("capability_id") for g in diagnosis if g.get("capability_id")})
+        if not weak_caps:
+            weak_caps = [r.get("capability_id") for r in (prev.radar or []) if r.get("score", 0) < 3.0 and r.get("capability_id")]
+        gap_hints = []
+        for g in diagnosis:
+            if g.get("severity") in ("critical", "major"):
+                gap_hints.append(f"- [{g.get('capability_name','')}] {g.get('title','')}: {g.get('correct_understanding','')}")
+    finally:
+        db.close()
+
+    session_id, qs = generate_questions(
+        service_id=service_id,
+        capability_ids=weak_caps if weak_caps else None,
+        post_test_gap_hints=gap_hints if gap_hints else None,
+    )
+    return {"session_id": session_id, "questions": qs}
+
+
+@router.post("/generate")
 def generate(req: GenerateRequest):
-    """动态出题：基于 Service + Capability 生成。
+    """动态出题（异步）：立即返回 task_id，前端轮询 /task/{id} 拿结果。
 
     业务规则：同一服务下若有未完成的后测，禁止开新前测。
     """
@@ -63,7 +112,8 @@ def generate(req: GenerateRequest):
                 "pending": pending,
             },
         )
-    try:
+
+    def _job():
         session_id, qs = generate_questions(
             service_id=req.service_id,
             capability_ids=req.capability_ids or None,
@@ -71,77 +121,54 @@ def generate(req: GenerateRequest):
             num_open=req.num_open,
             difficulty=req.difficulty,
         )
-    except ValueError as e:
-        raise HTTPException(400, detail=str(e))
-    return GenerateResponse(session_id=session_id, questions=qs)
+        return {"session_id": session_id, "questions": qs}
+
+    task_id = create_task(_job)
+    return {"task_id": task_id}
 
 
-@router.post("/submit", response_model=AssessmentResult)
+@router.post("/submit")
 def submit(req: SubmitRequest):
-    """提交答案（前测）。"""
-    try:
-        return run_assessment(
+    """提交答案（前测，异步）：立即返回 task_id。"""
+    def _job():
+        result = run_assessment(
             user_id=req.user_id,
             answer_items=req.answers,
             session_id=req.session_id,
             kind="pre",
         )
-    except ValueError as e:
-        raise HTTPException(400, detail=str(e))
+        return result.model_dump()
+
+    task_id = create_task(_job)
+    return {"task_id": task_id}
 
 
-@router.post("/post-test/generate", response_model=GenerateResponse)
+@router.post("/post-test/generate")
 def post_test_generate(req: PostTestRequest):
-    """后测出题：基于前测诊断出的知识盲区，针对性验证用户是否掌握了薄弱点。"""
-    from app.db import SessionLocal
-    from app.models import Assessment
-
-    db = SessionLocal()
-    try:
-        prev = db.query(Assessment).filter_by(id=req.prev_assessment_id).first()
-        if not prev or not prev.service_id:
-            raise HTTPException(404, "前测记录不存在")
-        service_id = prev.service_id
-
-        # 从前测诊断盲区中提取薄弱 capability + 具体盲区描述
-        diagnosis = prev.diagnosis or []
-        weak_caps = list({g.get("capability_id") for g in diagnosis if g.get("capability_id")})
-
-        # 如果诊断没有盲区（用户前测全对），fallback 到 radar 低分
-        if not weak_caps:
-            weak_caps = [r.get("capability_id") for r in (prev.radar or []) if r.get("score", 0) < 3.0 and r.get("capability_id")]
-
-        # 构建盲区描述，注入给出题 prompt
-        gap_hints = []
-        for g in diagnosis:
-            if g.get("severity") in ("critical", "major"):
-                gap_hints.append(f"- [{g.get('capability_name','')}] {g.get('title','')}: {g.get('correct_understanding','')}")
-    finally:
-        db.close()
-
-    # 把盲区信息作为额外上下文传给出题函数
-    session_id, qs = generate_questions(
-        service_id=service_id,
-        capability_ids=weak_caps if weak_caps else None,
-        post_test_gap_hints=gap_hints if gap_hints else None,
-    )
-    return GenerateResponse(session_id=session_id, questions=qs)
+    """后测出题（异步）：立即返回 task_id。"""
+    task_id = create_task(lambda: _do_post_test_generate(req.prev_assessment_id))
+    return {"task_id": task_id}
 
 
-@router.post("/post-test/submit", response_model=AssessmentResult)
+@router.post("/post-test/submit")
 def post_test_submit(req: SubmitRequest):
-    """提交后测答案，返回前后对比。"""
+    """提交后测答案（异步）：立即返回 task_id。"""
     parts = req.session_id.split(":", 1)
     session_id = parts[0]
     prev_id = parts[1] if len(parts) > 1 else ""
 
-    return run_assessment(
-        user_id=req.user_id,
-        answer_items=req.answers,
-        session_id=session_id,
-        kind="post",
-        prev_assessment_id=prev_id,
-    )
+    def _job():
+        result = run_assessment(
+            user_id=req.user_id,
+            answer_items=req.answers,
+            session_id=session_id,
+            kind="post",
+            prev_assessment_id=prev_id,
+        )
+        return result.model_dump()
+
+    task_id = create_task(_job)
+    return {"task_id": task_id}
 
 
 # ---------- 用户历史与雷达图 ----------

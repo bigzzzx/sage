@@ -243,6 +243,30 @@ export class PendingPostTestError extends Error {
   }
 }
 
+// ---------- 异步任务轮询 ----------
+
+/**
+ * 轮询一个后台任务直到完成。
+ * 后端慢操作（出题/评分/多 agent）返回 {task_id}，这里轮询 /task/{id}。
+ */
+async function pollTask<T>(taskId: string, opts?: { intervalMs?: number; timeoutMs?: number }): Promise<T> {
+  const interval = opts?.intervalMs ?? 2000;
+  const timeout = opts?.timeoutMs ?? 300000; // 5 分钟
+  const start = Date.now();
+  while (true) {
+    if (Date.now() - start > timeout) {
+      throw new Error("任务超时，请重试");
+    }
+    await new Promise((res) => setTimeout(res, interval));
+    const r = await fetch(`${API_BASE}/api/assessment/task/${taskId}`, { cache: "no-store" });
+    if (!r.ok) throw new Error(`task poll ${r.status}`);
+    const data = await r.json();
+    if (data.status === "done") return data.result as T;
+    if (data.status === "error") throw new Error(data.error || "任务执行失败");
+    // pending / running → 继续轮询
+  }
+}
+
 export async function generateQuestions(opts: {
   serviceId: string;
   capabilityIds?: string[];
@@ -257,8 +281,8 @@ export async function generateQuestions(opts: {
       user_id: "demo_user",
       service_id: opts.serviceId,
       capability_ids: opts.capabilityIds || [],
-      num_choice: opts.numChoice ?? 4,
-      num_open: opts.numOpen ?? 2,
+      num_choice: opts.numChoice ?? 6,
+      num_open: opts.numOpen ?? 3,
       difficulty: opts.difficulty || "",
     }),
   });
@@ -270,7 +294,8 @@ export async function generateQuestions(opts: {
     throw new Error(`generate 409: ${JSON.stringify(data)}`);
   }
   if (!r.ok) throw new Error(`generate ${r.status}: ${await r.text()}`);
-  return r.json();
+  const { task_id } = await r.json();
+  return pollTask<GenerateResponse>(task_id);
 }
 
 export async function submitAssessment(
@@ -284,7 +309,8 @@ export async function submitAssessment(
     body: JSON.stringify({ user_id: userId, answers, session_id: sessionId }),
   });
   if (!r.ok) throw new Error(`submit ${r.status}: ${await r.text()}`);
-  return r.json();
+  const { task_id } = await r.json();
+  return pollTask<AssessmentResult>(task_id);
 }
 
 export async function generatePostTest(prevAssessmentId: string): Promise<GenerateResponse> {
@@ -294,7 +320,8 @@ export async function generatePostTest(prevAssessmentId: string): Promise<Genera
     body: JSON.stringify({ user_id: "demo_user", prev_assessment_id: prevAssessmentId }),
   });
   if (!r.ok) throw new Error(`post-test generate ${r.status}: ${await r.text()}`);
-  return r.json();
+  const { task_id } = await r.json();
+  return pollTask<GenerateResponse>(task_id);
 }
 
 export async function submitPostTest(
@@ -310,7 +337,8 @@ export async function submitPostTest(
     body: JSON.stringify({ user_id: userId, answers, session_id: combined }),
   });
   if (!r.ok) throw new Error(`post-test submit ${r.status}: ${await r.text()}`);
-  return r.json();
+  const { task_id } = await r.json();
+  return pollTask<AssessmentResult>(task_id);
 }
 
 export async function fetchUserTrackRadar(userId: string, trackId: string = "big_data"): Promise<UserTrackRadar> {

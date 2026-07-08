@@ -65,6 +65,29 @@ export function isLoggedIn(): boolean {
 
 // ---------- API calls ----------
 
+export async function register(username: string, password: string, displayName?: string): Promise<UserInfo> {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password, display_name: displayName || "" }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail || "注册失败");
+  }
+  const data = await res.json();
+  setToken(data.token);
+  const user: UserInfo = {
+    user_id: data.user_id,
+    username: data.username,
+    display_name: data.display_name,
+    role: data.role,
+    current_profile: data.current_profile || "",
+  };
+  setStoredUser(user);
+  return user;
+}
+
 export async function login(username: string, password: string): Promise<UserInfo> {
   const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",

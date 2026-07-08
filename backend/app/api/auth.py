@@ -67,6 +67,12 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    display_name: str = ""
+
+
 class LoginResponse(BaseModel):
     token: str
     user_id: str
@@ -132,6 +138,45 @@ def login(req: LoginRequest):
         db.close()
 
 
+@router.post("/register", response_model=LoginResponse)
+def register(req: RegisterRequest):
+    """注册新用户，注册成功后自动登录返回 token。"""
+    if not req.username or not req.password:
+        raise HTTPException(400, "用户名和密码不能为空")
+    if len(req.username) < 2 or len(req.username) > 32:
+        raise HTTPException(400, "用户名长度需在 2-32 个字符之间")
+    if len(req.password) < 6:
+        raise HTTPException(400, "密码长度不能少于 6 位")
+
+    db = SessionLocal()
+    try:
+        existing = db.query(User).filter_by(username=req.username).first()
+        if existing:
+            raise HTTPException(409, "用户名已存在")
+        display = req.display_name.strip() if req.display_name else req.username
+        new_user = User(
+            username=req.username,
+            password_hash=_hash_password(req.password),
+            display_name=display,
+            role="member",
+            current_profile="big_data",
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        token = _create_token(new_user.id, new_user.username, new_user.role)
+        return LoginResponse(
+            token=token,
+            user_id=new_user.id,
+            username=new_user.username,
+            display_name=new_user.display_name,
+            role=new_user.role,
+            current_profile=new_user.current_profile,
+        )
+    finally:
+        db.close()
+
+
 @router.get("/me")
 def get_me(current: dict = Depends(get_current_user)):
     db = SessionLocal()
@@ -175,14 +220,14 @@ def switch_profile(req: ProfileUpdateRequest, current: dict = Depends(get_curren
 
 PROFILES = [
     {"id": "big_data", "name": "Big Data", "icon": "📊", "available": True},
-    {"id": "deployment", "name": "Deployment", "icon": "🚀", "available": False},
-    {"id": "database", "name": "Database", "icon": "🗄️", "available": False},
-    {"id": "dms", "name": "DMS", "icon": "🔄", "available": False},
     {"id": "analytics", "name": "Analytics", "icon": "📈", "available": True},
-    {"id": "networking", "name": "Networking", "icon": "🌐", "available": False},
-    {"id": "scd", "name": "SCD", "icon": "🔒", "available": False},
-    {"id": "linux", "name": "Linux", "icon": "🐧", "available": False},
-    {"id": "windows", "name": "Windows", "icon": "🪟", "available": False},
+    {"id": "deployment", "name": "Deployment", "icon": "🚀", "available": True},
+    {"id": "database", "name": "Database", "icon": "🗄️", "available": True},
+    {"id": "dms", "name": "DMS", "icon": "🔄", "available": True},
+    {"id": "networking", "name": "Networking & Security", "icon": "🌐", "available": True},
+    {"id": "scd", "name": "SCD", "icon": "🔒", "available": True},
+    {"id": "linux", "name": "Linux", "icon": "🐧", "available": True},
+    {"id": "windows", "name": "Windows", "icon": "🪟", "available": True},
 ]
 
 

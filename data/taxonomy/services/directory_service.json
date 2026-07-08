@@ -1,0 +1,42 @@
+{
+  "id": "directory_service",
+  "name": "AWS Directory Service",
+  "track_id": "windows",
+  "description": "托管目录服务（Microsoft AD/AD Connector/Simple AD），覆盖身份集成与域管理。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ds_managed_ad",
+      "name": "AWS Managed Microsoft AD",
+      "description": "目录创建、信任关系、Schema 扩展、多区域复制",
+      "levels": {
+        "L1": "能创建 Managed AD 并加入域机器",
+        "L2": "能配置单向/双向信任关系，管理 OU 和组策略",
+        "L3": "可设计多区域 AD 架构（含 Trust 规划、Schema 扩展、混合身份集成）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ds_integration",
+      "name": "与 AWS 服务集成",
+      "description": "EC2 域加入、RDS/FSx/WorkSpaces AD 认证、SSO 集成",
+      "levels": {
+        "L1": "能配置 EC2 实例无缝加域",
+        "L2": "能集成 FSx、RDS、WorkSpaces 等服务的 AD 认证",
+        "L3": "可设计企业级身份集成方案（含 IAM Identity Center、SAML 联合、条件访问）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ds_troubleshooting",
+      "name": "故障排查与监控",
+      "description": "目录状态、复制监控、DNS 解析、信任验证",
+      "levels": {
+        "L1": "能检查目录状态和基本连接",
+        "L2": "能排查域加入失败、DNS 解析问题、信任关系中断",
+        "L3": "可排查复杂的 AD 复制延迟、Kerberos 认证问题、跨域访问故障"
+      },
+      "doc_refs": []
+    }
+  ]
+}

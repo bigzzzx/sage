@@ -1,0 +1,53 @@
+{
+  "id": "ssm",
+  "name": "AWS Systems Manager",
+  "track_id": "linux",
+  "description": "统一运维管理平台，覆盖实例管理、补丁、配置合规与自动化。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ssm_session_run",
+      "name": "Session Manager 与 Run Command",
+      "description": "免 SSH 远程访问、Run Command 批量执行、文档编写",
+      "levels": {
+        "L1": "能通过 Session Manager 连接实例",
+        "L2": "能使用 Run Command 批量执行命令，编写自定义 SSM 文档",
+        "L3": "可设计大规模远程管理方案（含会话审计、权限控制、混合环境）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ssm_patch",
+      "name": "Patch Manager",
+      "description": "补丁基线、补丁组、合规报告、维护窗口",
+      "levels": {
+        "L1": "能扫描实例补丁合规状态",
+        "L2": "能配置自定义补丁基线和补丁组，通过维护窗口自动化打补丁",
+        "L3": "可设计企业级补丁管理策略（含测试流程、回滚方案、合规审计）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ssm_automation",
+      "name": "Automation 与状态管理",
+      "description": "Automation Runbook、State Manager 关联、Inventory",
+      "levels": {
+        "L1": "能运行预置 Runbook 执行常见操作",
+        "L2": "能编写自定义 Automation Runbook，用 State Manager 维持配置一致性",
+        "L3": "可设计复杂的自动化运维工作流（含审批、分支、错误处理、跨账号）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ssm_parameter",
+      "name": "Parameter Store 与配置管理",
+      "description": "参数层级、SecureString、版本管理、与应用集成",
+      "levels": {
+        "L1": "能创建和读取参数",
+        "L2": "能设计参数层级结构，使用 SecureString 存储密钥，配置跨账号访问",
+        "L3": "可设计应用配置管理体系（含动态配置刷新、版本回滚、审计追踪）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

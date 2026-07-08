@@ -1,0 +1,53 @@
+{
+  "id": "dms",
+  "name": "AWS DMS",
+  "track_id": "database",
+  "description": "数据库迁移服务，覆盖同构/异构迁移、CDC 复制与 Schema 转换。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "dms_task_mgmt",
+      "name": "迁移任务管理",
+      "description": "复制实例、源/目标端点、任务类型（全量/CDC/全量+CDC）、表映射",
+      "levels": {
+        "L1": "能创建基本的全量迁移任务",
+        "L2": "能配置 CDC 持续复制任务，使用表映射规则做筛选和转换",
+        "L3": "可设计大规模异构迁移方案（含多任务编排、数据验证、切换窗口规划）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "dms_source_target",
+      "name": "源端与目标端配置",
+      "description": "Oracle/MySQL/PostgreSQL/SQL Server 特定配置、S3/Kinesis 目标、权限配置",
+      "levels": {
+        "L1": "能配置常见数据库的源端/目标端点",
+        "L2": "能处理各引擎特定的 CDC 前置条件（如 Oracle Supplemental Log、MySQL binlog）",
+        "L3": "可设计异构迁移中的数据类型映射策略，处理 LOB、分区表等复杂场景"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "dms_troubleshooting",
+      "name": "故障排查与性能",
+      "description": "任务日志分析、延迟监控、内存/存储不足、常见错误处理",
+      "levels": {
+        "L1": "能查看任务状态和基本日志",
+        "L2": "能从日志中定位常见错误（连接失败、权限不足、数据类型不兼容），优化任务性能",
+        "L3": "可排查复杂的 CDC 延迟问题（源端压力、LOB 处理、网络瓶颈），设计监控告警体系"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "dms_schema_conversion",
+      "name": "Schema 转换与验证",
+      "description": "SCT（Schema Conversion Tool）、DMS Serverless、数据验证",
+      "levels": {
+        "L1": "了解 SCT 的作用和基本使用流程",
+        "L2": "能使用 SCT 完成异构数据库的 Schema 转换，处理转换报告中的问题",
+        "L3": "可设计端到端的迁移验证方案（数据完整性校验、性能基线对比）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

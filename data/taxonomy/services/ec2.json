@@ -1,0 +1,64 @@
+{
+  "id": "ec2",
+  "name": "Amazon EC2",
+  "track_id": "deployment",
+  "description": "弹性计算实例，覆盖实例管理、网络配置、存储与性能优化。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ec2_instance_mgmt",
+      "name": "实例生命周期管理",
+      "description": "实例类型选择、启停/终止、AMI 管理、Launch Template",
+      "levels": {
+        "L1": "会启动/停止实例，了解常用实例类型区别",
+        "L2": "能根据工作负载选型（计算/内存/存储优化），熟练使用 Launch Template 与 AMI 构建",
+        "L3": "可设计大规模实例管理方案（Fleet、Spot 策略、容量预留），优化成本与可用性"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2_networking",
+      "name": "网络与安全组",
+      "description": "ENI、安全组、弹性 IP、Placement Group、增强型网络",
+      "levels": {
+        "L1": "能配置安全组入站/出站规则，绑定弹性 IP",
+        "L2": "理解多 ENI 场景、安全组状态追踪、Placement Group 对性能影响",
+        "L3": "可设计高性能网络架构（EFA、集群网络），排查复杂的网络连通性问题"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2_storage",
+      "name": "存储与 EBS",
+      "description": "EBS 卷类型、IOPS 预置、快照、实例存储、加密",
+      "levels": {
+        "L1": "知道 gp3/io2 区别，能创建和挂载 EBS 卷",
+        "L2": "能根据 IOPS/吞吐需求选型，理解快照增量机制与加密策略",
+        "L3": "可设计高性能存储方案（io2 Block Express、多卷 RAID），优化存储成本"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2_monitoring",
+      "name": "监控与故障排查",
+      "description": "CloudWatch 指标、状态检查、系统日志、串行控制台",
+      "levels": {
+        "L1": "能查看基本 CloudWatch 指标，识别实例状态检查失败",
+        "L2": "能通过系统日志和串行控制台排查启动失败，配置详细监控与告警",
+        "L3": "可建立完整的 EC2 可观测体系，快速定位内核 panic、网络不通等底层故障"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2_autoscaling",
+      "name": "Auto Scaling 与弹性",
+      "description": "ASG 策略、启动配置、扩缩容策略、生命周期钩子",
+      "levels": {
+        "L1": "能创建基本的 ASG 并配置固定容量",
+        "L2": "能配置动态/预测性扩缩策略，使用生命周期钩子做优雅部署",
+        "L3": "可设计混合实例策略（Spot+OD），优化成本同时保障 SLA"
+      },
+      "doc_refs": []
+    }
+  ]
+}

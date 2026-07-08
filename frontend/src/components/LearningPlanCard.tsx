@@ -45,9 +45,6 @@ function TaskBlock({
           </span>
           <span className="text-slate-100 font-medium">{task.topic}</span>
         </div>
-        <span className="text-xs text-slate-500 whitespace-nowrap">
-          ⏱ {task.time_minutes} 分钟
-        </span>
       </div>
 
       {/* 学习目标 */}
@@ -211,10 +208,6 @@ export default function LearningPlanCard({
 
       <div className="space-y-5">
         {plan.weekly_plan.map((w) => {
-          const totalMin = w.tasks.reduce(
-            (a, t) => a + (t.time_minutes || 0),
-            0,
-          );
           return (
             <div
               key={w.week}
@@ -228,7 +221,7 @@ export default function LearningPlanCard({
                   {w.focus}
                 </span>
                 <span className="text-xs text-slate-500">
-                  共 {w.tasks.length} 天 / {totalMin} 分钟
+                  共 {w.tasks.length} 天
                 </span>
               </div>
               <div className="space-y-3">

@@ -1,0 +1,42 @@
+{
+  "id": "memorydb",
+  "name": "Amazon MemoryDB",
+  "track_id": "linux",
+  "description": "兼容 Redis 的持久化内存数据库，覆盖集群管理、数据持久性与性能。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "mdb_cluster",
+      "name": "集群架构与管理",
+      "description": "集群创建、分片、副本、节点类型选择、ACL",
+      "levels": {
+        "L1": "能创建 MemoryDB 集群并连接",
+        "L2": "能规划分片数和副本配置，配置 ACL 做用户认证",
+        "L3": "可设计高可用持久化缓存方案，评估 MemoryDB vs ElastiCache 适用场景"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "mdb_durability",
+      "name": "数据持久性与恢复",
+      "description": "Multi-AZ 事务日志、快照、恢复、数据一致性",
+      "levels": {
+        "L1": "了解 MemoryDB 的持久性保证与 ElastiCache 的区别",
+        "L2": "能配置快照策略，从快照恢复集群，理解事务日志机制",
+        "L3": "可设计数据库级一致性要求的内存存储方案（含 RPO 分析、故障恢复验证）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "mdb_performance",
+      "name": "性能与监控",
+      "description": "读写延迟、连接管理、CloudWatch 指标、慢命令",
+      "levels": {
+        "L1": "能查看基本的集群性能指标",
+        "L2": "能分析慢命令和内存使用，优化连接池配置",
+        "L3": "可排查微秒级延迟抖动，设计大规模实时应用的缓存层"
+      },
+      "doc_refs": []
+    }
+  ]
+}

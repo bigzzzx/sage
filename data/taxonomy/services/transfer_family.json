@@ -1,0 +1,42 @@
+{
+  "id": "transfer_family",
+  "name": "AWS Transfer Family",
+  "track_id": "dms",
+  "description": "托管文件传输服务（SFTP/FTPS/FTP/AS2），覆盖服务器管理与集成。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "tf_server_mgmt",
+      "name": "服务器配置与协议管理",
+      "description": "SFTP/FTPS/FTP/AS2 协议、端点类型（公网/VPC）、身份提供程序",
+      "levels": {
+        "L1": "能创建 SFTP 服务器并配置基本用户",
+        "L2": "能配置多协议支持、VPC 端点、自定义身份提供程序（Lambda/API Gateway）",
+        "L3": "可设计企业级文件传输平台（含高可用、合规审计、自动化工作流）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "tf_workflow",
+      "name": "工作流与自动化",
+      "description": "托管工作流、文件处理步骤、Lambda 集成、事件通知",
+      "levels": {
+        "L1": "了解工作流概念和基本使用场景",
+        "L2": "能配置文件到达后的自动处理工作流（复制、标记、Lambda 调用）",
+        "L3": "可设计复杂的 B2B 文件交换方案（AS2 协议、合规加密、异常处理）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "tf_troubleshooting",
+      "name": "故障排查与安全",
+      "description": "连接排查、SSH 密钥管理、安全策略、CloudWatch 日志",
+      "levels": {
+        "L1": "能排查基本的连接和认证失败",
+        "L2": "能配置安全策略（密码套件、TLS 版本），分析结构化日志定位问题",
+        "L3": "可排查复杂的网络和协议兼容问题，设计安全合规的传输方案"
+      },
+      "doc_refs": []
+    }
+  ]
+}

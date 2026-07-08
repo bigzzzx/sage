@@ -532,6 +532,32 @@ def get_user_active_plans(user_id: str, track_id: str | None = None) -> list[dic
         db.close()
 
 
+# ---------- 团队雷达（管理员看板用）----------
+
+def get_team_track_radar(track_id: str = "big_data") -> list[dict]:
+    """获取所有 member 角色用户在某 Track 下的雷达数据（给管理员看板用）。"""
+    from app.models import User
+
+    db = SessionLocal()
+    try:
+        members = db.query(User).filter_by(role="member").all()
+        results = []
+        for m in members:
+            radar = get_user_track_radar(m.id, track_id)
+            # 只返回有至少一项已测评的用户
+            has_tested = any(s.get("is_tested") for s in radar.get("services", []))
+            results.append({
+                "user_id": m.id,
+                "username": m.username,
+                "display_name": m.display_name,
+                "has_tested": has_tested,
+                "radar": radar,
+            })
+        return results
+    finally:
+        db.close()
+
+
 # ---------- 历史 ----------
 
 def get_user_history(user_id: str) -> list[dict]:

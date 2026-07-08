@@ -1,0 +1,42 @@
+{
+  "id": "migration_hub",
+  "name": "AWS Migration Hub",
+  "track_id": "dms",
+  "description": "迁移跟踪与编排中心，覆盖迁移评估、进度跟踪与应用发现。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "mh_discovery",
+      "name": "应用发现与评估",
+      "description": "Application Discovery Service、导入工具、依赖映射",
+      "levels": {
+        "L1": "了解应用发现的目的和基本工具",
+        "L2": "能部署 Discovery Agent/Connector 收集服务器信息，生成依赖关系图",
+        "L3": "可设计大规模迁移评估方案（含 TCO 分析、wave planning、优先级排序）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "mh_tracking",
+      "name": "迁移跟踪与编排",
+      "description": "迁移项目、状态跟踪、与 DMS/MGN/SMS 集成",
+      "levels": {
+        "L1": "能在 Migration Hub 中查看迁移状态",
+        "L2": "能配置迁移项目关联多种迁移工具，跟踪应用级迁移进度",
+        "L3": "可设计端到端的迁移管理体系（含里程碑、风险评估、回滚计划）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "mh_mgn",
+      "name": "Application Migration Service (MGN)",
+      "description": "服务器迁移（Rehost）、复制配置、测试切换、正式切换",
+      "levels": {
+        "L1": "了解 MGN 的 Rehost 迁移方式",
+        "L2": "能配置 MGN 复制代理，执行测试切换和正式切换",
+        "L3": "可设计大规模 Lift-and-Shift 方案（含 wave 管理、自动化启动模板、切换窗口规划）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

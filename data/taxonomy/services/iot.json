@@ -1,0 +1,53 @@
+{
+  "id": "iot",
+  "name": "AWS IoT Core",
+  "track_id": "dms",
+  "description": "物联网平台，覆盖设备连接、消息路由、规则引擎与设备管理。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "iot_connectivity",
+      "name": "设备连接与协议",
+      "description": "MQTT/HTTPS/WebSocket 协议、证书认证、Thing 注册",
+      "levels": {
+        "L1": "能注册设备并通过 MQTT 连接 IoT Core",
+        "L2": "能配置 X.509 证书认证、管理 Thing 类型和组，使用 Fleet Provisioning 批量注册",
+        "L3": "可设计大规模设备接入方案（百万级连接、证书轮换、多协议网关）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "iot_rules",
+      "name": "规则引擎与消息路由",
+      "description": "IoT Rule SQL、Action 配置、错误处理、消息转发",
+      "levels": {
+        "L1": "能创建基本规则将消息转发到 S3 或 Lambda",
+        "L2": "能编写复杂 SQL 查询（函数、WHERE 过滤），配置多目标 Action 和错误 Action",
+        "L3": "可设计高吞吐消息处理架构（含 Basic Ingest、Kinesis 集成、规则拆分策略）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "iot_shadow",
+      "name": "设备影子与状态管理",
+      "description": "Device Shadow、Named Shadow、Desired/Reported 状态同步",
+      "levels": {
+        "L1": "了解 Device Shadow 概念和基本使用",
+        "L2": "能使用 Named Shadow 管理设备多维状态，处理 Desired/Reported 冲突",
+        "L3": "可设计离线设备状态同步方案（含 Delta 回调、版本冲突解决）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "iot_security",
+      "name": "安全与策略",
+      "description": "IoT Policy、策略变量、Authorizer、审计(Device Defender)",
+      "levels": {
+        "L1": "能配置基本的 IoT Policy 允许设备 pub/sub",
+        "L2": "能使用策略变量实现细粒度权限，配置 Custom Authorizer",
+        "L3": "可设计零信任 IoT 安全架构（含 Device Defender 审计、异常行为检测）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "eventbridge",
+  "name": "Amazon EventBridge",
+  "track_id": "deployment",
+  "description": "Serverless 事件总线，覆盖事件规则、目标配置、Schema Registry 与跨账号事件。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "eb_rules",
+      "name": "事件规则与模式匹配",
+      "description": "事件模式、规则配置、输入转换器、调度表达式",
+      "levels": {
+        "L1": "能创建基本的事件规则匹配 AWS 服务事件",
+        "L2": "能编写复杂事件模式（内容过滤、数组匹配），配置输入转换器定制目标输入",
+        "L3": "可设计事件驱动架构（含多总线、Archive/Replay、跨账号/跨区域事件路由）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "eb_targets",
+      "name": "目标与集成",
+      "description": "目标类型（Lambda/SQS/StepFunctions/API Destination）、DLQ、重试策略",
+      "levels": {
+        "L1": "能配置 Lambda 或 SNS 作为规则目标",
+        "L2": "能配置 API Destination 调用外部 API，设置 DLQ 和重试策略",
+        "L3": "可设计高可靠事件处理架构（多目标、幂等性保证、顺序保证）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "eb_troubleshooting",
+      "name": "故障排查与监控",
+      "description": "调用指标、失败通知、事件追踪、Schema Discovery",
+      "levels": {
+        "L1": "能查看规则匹配和调用指标",
+        "L2": "能排查事件未触发/目标调用失败问题，使用 Schema Registry 管理事件格式",
+        "L3": "可建立事件驱动系统的全链路可观测体系（事件流追踪、延迟分析）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

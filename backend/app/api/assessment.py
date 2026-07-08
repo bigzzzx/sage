@@ -12,6 +12,7 @@ from app.schemas.assessment import (
 )
 from app.services.assessment import (
     get_pending_post_test,
+    get_team_track_radar,
     get_user_active_plans,
     get_user_history,
     get_user_track_radar,
@@ -182,6 +183,12 @@ def history(user_id: str):
 def user_track_radar(user_id: str, track_id: str = "big_data"):
     """获取用户在某 Track 下的全服务能力雷达图。"""
     return get_user_track_radar(user_id, track_id)
+
+
+@router.get("/team-radar")
+def team_radar(track_id: str = "big_data"):
+    """获取团队所有 member 在某 Track 下的雷达数据（管理员看板用）。"""
+    return {"members": get_team_track_radar(track_id)}
 
 
 @router.get("/users/{user_id}/pending-post-test")

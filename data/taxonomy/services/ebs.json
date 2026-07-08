@@ -1,0 +1,53 @@
+{
+  "id": "ebs",
+  "name": "Amazon EBS",
+  "track_id": "linux",
+  "description": "块存储服务，覆盖卷类型选择、快照管理、性能优化与加密。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ebs_volume_types",
+      "name": "卷类型与选型",
+      "description": "gp3/io2/st1/sc1 类型区别、IOPS/吞吐量配置、io2 Block Express",
+      "levels": {
+        "L1": "了解常用 EBS 卷类型区别（gp3 vs io2）",
+        "L2": "能根据 IOPS 和吞吐量需求选型，配置 gp3 的独立 IOPS/吞吐参数",
+        "L3": "可设计高性能存储方案（含 io2 Block Express、多卷 RAID、实例存储混合使用）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ebs_snapshot",
+      "name": "快照与数据保护",
+      "description": "快照创建/恢复、增量机制、跨区域复制、快照归档、DLM",
+      "levels": {
+        "L1": "能创建快照并从快照恢复卷",
+        "L2": "能使用 DLM 自动化快照生命周期，配置跨区域快照复制",
+        "L3": "可设计企业级数据保护方案（含快照归档策略、Recycle Bin、成本优化）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ebs_performance",
+      "name": "性能优化与监控",
+      "description": "CloudWatch 卷指标、突发性能、EBS-optimized、预热(Fast Snapshot Restore)",
+      "levels": {
+        "L1": "能查看卷的基本 I/O 指标",
+        "L2": "能分析 IOPS 节流和延迟问题，使用 Fast Snapshot Restore 消除预热延迟",
+        "L3": "可排查复杂的存储性能瓶颈（含实例级 EBS 带宽限制、Nitro 系统优化）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ebs_encryption",
+      "name": "加密与安全",
+      "description": "默认加密、KMS 密钥管理、加密卷复制、跨账号快照共享",
+      "levels": {
+        "L1": "能启用 EBS 加密",
+        "L2": "能配置自定义 KMS 密钥加密，处理跨账号快照共享的密钥授权",
+        "L3": "可设计统一的块存储加密策略（含密钥轮换、合规审计、默认加密强制）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

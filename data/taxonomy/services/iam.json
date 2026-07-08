@@ -1,0 +1,53 @@
+{
+  "id": "iam",
+  "name": "AWS IAM",
+  "track_id": "scd",
+  "description": "身份与访问管理，覆盖策略编写、角色设计、权限边界与多账号治理。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "iam_policy",
+      "name": "策略编写与评估",
+      "description": "Identity Policy、Resource Policy、条件键、策略变量、评估逻辑",
+      "levels": {
+        "L1": "能使用 AWS 托管策略，了解 Allow/Deny 基本概念",
+        "L2": "能编写自定义策略（含条件键、变量），理解策略评估逻辑和优先级",
+        "L3": "可设计最小权限策略体系，使用 Access Analyzer 验证并持续收缩权限"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "iam_role",
+      "name": "角色与跨账号访问",
+      "description": "服务角色、跨账号 AssumeRole、Role Chaining、External ID",
+      "levels": {
+        "L1": "能创建服务角色并配置信任关系",
+        "L2": "能设计跨账号角色切换，理解 Role Chaining 和 External ID 安全机制",
+        "L3": "可设计企业级角色继承体系（含权限边界、Session Policy、角色最大会话时长）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "iam_boundary",
+      "name": "权限边界与 SCP",
+      "description": "Permission Boundary、SCP、会话策略、有效权限计算",
+      "levels": {
+        "L1": "了解权限边界概念",
+        "L2": "能配置 Permission Boundary 限制委托管理员，理解与 SCP 的叠加效果",
+        "L3": "可设计多层权限治理架构（SCP + Boundary + Identity Policy），排查权限拒绝链路"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "iam_troubleshooting",
+      "name": "权限排查与审计",
+      "description": "Access Analyzer、CloudTrail、策略模拟器、Last Accessed",
+      "levels": {
+        "L1": "能使用策略模拟器测试权限",
+        "L2": "能从 CloudTrail 事件中定位 AccessDenied 根因，使用 Access Analyzer 检查公开访问",
+        "L3": "可建立持续的权限审计体系（未使用权限清理、异常行为检测、合规报告）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

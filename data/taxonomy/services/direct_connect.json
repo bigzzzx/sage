@@ -1,0 +1,53 @@
+{
+  "id": "direct_connect",
+  "name": "AWS Direct Connect",
+  "track_id": "networking",
+  "description": "专线连接服务，覆盖物理连接、虚拟接口(VIF)、BGP 配置与高可用。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "dx_connection",
+      "name": "连接与虚拟接口",
+      "description": "物理连接(Dedicated/Hosted)、Private VIF、Public VIF、Transit VIF",
+      "levels": {
+        "L1": "了解 Direct Connect 的连接类型和 VIF 概念",
+        "L2": "能区分三种 VIF 的使用场景，配置 Private VIF 访问 VPC",
+        "L3": "可设计多连接冗余方案，评估 Dedicated vs Hosted 并规划带宽"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "dx_bgp",
+      "name": "BGP 路由与策略",
+      "description": "BGP 对等、路由通告、AS Path Prepending、BFD",
+      "levels": {
+        "L1": "了解 BGP 在 DX 中的作用",
+        "L2": "能配置 BGP 路由通告和路由过滤，使用 BFD 加速故障检测",
+        "L3": "可设计复杂的路由策略（多路径负载分担、故障切换优先级、社区标签）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "dx_ha",
+      "name": "高可用与故障转移",
+      "description": "冗余连接、LAG、DX + VPN Backup、故障转移时间",
+      "levels": {
+        "L1": "了解单连接的风险和基本冗余概念",
+        "L2": "能设计双连接跨设施冗余，配置 VPN 作为备份路径",
+        "L3": "可设计满足 SLA 的最高弹性方案（双设施双连接），验证故障转移行为"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "dx_troubleshooting",
+      "name": "故障排查",
+      "description": "物理层/链路层/BGP 层诊断、CloudWatch 指标、Virtual Interface 状态",
+      "levels": {
+        "L1": "能识别连接状态（up/down）和基本告警",
+        "L2": "能按层排查（物理→链路→BGP→路由），定位常见的 BGP 邻居建立失败",
+        "L3": "可排查复杂的单向流量问题、MTU 问题、间歇性丢包"
+      },
+      "doc_refs": []
+    }
+  ]
+}

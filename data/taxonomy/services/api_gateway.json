@@ -1,0 +1,53 @@
+{
+  "id": "api_gateway",
+  "name": "Amazon API Gateway",
+  "track_id": "dms",
+  "description": "API 管理服务，覆盖 REST/HTTP/WebSocket API 的创建、部署与安全。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "apigw_design",
+      "name": "API 设计与部署",
+      "description": "REST vs HTTP API、资源/方法、阶段(Stage)、部署、Canary",
+      "levels": {
+        "L1": "能创建基本的 REST API 并集成 Lambda",
+        "L2": "能选择 REST vs HTTP API，配置阶段变量、Canary 部署",
+        "L3": "可设计大规模 API 平台（含版本管理、多阶段推进、自定义域名）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "apigw_auth",
+      "name": "认证与授权",
+      "description": "IAM 认证、Cognito Authorizer、Lambda Authorizer、API Key/Usage Plan",
+      "levels": {
+        "L1": "能配置 API Key 做基本访问控制",
+        "L2": "能配置 Cognito 或 Lambda Authorizer 实现 JWT 认证，设计 Usage Plan 限流",
+        "L3": "可设计多租户 API 安全架构（含 mTLS、资源策略、跨账号访问控制）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "apigw_integration",
+      "name": "集成与转换",
+      "description": "Lambda/HTTP/AWS 服务集成、请求/响应映射、VPC Link",
+      "levels": {
+        "L1": "能配置 Lambda Proxy 集成",
+        "L2": "能使用映射模板做请求转换，配置 VPC Link 访问私有后端",
+        "L3": "可设计复杂的 API 编排（含 StepFunctions 集成、Mock 集成、错误统一处理）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "apigw_troubleshooting",
+      "name": "性能与故障排查",
+      "description": "节流(Throttling)、缓存、CloudWatch 日志、延迟分析",
+      "levels": {
+        "L1": "能查看 API 调用指标和错误率",
+        "L2": "能排查 5xx/4xx 错误来源，配置缓存和节流策略",
+        "L3": "可优化高并发场景性能（含 Regional vs Edge、缓存策略、WAF 集成）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

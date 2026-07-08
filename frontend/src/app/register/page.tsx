@@ -3,24 +3,36 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { login } from "@/lib/auth";
+import { register } from "@/lib/auth";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("两次输入的密码不一致");
+      return;
+    }
+    if (password.length < 6) {
+      setError("密码长度不能少于 6 位");
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(username, password);
+      await register(username, password, displayName || undefined);
       router.push("/select-profile");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "登录失败");
+      setError(err instanceof Error ? err.message : "注册失败");
     } finally {
       setLoading(false);
     }
@@ -35,7 +47,7 @@ export default function LoginPage() {
             <span className="text-4xl">🌿</span>
             <span className="text-3xl font-bold text-slate-100 tracking-wide">SAGE</span>
           </div>
-          <p className="text-slate-400 text-sm">SE Adaptive Growth Engine</p>
+          <p className="text-slate-400 text-sm">创建你的账号</p>
         </div>
 
         {/* Form */}
@@ -54,8 +66,24 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               required
               autoFocus
+              minLength={2}
+              maxLength={32}
               className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
-              placeholder="请输入用户名"
+              placeholder="2-32 个字符"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="displayName" className="block text-sm text-slate-300 mb-1.5">
+              显示名称 <span className="text-slate-500">（选填）</span>
+            </label>
+            <input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+              placeholder="不填则默认使用用户名"
             />
           </div>
 
@@ -69,8 +97,24 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
               className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
-              placeholder="请输入密码"
+              placeholder="至少 6 位"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm text-slate-300 mb-1.5">
+              确认密码
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+              placeholder="再次输入密码"
             />
           </div>
 
@@ -80,16 +124,16 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading || !username || !password}
+            disabled={loading || !username || !password || !confirmPassword}
             className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold rounded-lg transition-colors"
           >
-            {loading ? "登录中…" : "登录"}
+            {loading ? "注册中…" : "注册"}
           </button>
 
           <p className="text-center text-sm text-slate-400">
-            还没有账号？{" "}
-            <Link href="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">
-              注册
+            已有账号？{" "}
+            <Link href="/login" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+              登录
             </Link>
           </p>
         </form>

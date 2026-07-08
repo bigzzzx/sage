@@ -1,0 +1,53 @@
+{
+  "id": "ec2_linux",
+  "name": "EC2 Linux",
+  "track_id": "linux",
+  "description": "Linux 实例运维，覆盖实例管理、系统排障、性能调优与安全加固。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ec2l_instance",
+      "name": "实例管理与启动",
+      "description": "实例类型选择、AMI 管理、User Data、Launch Template、Nitro 系统",
+      "levels": {
+        "L1": "能启动 Linux 实例并通过 SSH 连接",
+        "L2": "能使用 Launch Template 标准化部署、编写 User Data 做初始化、选择合适实例族",
+        "L3": "可设计大规模 Linux 实例管理方案（含 Golden AMI 流水线、Spot 策略、容量规划）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2l_troubleshooting",
+      "name": "系统故障排查",
+      "description": "启动失败诊断、串行控制台、系统日志、内核 panic、网络不通",
+      "levels": {
+        "L1": "能通过状态检查识别实例异常",
+        "L2": "能使用串行控制台和系统日志排查启动失败、文件系统满、SSH 连接问题",
+        "L3": "可排查复杂的内核级问题（panic、hung task、驱动冲突），使用 EC2 Rescue 修复"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2l_performance",
+      "name": "性能监控与调优",
+      "description": "CPU/内存/磁盘/网络指标、CloudWatch Agent、增强型网络、ENA",
+      "levels": {
+        "L1": "能使用 top/free/iostat 查看基本性能指标",
+        "L2": "能配置 CloudWatch Agent 采集 OS 级指标，排查 CPU steal、IO wait、网络丢包",
+        "L3": "可做深度性能调优（含 NUMA 感知、hugepages、ENA 驱动优化、网络中断亲和性）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2l_security",
+      "name": "安全加固与访问",
+      "description": "SSH 密钥管理、Instance Connect、安全组、IMDSv2、SELinux",
+      "levels": {
+        "L1": "能管理 SSH 密钥对，配置安全组规则",
+        "L2": "能强制 IMDSv2、配置 Instance Connect 免密钥登录、基本安全加固",
+        "L3": "可设计企业级 Linux 安全基线（含 CIS Benchmark、审计日志、入侵检测）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

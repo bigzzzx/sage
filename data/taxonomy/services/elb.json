@@ -1,0 +1,53 @@
+{
+  "id": "elb",
+  "name": "Elastic Load Balancing",
+  "track_id": "networking",
+  "description": "负载均衡服务（ALB/NLB/GLB），覆盖流量分发、目标组与 SSL/TLS。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "elb_type_selection",
+      "name": "负载均衡类型选择",
+      "description": "ALB vs NLB vs GLB、协议支持、使用场景",
+      "levels": {
+        "L1": "了解三种负载均衡器的基本区别",
+        "L2": "能根据协议、性能、功能需求选择合适的 LB 类型",
+        "L3": "可设计混合 LB 架构（ALB+NLB 组合、GLB 流量审查）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "elb_target_routing",
+      "name": "目标组与路由规则",
+      "description": "目标类型（实例/IP/Lambda）、路由规则、粘性会话、加权目标",
+      "levels": {
+        "L1": "能创建目标组并注册目标",
+        "L2": "能配置基于路径/主机的路由规则、粘性会话、健康检查参数",
+        "L3": "可设计蓝绿/金丝雀发布的流量切换方案，优化跨 AZ 流量分配"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "elb_ssl_security",
+      "name": "SSL/TLS 与安全",
+      "description": "证书管理（ACM）、安全策略、mTLS、WAF 集成",
+      "levels": {
+        "L1": "能配置 HTTPS 监听器和 ACM 证书",
+        "L2": "能选择合适的安全策略、配置 SSL 重定向、集成 WAF",
+        "L3": "可设计端到端加密架构（含 mTLS、证书轮换、多域名 SNI）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "elb_troubleshooting",
+      "name": "故障排查与监控",
+      "description": "访问日志、连接日志、5xx/4xx 分析、目标健康检查失败",
+      "levels": {
+        "L1": "能识别目标不健康状态和基本错误码",
+        "L2": "能通过访问日志分析 5xx 来源（LB vs 后端），排查健康检查失败",
+        "L3": "可排查复杂的连接超时、TLS 握手失败、跨 AZ 不均衡等问题"
+      },
+      "doc_refs": []
+    }
+  ]
+}

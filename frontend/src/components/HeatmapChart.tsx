@@ -39,7 +39,7 @@ export default function HeatmapChart({ data, height = 360 }: Props) {
           return `${m}<br/>${dim}: <b>${p.value[2]}/5</b>`;
         },
       },
-      grid: { left: 140, right: 20, top: 30, bottom: 40 },
+      grid: { left: 140, right: 20, top: 30, bottom: 80 },
       xAxis: {
         type: "category",
         data: members,
@@ -58,7 +58,7 @@ export default function HeatmapChart({ data, height = 360 }: Props) {
       visualMap: {
         min: 0,
         max: 5,
-        calculable: true,
+        calculable: false,
         orient: "horizontal",
         left: "center",
         bottom: 0,

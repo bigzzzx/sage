@@ -43,17 +43,16 @@ _PLAN_PROMPT = """你是 AWS {service_name} 的资深 SE 培训师。一位 SE �
 # 设计原则（硬性约束）
 
 1. **总周期**：恰好 5 个工作日（Day 1 ~ Day 5），weekly_plan 数组长度必须 = 1
-2. **每天时长**：60 ~ 120 分钟
-3. **每天 1 个 task**，围绕 1 个核心主题
-4. **由浅入深**：
+2. **每天 1 个 task**，围绕 1 个核心主题
+3. **由浅入深**：
    - Day 1：概念入门（task_type = reading 或 review）
    - Day 2：进阶概念 + 配置规则（reading 或 review）
    - Day 3：动手实操初阶（lab）
    - Day 4：动手实操进阶 + 故障复现（lab 或 review）
    - Day 5：综合复盘 + 后测准备（quiz）
-5. **每个 task 必须 cite 盲区**：targets_gap_ids 字段必须包含 1~2 个上面盲区的 gap_id
-6. **覆盖度**：所有 severity=critical / major 的盲区都必须被至少一个 task 覆盖；minor 可酌情合并
-7. **URL 白名单**：concepts[].url 必须严格来自上面"文档资料库"。资料库没有合适的，url 写空字符串 ""
+4. **每个 task 必须 cite 盲区**：targets_gap_ids 字段必须包含 1~2 个上面盲区的 gap_id
+5. **覆盖度**：所有 severity=critical / major 的盲区都必须被至少一个 task 覆盖；minor 可酌情合并
+6. **URL 白名单**：concepts[].url 必须严格来自上面"文档资料库"。资料库没有合适的，url 写空字符串 ""
 
 # 每个 task 必填字段
 
@@ -113,7 +112,6 @@ _PLAN_PROMPT = """你是 AWS {service_name} 的资深 SE 培训师。一位 SE �
   deliverable 让学习计划"可检验"——学员知道自己做到什么程度算"学完了"。
 
 - **task_type**: reading / review / lab / quiz
-- **time_minutes**: 60~120 整数
 
 # Day 5 quiz 的特殊要求
 
@@ -146,8 +144,7 @@ Day 5 是整周的综合复盘 + 后测准备，task_type 必须为 quiz。内�
             {{"point": "...", "url": ""}}
           ],
           "hands_on": "1. ...\\n2. ...\\n3. ...（含验证 + 思考题）",
-          "troubleshooting": "场景：...\\n排查练习：\\n1. ...\\n2. ...",
-          "time_minutes": 90
+          "troubleshooting": "场景：...\\n排查练习：\\n1. ...\\n2. ..."
         }}
         ... (Day 2 ~ Day 5)
       ]
@@ -237,8 +234,6 @@ def run_planning(
         weekly = [weekly[0]]
         weekly[0]["week"] = 1
         for t in weekly[0].get("tasks", []) or []:
-            tm = int(t.get("time_minutes", 60) or 60)
-            t["time_minutes"] = max(60, min(120, tm))
             # URL 白名单
             for c in t.get("concepts", []) or []:
                 url = (c.get("url") or "").strip()

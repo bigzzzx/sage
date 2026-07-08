@@ -7,8 +7,10 @@ import { getStoredUser } from "@/lib/auth";
 import HeatmapChart, { type HeatmapPoint } from "@/components/HeatmapChart";
 import {
   fetchTaxonomy,
+  fetchTeamRadar,
   fetchUserTrackRadar,
   type FullTaxonomy,
+  type TeamMemberRadar,
   type UserTrackRadar,
 } from "@/lib/api";
 
@@ -16,15 +18,10 @@ import {
  * 经理看板：团队能力热力图 + 短板与培训建议。
  *
  * 数据策略：
- * - "我"：从后端读真实 track-radar
- * - 其他成员：本地 mock（baseline 数组），让看板饱满
+ * - 从后端 /team-radar 拉取所有 member 的真实 track-radar 数据
+ * - "我"：管理员自己的数据
+ * - 无数据的 member 仍显示（score=0），确保团队全员可见
  */
-const MOCK_MEMBERS: { name: string; baseline: number[] }[] = [
-  { name: "Alice", baseline: [4.5, 3.8, 4.0, 3.0, 2.5, 2.0, 3.5] },
-  { name: "Bob",   baseline: [2.0, 4.5, 3.5, 4.0, 3.0, 2.0, 4.0] },
-  { name: "Carol", baseline: [3.5, 3.0, 4.5, 3.5, 4.0, 4.5, 3.0] },
-  { name: "David", baseline: [1.5, 2.0, 2.5, 3.0, 3.5, 4.5, 3.5] },
-];
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -46,6 +43,7 @@ export default function DashboardPage() {
   const trackId = user?.current_profile || "big_data";
 
   const [taxonomy, setTaxonomy] = useState<FullTaxonomy | null>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMemberRadar[]>([]);
   const [meRadar, setMeRadar] = useState<UserTrackRadar | null>(null);
   const [heatmap, setHeatmap] = useState<HeatmapPoint[]>([]);
 
@@ -54,6 +52,7 @@ export default function DashboardPage() {
     if (!user) return;
     fetchTaxonomy().then(setTaxonomy);
     fetchUserTrackRadar(user.user_id, trackId).then(setMeRadar);
+    fetchTeamRadar(trackId).then(setTeamMembers);
   }, [user, trackId]);
 
   useEffect(() => {
@@ -64,15 +63,26 @@ export default function DashboardPage() {
     const services = track.services;
     const points: HeatmapPoint[] = [];
 
-    // 4 个 mock 成员
-    MOCK_MEMBERS.forEach((m) => {
-      services.forEach((s, i) => {
-        const score = m.baseline[i] ?? Math.round(Math.random() * 5 * 10) / 10;
-        points.push({ member: m.name, dimension: s.name, score });
-      });
+    // 所有 member 的真实数据
+    teamMembers.forEach((m) => {
+      const memberName = m.display_name || m.username;
+      if (m.radar && m.radar.services) {
+        m.radar.services.forEach((s) => {
+          points.push({
+            member: memberName,
+            dimension: s.service_name,
+            score: s.is_tested ? s.score : 0,
+          });
+        });
+      } else {
+        // 没有 radar 数据的成员，每个 service 都是 0
+        services.forEach((s) => {
+          points.push({ member: memberName, dimension: s.name, score: 0 });
+        });
+      }
     });
 
-    // "我" — 真实数据
+    // "我"（管理员自己）— 真实数据
     if (meRadar) {
       meRadar.services.forEach((s) => {
         points.push({
@@ -84,7 +94,7 @@ export default function DashboardPage() {
     }
 
     setHeatmap(points);
-  }, [taxonomy, meRadar, trackId]);
+  }, [taxonomy, meRadar, teamMembers, trackId]);
 
   // 团队统计
   const stats = (() => {
@@ -152,7 +162,7 @@ export default function DashboardPage() {
               <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
                 <div className="text-xs text-slate-400 mb-1">团队成员</div>
                 <div className="text-2xl font-bold text-emerald-400">
-                  {MOCK_MEMBERS.length + (meRadar ? 1 : 0)}
+                  {teamMembers.length + (meRadar ? 1 : 0)}
                 </div>
               </div>
               <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">

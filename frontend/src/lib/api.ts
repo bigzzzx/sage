@@ -383,3 +383,22 @@ export async function fetchHistory(userId: string): Promise<{
   const data = await r.json();
   return data.history || [];
 }
+
+// ---------- 团队雷达（管理员看板）----------
+
+export interface TeamMemberRadar {
+  user_id: string;
+  username: string;
+  display_name: string;
+  has_tested: boolean;
+  radar: UserTrackRadar;
+}
+
+export async function fetchTeamRadar(trackId: string = "big_data"): Promise<TeamMemberRadar[]> {
+  const r = await fetch(`${API_BASE}/api/assessment/team-radar?track_id=${encodeURIComponent(trackId)}`, {
+    cache: "no-store",
+  });
+  if (!r.ok) throw new Error(`team-radar ${r.status}`);
+  const data = await r.json();
+  return data.members || [];
+}

@@ -1,0 +1,53 @@
+{
+  "id": "lambda",
+  "name": "AWS Lambda",
+  "track_id": "dms",
+  "description": "Serverless 计算服务，覆盖函数开发、触发器配置、性能优化与故障排查。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "lambda_dev",
+      "name": "函数开发与部署",
+      "description": "运行时选择、Handler 编写、Layer、容器镜像部署、版本与别名",
+      "levels": {
+        "L1": "能编写和部署简单 Lambda 函数",
+        "L2": "能使用 Layer 管理依赖、配置版本和别名实现灰度发布",
+        "L3": "可设计复杂的 Serverless 应用架构（含容器镜像、自定义运行时、SnapStart）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "lambda_trigger",
+      "name": "触发器与事件源",
+      "description": "API Gateway/S3/SQS/Kinesis/EventBridge 触发、事件过滤",
+      "levels": {
+        "L1": "能配置 API Gateway 和 S3 触发器",
+        "L2": "能配置流式事件源（SQS/Kinesis），理解批处理和错误处理行为",
+        "L3": "可设计高吞吐事件处理架构（含并发控制、DLQ、事件过滤优化）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "lambda_performance",
+      "name": "性能与冷启动优化",
+      "description": "内存配置、Provisioned Concurrency、SnapStart、执行时长优化",
+      "levels": {
+        "L1": "了解冷启动概念，能调整内存配置",
+        "L2": "能分析冷启动影响并配置 Provisioned Concurrency，优化函数包大小",
+        "L3": "可从运行时层面深度优化（SnapStart、连接池复用、SDK 初始化策略）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "lambda_troubleshooting",
+      "name": "故障排查与监控",
+      "description": "CloudWatch Logs/Metrics、X-Ray 追踪、超时/OOM 排查",
+      "levels": {
+        "L1": "能查看函数日志和调用错误",
+        "L2": "能使用 X-Ray 追踪定位延迟瓶颈，排查超时和内存不足问题",
+        "L3": "可建立 Serverless 全链路可观测体系（分布式追踪、自定义指标、告警联动）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

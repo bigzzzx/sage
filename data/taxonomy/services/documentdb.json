@@ -1,0 +1,42 @@
+{
+  "id": "documentdb",
+  "name": "Amazon DocumentDB",
+  "track_id": "database",
+  "description": "兼容 MongoDB 的托管文档数据库，覆盖集群管理、索引优化与迁移。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "docdb_cluster",
+      "name": "集群架构与管理",
+      "description": "实例类型、副本配置、弹性集群、存储自动扩展",
+      "levels": {
+        "L1": "能创建 DocumentDB 集群，了解实例与副本概念",
+        "L2": "能规划读副本数量和故障转移优先级，评估弹性集群适用场景",
+        "L3": "可设计高吞吐分片方案（Elastic Clusters），优化存储成本"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "docdb_query_index",
+      "name": "查询与索引优化",
+      "description": "索引策略、explain 分析、聚合管道、TTL 索引",
+      "levels": {
+        "L1": "能创建基本索引，执行 CRUD 操作",
+        "L2": "能使用 explain 分析查询计划，设计复合索引和 TTL 策略",
+        "L3": "可优化复杂聚合管道性能，设计大规模文档数据建模方案"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "docdb_connectivity",
+      "name": "连接与兼容性",
+      "description": "MongoDB 驱动兼容、连接池、TLS 配置、功能差异",
+      "levels": {
+        "L1": "能通过 MongoDB 驱动连接 DocumentDB",
+        "L2": "能处理与 MongoDB 的功能差异，配置连接池和 TLS",
+        "L3": "可评估 MongoDB 到 DocumentDB 迁移的兼容性风险，设计迁移策略"
+      },
+      "doc_refs": []
+    }
+  ]
+}

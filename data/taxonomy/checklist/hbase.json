@@ -1,0 +1,22 @@
+{
+  "service_id": "emr",
+  "module": "HBase",
+  "questions": [
+    {"level": 100, "type": "概念", "question": "Hmaster 原理与功能"},
+    {"level": 100, "type": "概念", "question": "Region server 原理与功能"},
+    {"level": 100, "type": "排查", "question": "如何排查Hfile 文件没有写入"},
+    {"level": 100, "type": "排查", "question": "如何排查Region 发生RIT"},
+    {"level": 100, "type": "概念", "question": "内存模型：blockcache，memoryStore"},
+    {"level": 100, "type": "概念", "question": "缓存：一级缓存，二级缓存"},
+    {"level": 100, "type": "概念", "question": "Hbase on HDFS 与 S3 区别"},
+    {"level": 100, "type": "排查", "question": "报错 Hfile 不存在，如何排查"},
+    {"level": 100, "type": "排查", "question": "如何排查表丢失region"},
+    {"level": 200, "type": "排查", "question": "如何排查region server高水位的问题"},
+    {"level": 200, "type": "操作", "question": "Region server 与分区数量关系"},
+    {"level": 200, "type": "操作", "question": "RegionServer 参数使用场景与相关调参"},
+    {"level": 200, "type": "概念", "question": "Flush 处理，触发条件，步骤"},
+    {"level": 200, "type": "概念", "question": "Split 处理，RegionSplitPolicy解析，split流程，split优化"},
+    {"level": 200, "type": "概念", "question": "Compact 处理，概念术语，触发时机，基本流程"},
+    {"level": 300, "type": "排查", "question": "增加RegionServer后，Hmaster 启动不成功，如何排查"}
+  ]
+}

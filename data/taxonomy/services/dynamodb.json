@@ -1,0 +1,59 @@
+{
+  "id": "dynamodb",
+  "name": "Amazon DynamoDB",
+  "track_id": "big_data",
+  "description": "Serverless NoSQL 数据库，提供毫秒级延迟与弹性扩展。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "ddb_table_design",
+      "name": "表设计与数据建模",
+      "description": "Partition Key / Sort Key、GSI / LSI、Composite Key、访问模式驱动的单表设计",
+      "levels": {
+        "L1": "了解 PK/SK 概念，能设计简单表",
+        "L2": "理解访问模式驱动的建模，能合理使用 GSI/LSI",
+        "L3": "能基于复杂访问模式做单表设计与索引规划"
+      }
+    },
+    {
+      "id": "ddb_capacity_perf",
+      "name": "容量与性能",
+      "description": "On-Demand vs Provisioned、Auto Scaling、自适应容量、突增容量、DAX、Hot Partition、Throttle",
+      "levels": {
+        "L1": "了解两种计费模式与 WCU/RCU 计算",
+        "L2": "能选型计费模式、配置 Auto Scaling，判断 throttle 原因",
+        "L3": "能做成本最优容量规划、Hot Partition 优化与 DAX 缓存设计"
+      }
+    },
+    {
+      "id": "ddb_streams",
+      "name": "Streams 与事件驱动",
+      "description": "DynamoDB Streams、Kinesis Data Streams、Lambda 触发、CDC 架构",
+      "levels": {
+        "L1": "了解 Streams 用途，能开启并查看记录",
+        "L2": "能用 Streams + Lambda 实现变更通知",
+        "L3": "能设计基于 CDC 的事件驱动架构"
+      }
+    },
+    {
+      "id": "ddb_backup_global",
+      "name": "备份恢复与全局表",
+      "description": "PITR、按需备份、AWS Backup、Global Tables 多区域、导入导出",
+      "levels": {
+        "L1": "了解备份恢复与 Global Tables 概念",
+        "L2": "能配置 PITR、跨区域复制、导入导出迁移数据",
+        "L3": "能设计跨区域容灾架构与一致性策略"
+      }
+    },
+    {
+      "id": "ddb_security_monitor",
+      "name": "安全与监控",
+      "description": "IAM 策略、KMS 加密、CloudWatch、Contributor Insights、Hawkeye、延迟与受限排查",
+      "levels": {
+        "L1": "能配置基础 IAM 与监控",
+        "L2": "能用 CloudWatch/CCI 监控并定位 throttle、延迟问题",
+        "L3": "能深入排查 4xx/5xx、自适应容量、下调容量受限等复杂问题"
+      }
+    }
+  ]
+}

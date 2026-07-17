@@ -1,0 +1,23 @@
+{
+  "service_id": "glue",
+  "modules": [
+    {
+      "name": "Glue",
+      "basic": {
+        "topics": ["DataCatalog 概念/创建Table方式/加密/跨账号", "Crawler 概念/数据源/增量爬网/Classifier", "ETL Job 类型/Worker类型/网络/Spark History Server/BookMark/DAG概念", "JES internals/Docker Container/EC2 Worker/Task Runner", "Workflow/Interactive session/Blueprints", "LakeFormation: Catalog permissions/Managed S3 locations/跨账号共享"],
+        "resources": ["KNET Glue 101/111/121-123/131/232", "Wiki: JES Introduction/Worker-Types", "Public Doc: 作业书签/Spark Overview"],
+        "labs": ["Glue Crawler Labs", "Glue Lab – ETL", "LakeFormation Lab"]
+      },
+      "intermediate": {
+        "topics": ["DataCatalog Partition Index/Schema registry/底层存储", "Crawler 工作原理/Schema Inference/Custom classifier/架构", "ETL Job: Spark Memory/Shuffle/Catalyst Optimizer/Join策略/DynamicFrame/DataFrame/Monitoring/Spark UI"],
+        "resources": ["KNET Glue 221-225", "Wiki: DataCatalog backend/Crawler Architecture"],
+        "labs": ["Crawler 性能瓶颈分析", "Glue Job exit code 排查", "Spark UI GC 分析"]
+      },
+      "advanced": {
+        "topics": ["Crawler Schema matching/Partition Threshold", "ETL优化: 降低I/O/BookMark/S3 lister/Grouping/Bounded Execution/Filter Pushdown/Parquet/JDBC并行/S3-optimized Committer", "Shuffle优化/并行度/DPU计算", "JES Credential service/Task flow"],
+        "resources": ["KNET Glue 224/311/322/231", "Wiki: JES Deep Dive/Anatomy of a Crawler"],
+        "labs": ["Glue Job 运行慢排查", "Job 偶尔成功偶尔失败"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "guardduty",
+  "name": "Amazon GuardDuty",
+  "track_id": "scd",
+  "description": "智能威胁检测服务，覆盖异常行为检测、告警管理与安全事件响应。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "gd_detection",
+      "name": "威胁检测与 Finding 分析",
+      "description": "Finding 类型（Recon/Trojan/UnauthorizedAccess）、严重等级、上下文分析",
+      "levels": {
+        "L1": "能查看 GuardDuty Finding 并理解基本威胁类型",
+        "L2": "能按严重等级分类响应，分析 Finding 上下文判断是否误报",
+        "L3": "可设计基于 Finding 的自动化安全响应工作流（含 StepFunctions 联动）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "gd_config",
+      "name": "配置与数据源",
+      "description": "数据源（CloudTrail/VPC Flow/DNS/S3/EKS）、抑制规则、受信 IP",
+      "levels": {
+        "L1": "能启用 GuardDuty 并查看默认数据源",
+        "L2": "能配置抑制规则减少噪音，启用扩展数据源（S3 Protection、EKS Audit）",
+        "L3": "可设计多账号集中化 GuardDuty 架构（Organizations 委托管理员）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "gd_response",
+      "name": "事件响应与集成",
+      "description": "EventBridge 联动、Security Hub 聚合、自动修复、取证",
+      "levels": {
+        "L1": "了解 GuardDuty 与其他安全服务的关系",
+        "L2": "能配置 EventBridge 规则实现告警通知和基本自动响应",
+        "L3": "可设计完整的安全事件响应体系（检测→告警→隔离→取证→修复→复盘）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

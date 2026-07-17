@@ -1,0 +1,23 @@
+{
+  "service_id": "dynamodb",
+  "modules": [
+    {
+      "name": "DynamoDB",
+      "basic": {
+        "topics": ["基础架构/WCU/RCU/TTL/Transaction/DAX/KMS加密/SLA", "Global表/Secondary Index/DDB stream/备份恢复导入导出", "Hawkeye/CloudWatch/CloudTrail/Contributor Insight"],
+        "resources": ["KNET DDB 101-114", "Public Doc: DynamoDB CoreComponents"],
+        "labs": ["Dynamodb-Lab-basic: 创建预置表/配置GSI/autoscaling/stream"]
+      },
+      "intermediate": {
+        "topics": ["AutoScaling原理/Global表原理/自适应容量/PITR/On-demand/加密原理", "判断throttle原因/请求延迟分析/TTL troubleshooting", "Stream Query 工具使用"],
+        "resources": ["KNET DDB 201-209,301", "DDB Internal Architecture Video", "DDB Troubleshooting Best Practice"],
+        "labs": ["StreamQuery 工具实操", "PITR 备份恢复测试"]
+      },
+      "advanced": {
+        "topics": ["事务隔离级别/冲突处理/DAX事务吞吐/分区key设计", "DAX 问题排查"],
+        "resources": ["KNET DDB 302-304, DAX 101-102"],
+        "labs": ["Dynamodb-Lab-advance: Hive SQL查询DDB"]
+      }
+    }
+  ]
+}

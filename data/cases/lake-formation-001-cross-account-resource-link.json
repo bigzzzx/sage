@@ -1,0 +1,27 @@
+{
+  "title": "Lake Formation 跨账号共享表因缺失 Resource Link 及 Glue/S3 跨账号权限导致查询失败",
+  "service": "AWS Lake Formation",
+  "capability_area": "安全与权限 / 跨账号数据共享",
+  "difficulty": "L2",
+  "summary": "客户在 A 账号通过 Lake Formation 将表共享给 B 账号后，B 账号无法看到并查询数据。根因是 B 账号未创建指向该共享表的 Resource Link，且两端账号间缺乏 A 账号 Glue Catalog 元数据读取权限（GetTable）以及底层 S3 存储桶的跨账号访问权限。通过在 A 账号授权 Glue 权限后让 B 账号创建 Resource Link，并同步配置 A 账号的 S3 桶策略，最终使 B 账号可通过 Athena 正常查询该表。",
+  "customer_symptom": "Lake Formation 中将一个表共享给其他账号后，对端账号没有获取到数据（看不到表或 Athena 无法查询该表）。",
+  "root_cause": "跨账号共享 Lake Formation 表时，底层多层级权限和数据目录对象未配置完整：1. 接收方（B账号）未创建本地 Resource Link，导致 Athena 等服务无法检索到该跨账号共享表；2. 共享表的元数据仍存于 A 账号，B 账号在尝试读取时因 A 账号 Glue Catalog Settings 未配置跨账号 Principal 导致 glue:GetTable 权限受阻；3. 实际数据存在于 A 账号 S3 中，但 A 账号 S3 Bucket Policy 未显式授权给 B 账号。",
+  "resolution_steps": [
+    "步骤1：在源账号（A账号）的 AWS Glue 控制台 Catalog settings 中添加策略，将对端账号（B账号）设为 Principal 并授予元数据访问权限。",
+    "步骤2：在对端账号（B账号）的 Lake Formation 控制台中，针对该被共享的表创建对应的 Resource Link（资源链接）。",
+    "步骤3：在源账号（A账号）底层数据所在的 Amazon S3 存储桶策略（Bucket Policy）中，将对端账号（B账号）添加为 Principal 并授予数据读取权限。"
+  ],
+  "key_knowledge_points": [
+    "AWS Lake Formation 跨账号数据共享机制与 RAM (Resource Access Manager) 的底层集成",
+    "资源链接（Resource Link）在数据目录（Data Catalog）多租户/跨账号场景下的定位与 Athena 集成机制",
+    "AWS Glue Data Catalog Settings 级别跨账号元数据访问策略配置",
+    "Amazon S3 跨账号访问场景下的 Bucket Policy 与 Principal 显式授权"
+  ],
+  "troubleshooting_clues": [
+    "线索1：对端账号在被共享后找不到表，确认为在对端账号中没有创建该表的 Resource Link",
+    "线索2：在对端账号创建 Resource Link 时，报错提示缺少 glue:GetTable 权限",
+    "线索3：创建 Resource Link 后通过 Athena 查询，报错提示缺少对源账号底层 S3 存储桶的访问权限"
+  ],
+  "related_services": ["AWS Lake Formation", "AWS Glue", "Amazon S3", "Amazon Athena"],
+  "prevention_advice": "进行 Lake Formation 跨账号表共享时，接收方必须创建 Resource Link，且共享方需同步完成 Glue Catalog Settings 以及底层 S3 Bucket Policy 的跨账号权限显式授予。"
+}

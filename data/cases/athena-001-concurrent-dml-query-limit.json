@@ -1,0 +1,27 @@
+{
+  "title": "Amazon Athena 并发 DML 查询超限导致查询任务排队受阻",
+  "service": "Amazon Athena",
+  "capability_area": "服务限额与并发调优",
+  "difficulty": "L1",
+  "summary": "客户在使用 BI 工具和控制台同时执行大量 Amazon Athena 查询时，遇到了并发 DML 查询数超过账号级别默认限额（20个）的问题，导致新提交的查询任务受阻并在队列中排队。根因是下游 BI 报表和控制台的瞬时并发查询量超过了 Service Quotas 限制。解决方案是通过控制台取消部分查询缓解当前排队，并指导客户在 Service Quotas 中申请提高 Athena 并发 DML 查询限额，同时建议在下游 BI 报表端开启缓存以减少并发请求。",
+  "customer_symptom": "查询报错：You have exceeded the limit for the number of queries you can run concurrently. Please reduce the number of concurrent queries submitted by this account. Contact customer support to request a concurrent query limit increase.",
+  "root_cause": "BI 报表和 Athena 控制台同时涌入大量查询，导致 active DML queries（可同时并发运行的 DML 查询数量）超过了该账号级别下的默认限额（默认值为 20），进而触发限流，导致后续查询受阻并进入排队状态。",
+  "resolution_steps": [
+    "步骤1：引导客户在 Athena 控制台手动取消部分正在运行的查询以腾出并发配额并恢复当前业务。",
+    "步骤2：指导客户在 AWS Service Quotas 控制台中搜索 Athena 服务，针对并发 DML 查询限制（Active DML queries limit）提交限额提高申请。",
+    "步骤3：建议客户在下游 BI 工具的报表中开启数据缓存功能，以降低对 Athena 的瞬时并发查询频率。",
+    "步骤4：建议客户在 Athena 控制台或客户端开启重复使用查询结果（Query result reuse）功能，避免相同查询重复消耗并发资源。"
+  ],
+  "key_knowledge_points": [
+    "Amazon Athena Service Quotas (Active DML queries 并发限额机制)",
+    "Athena 查询状态生命周期与任务排队机制",
+    "BI 工具与大数据查询服务的并发控制与缓存优化策略",
+    "Service Quotas 提额的计费规则（提高配额本身免费，按实际使用资源计费）"
+  ],
+  "troubleshooting_clues": [
+    "报错日志中包含关键字：'You have exceeded the limit for the number of queries you can run concurrently'",
+    "会议沟通中确认 BI 工具报表和控制台同时存在大量查询并发涌入"
+  ],
+  "related_services": ["Amazon Athena", "AWS Service Quotas"],
+  "prevention_advice": "在业务高峰前通过 Service Quotas 提前提升 Athena 并发查询限额，并在下游 BI 消费端合理配置缓存与查询复用机制。"
+}

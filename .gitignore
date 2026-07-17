@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Project data
+data/cases/raw/
+data/cases/private/
+data/chroma/
+*.log
+logs/
+
+# DB
+*.sqlite
+*.db
+
+# LLM debug
+llm_debug.log
+*.log
+
+# Local package caches (kept on the project drive)
+.cache/

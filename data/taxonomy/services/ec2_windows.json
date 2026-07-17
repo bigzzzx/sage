@@ -1,0 +1,53 @@
+{
+  "id": "ec2_windows",
+  "name": "EC2 Windows",
+  "track_id": "windows",
+  "description": "Windows 实例运维，覆盖 AMI 管理、域加入、许可证优化与 Windows 特定排障。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ec2w_instance",
+      "name": "Windows 实例管理",
+      "description": "Windows AMI、EC2Launch/Sysprep、许可证（BYOL/LI）、驱动更新",
+      "levels": {
+        "L1": "能启动 Windows 实例并通过 RDP 连接",
+        "L2": "能自定义 Windows AMI（Sysprep）、管理 EC2Launch 配置、选择许可证模式",
+        "L3": "可设计 Windows 实例标准化流水线（含自动化 AMI 构建、驱动更新、合规扫描）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2w_ad_domain",
+      "name": "域加入与组策略",
+      "description": "无缝域加入（SSM）、组策略应用、本地管理员管理",
+      "levels": {
+        "L1": "能手动将实例加入域",
+        "L2": "能配置 SSM 无缝域加入，验证组策略应用，管理本地管理员",
+        "L3": "可设计自动化域管理方案（含动态 OU 分配、启动后配置、域脱离清理）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2w_troubleshooting",
+      "name": "Windows 故障排查",
+      "description": "启动诊断、蓝屏分析、事件日志、RDP 连接失败",
+      "levels": {
+        "L1": "能通过控制台截图识别启动异常",
+        "L2": "能分析 Windows 事件日志，排查 RDP 连接和服务启动问题",
+        "L3": "可排查复杂的 Windows 内核问题（蓝屏 dump 分析、驱动冲突、性能瓶颈）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec2w_sql_server",
+      "name": "SQL Server on EC2",
+      "description": "SQL Server 安装与配置、Always On AG、备份策略、许可证",
+      "levels": {
+        "L1": "能在 EC2 上部署 SQL Server 并完成基本配置",
+        "L2": "能配置 Always On 可用性组实现高可用，设计备份恢复方案",
+        "L3": "可设计企业级 SQL Server 架构（含 FCI/AG 选型、性能调优、许可证优化）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

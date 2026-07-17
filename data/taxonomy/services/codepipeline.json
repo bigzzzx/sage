@@ -1,0 +1,42 @@
+{
+  "id": "codepipeline",
+  "name": "AWS CodePipeline",
+  "track_id": "deployment",
+  "description": "持续交付服务，编排构建、测试和部署流水线。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "cp_pipeline_design",
+      "name": "流水线设计与编排",
+      "description": "阶段/动作/工件、串并行执行、手动审批、跨账号部署",
+      "levels": {
+        "L1": "能创建基本的 Source → Build → Deploy 三阶段流水线",
+        "L2": "能设计含并行动作、手动审批、多环境部署的复杂流水线",
+        "L3": "可设计跨账号、跨区域的企业级 CI/CD 架构，含安全控制和回滚策略"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cp_integration",
+      "name": "与 CI/CD 工具集成",
+      "description": "CodeBuild、CodeDeploy、第三方集成、自定义 Action",
+      "levels": {
+        "L1": "能配置 CodeBuild 作为构建阶段，CodeDeploy 作为部署阶段",
+        "L2": "能集成 Jenkins、GitHub Actions 等第三方工具，编写自定义 Action",
+        "L3": "可设计混合 CI/CD 架构，整合多种工具链并保证端到端可追溯性"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cp_troubleshooting",
+      "name": "故障排查与监控",
+      "description": "执行历史、失败定位、EventBridge 集成、通知",
+      "levels": {
+        "L1": "能查看执行历史，识别失败阶段",
+        "L2": "能从日志和事件中定位失败根因，配置 SNS/EventBridge 告警",
+        "L3": "可建立流水线可观测体系，设计自动修复机制和 SLA 度量"
+      },
+      "doc_refs": []
+    }
+  ]
+}

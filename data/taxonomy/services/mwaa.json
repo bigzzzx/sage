@@ -1,0 +1,59 @@
+{
+  "id": "mwaa",
+  "name": "Amazon MWAA",
+  "track_id": "big_data",
+  "description": "托管 Apache Airflow 服务，用于编排 ETL/ELT 工作流、调度 Glue/EMR 作业、管理数据管道依赖。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "mwaa_dag_authoring",
+      "name": "DAG 编写与调度配置",
+      "description": "Airflow DAG 编写规范、Task 依赖设计、Schedule 配置、Variable 与 Connection 管理",
+      "levels": {
+        "L1": "能写简单线性 DAG，配置定时触发",
+        "L2": "能设计分支/并行 DAG，使用 Variable/Connection 管理配置，理解 Executor 机制",
+        "L3": "能设计复杂动态 DAG（TaskGroup/动态生成），优化 DAG 解析性能，处理跨 DAG 依赖"
+      }
+    },
+    {
+      "id": "mwaa_environment",
+      "name": "环境配置与网络",
+      "description": "MWAA 环境创建、VPC/VPCE 网络配置、S3 DAG 存储、requirements.txt / plugins 依赖管理",
+      "levels": {
+        "L1": "能按文档创建 MWAA 环境，上传 DAG 到 S3",
+        "L2": "理解 MWAA 网络模式（公有/私有），能配置 VPC Endpoint、管理 Python 依赖与约束文件",
+        "L3": "能排查环境启动失败、依赖冲突（constraints）、安全组出站规则等复杂问题"
+      }
+    },
+    {
+      "id": "mwaa_integration",
+      "name": "与 AWS 服务集成",
+      "description": "MWAA 与 Glue/EMR/S3/Redshift/Step Functions 的集成模式、Operator 使用",
+      "levels": {
+        "L1": "能用 BashOperator/PythonOperator 调用 AWS CLI",
+        "L2": "能使用 AWS Provider 的原生 Operator（GlueJobOperator/EmrAddStepsOperator 等）",
+        "L3": "能设计跨服务编排架构，处理失败重试与补偿逻辑"
+      }
+    },
+    {
+      "id": "mwaa_monitoring",
+      "name": "监控与故障排查",
+      "description": "CloudWatch 指标与日志、DAG 运行状态监控、Worker 资源瓶颈定位、常见错误排查",
+      "levels": {
+        "L1": "能在 Airflow UI 看 DAG 运行状态和日志",
+        "L2": "能用 CloudWatch 监控环境健康度，定位 Task 失败原因",
+        "L3": "能排查 Worker 资源不足、Scheduler 性能瓶颈、DAG 解析超时等复杂问题"
+      }
+    },
+    {
+      "id": "mwaa_security",
+      "name": "安全与权限",
+      "description": "MWAA 执行角色、IAM 策略、Secrets Manager 集成、RBAC（Airflow 角色权限）",
+      "levels": {
+        "L1": "能配置基本的 MWAA 执行角色",
+        "L2": "理解 MWAA IAM 策略结构，能用 Secrets Manager 管理连接凭据",
+        "L3": "能设计最小权限策略，配置 Airflow RBAC 实现多团队隔离"
+      }
+    }
+  ]
+}

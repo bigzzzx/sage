@@ -1,0 +1,59 @@
+{
+  "id": "sagemaker",
+  "name": "Amazon SageMaker",
+  "track_id": "big_data",
+  "description": "端到端机器学习平台，覆盖数据准备、训练、推理部署全流程。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "sm_notebook_env",
+      "name": "Notebook 与开发环境",
+      "description": "Studio vs Notebook Instance、网络配置、Lifecycle Configuration、Conda/包管理",
+      "levels": {
+        "L1": "能创建 Notebook 实例并安装包，了解 Studio 与 Notebook 区别",
+        "L2": "能配置 Notebook 网络/存储/生命周期，排查网络与 DNS 解析问题",
+        "L3": "能设计内网隔离环境、私有包安装、复杂网络路由方案"
+      }
+    },
+    {
+      "id": "sm_training",
+      "name": "训练任务",
+      "description": "内置算法、ML 框架、超参优化、分布式训练、Spot/暖池、训练监控",
+      "levels": {
+        "L1": "能用内置算法创建训练任务，了解训练工作流程",
+        "L2": "能用 SDK 创建训练任务、配置分布式/Spot 训练、监控指标",
+        "L3": "能设计大规模分布式训练方案并排查训练失败/性能问题"
+      }
+    },
+    {
+      "id": "sm_inference",
+      "name": "推理与部署",
+      "description": "实时/异步/Serverless 推理、Batch Transform、Endpoint Auto Scaling、调用与监控",
+      "levels": {
+        "L1": "能部署一个实时推理端点",
+        "L2": "理解不同推理类型选型，能配置 Auto Scaling 与监控",
+        "L3": "能设计低延迟/高并发推理架构并排查部署失败、推理慢问题"
+      }
+    },
+    {
+      "id": "sm_byo",
+      "name": "BYOS & BYOC",
+      "description": "自定义脚本（BYOS）、自定义容器（BYOC）、模型并行、大模型推理（LMI）",
+      "levels": {
+        "L1": "了解 BYOS/BYOC 概念",
+        "L2": "能用自定义脚本/容器执行训练与推理",
+        "L3": "能实现大模型并行推理、多模型单容器部署等高级场景"
+      }
+    },
+    {
+      "id": "sm_security_network",
+      "name": "安全与网络",
+      "description": "VPC 模式、IAM、KMS 加密、PrivateLink、网络隔离访问 S3/CloudWatch",
+      "levels": {
+        "L1": "了解默认网络与安全配置",
+        "L2": "能在 VPC 模式下运行 SageMaker 并配置基础安全",
+        "L3": "能设计合规级安全方案（PrivateLink、网络隔离、跨账号访问）"
+      }
+    }
+  ]
+}

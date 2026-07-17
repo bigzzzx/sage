@@ -1,0 +1,36 @@
+{
+  "id": "glue-000-template",
+  "service": "Glue",
+  "title": "一句话描述客户问题，比如：Glue Job 跑大数据量时频繁 OOM",
+  "severity": "normal",
+  "tags": ["spark", "memory", "shuffle"],
+  "summary": "用 3~5 句中文总结：客户场景是什么、报什么错、SE 怎么排查、最终怎么解决。这段是给 AI 看的快速摘要，质量很重要。",
+  "customer_problem": "客户原始问题描述，脱敏后保留语气和细节。例如：我们的 Glue Job <JOB_NAME> 处理 <CUSTOMER> 业务库的全量数据时，跑到 60% 左右就报 java.lang.OutOfMemoryError: Java heap space，已经把 worker 加到 G.2X 还是不行。",
+  "conversation": [
+    {
+      "role": "customer",
+      "content": "Hi team，我们的 Glue Job <JOB_NAME> 在处理大表时一直 OOM，能帮看下吗？日志见附件。"
+    },
+    {
+      "role": "se",
+      "content": "您好，先确认几个信息：1) Job 类型是 Spark 还是 Python Shell？2) 当前 Worker 类型和数量？3) 输入数据量大概多少 GB？方便提供下 Job 配置截图或 export 的 JSON 吗？"
+    },
+    {
+      "role": "customer",
+      "content": "Spark Glue 4.0，G.2X x 20，输入大概 800GB Parquet。配置 JSON 见下方..."
+    },
+    {
+      "role": "se",
+      "content": "看了日志，OOM 出现在 shuffle 阶段，driver 没问题，是 executor 端。建议：1) 检查是否有数据倾斜，可能存在大 key；2) 启用 spark.sql.adaptive.enabled 和 skewJoin；3) 必要时改写 join 逻辑加盐打散。先做第 2 步看效果。"
+    }
+  ],
+  "resolution": "最终解决方式：开启 AQE + skewJoin 后，Job 稳定跑完。根因是某个分区下单 key 数据量占比 70%，触发严重数据倾斜导致单个 executor OOM。",
+  "key_skills": [
+    "Spark 数据倾斜识别",
+    "Glue Job Spark 参数调优",
+    "Executor 日志分析"
+  ],
+  "references": [
+    "https://docs.aws.amazon.com/glue/latest/dg/monitor-debug-capacity.html"
+  ]
+}

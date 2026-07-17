@@ -1,0 +1,42 @@
+{
+  "id": "sns",
+  "name": "Amazon SNS",
+  "track_id": "dms",
+  "description": "消息发布/订阅服务，覆盖主题管理、订阅过滤、FIFO 与移动推送。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "sns_topic_mgmt",
+      "name": "主题与订阅管理",
+      "description": "Standard/FIFO 主题、订阅协议、消息过滤策略",
+      "levels": {
+        "L1": "能创建 SNS 主题并配置 Email/Lambda 订阅",
+        "L2": "能配置订阅过滤策略实现消息路由，选择 Standard vs FIFO 主题",
+        "L3": "可设计高吞吐 Pub/Sub 架构（含扇出模式、跨账号订阅、大消息处理）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "sns_delivery",
+      "name": "消息投递与可靠性",
+      "description": "投递策略、DLQ、投递状态日志、消息属性",
+      "levels": {
+        "L1": "了解 SNS 的 at-least-once 投递语义",
+        "L2": "能配置投递重试策略和 DLQ，启用投递状态日志排查丢失",
+        "L3": "可设计高可靠通知系统（含消息去重、顺序保证、跨区域冗余）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "sns_security",
+      "name": "安全与访问控制",
+      "description": "主题策略、加密(SSE)、跨账号发布、VPC Endpoint",
+      "levels": {
+        "L1": "能配置基本的主题访问策略",
+        "L2": "能配置 SSE 加密、跨账号发布权限、VPC Endpoint 私有访问",
+        "L3": "可设计企业级消息安全方案（含消息审计、策略合规检查）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

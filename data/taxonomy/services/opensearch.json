@@ -1,0 +1,59 @@
+{
+  "id": "opensearch",
+  "name": "Amazon OpenSearch",
+  "track_id": "analytics",
+  "description": "托管 OpenSearch 服务（原 Elasticsearch Service），用于搜索、日志分析与可观测性。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "os_cluster",
+      "name": "集群架构与节点配置",
+      "description": "实例类型选择、专用 Master、数据节点、UltraWarm、Cold Storage",
+      "levels": {
+        "L1": "能创建基本 OpenSearch 域",
+        "L2": "理解节点角色（Master/Data/UltraWarm），能按数据量选型",
+        "L3": "能设计大规模生产集群架构（含多 AZ、分片策略、存储分层）"
+      }
+    },
+    {
+      "id": "os_index",
+      "name": "索引管理与 ISM",
+      "description": "Index 设计、Mapping、ISM 策略（Hot-Warm-Cold-Delete）、Rollover",
+      "levels": {
+        "L1": "能创建索引并写入数据",
+        "L2": "能设计 Mapping 和 ISM 策略实现数据生命周期管理",
+        "L3": "能优化分片策略、处理 Mapping Explosion、排查索引性能问题"
+      }
+    },
+    {
+      "id": "os_ingestion",
+      "name": "数据摄入",
+      "description": "OpenSearch Ingestion (OSI)、Logstash、Firehose 投递、Fluent Bit",
+      "levels": {
+        "L1": "能用 Firehose 投递数据到 OpenSearch",
+        "L2": "能配置 OSI Pipeline 或 Logstash 实现数据转换",
+        "L3": "能设计高吞吐摄入架构并排查数据丢失、延迟问题"
+      }
+    },
+    {
+      "id": "os_security",
+      "name": "安全与访问控制",
+      "description": "Fine-Grained Access Control、IAM 策略、VPC 访问、SAML/OpenID",
+      "levels": {
+        "L1": "能配置基本访问策略",
+        "L2": "能配置 Fine-Grained Access Control（角色、租户隔离）",
+        "L3": "能设计企业级安全方案（SAML + 多租户 + 跨账号）"
+      }
+    },
+    {
+      "id": "os_monitoring",
+      "name": "监控与故障排查",
+      "description": "CloudWatch 指标、慢查询日志、集群健康状态（Red/Yellow）、JVM 压力",
+      "levels": {
+        "L1": "能查看集群健康状态",
+        "L2": "能用指标识别 JVM 内存压力和分片不均衡",
+        "L3": "能排查集群 Red/Yellow、写入拒绝、磁盘水位等复杂问题"
+      }
+    }
+  ]
+}

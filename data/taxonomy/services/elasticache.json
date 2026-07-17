@@ -1,0 +1,53 @@
+{
+  "id": "elasticache",
+  "name": "Amazon ElastiCache",
+  "track_id": "database",
+  "description": "托管内存缓存服务（Redis/Memcached），覆盖集群架构、复制与性能优化。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ec_cluster_mgmt",
+      "name": "集群架构与部署",
+      "description": "Redis Cluster 模式、分片、节点类型选择、Serverless",
+      "levels": {
+        "L1": "能创建基本的 Redis 缓存集群",
+        "L2": "能设计 Cluster Mode Enabled 架构，根据数据量和吞吐选择分片数和节点类型",
+        "L3": "可评估 Serverless vs Provisioned，设计大规模分布式缓存方案"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec_ha_replication",
+      "name": "高可用与复制",
+      "description": "Multi-AZ、自动故障转移、Global Datastore、备份恢复",
+      "levels": {
+        "L1": "了解 Multi-AZ 自动故障转移概念",
+        "L2": "能配置 Multi-AZ 复制，理解故障转移对应用的影响，配置备份策略",
+        "L3": "可设计 Global Datastore 跨区域方案，处理脑裂和数据一致性问题"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec_performance",
+      "name": "性能调优与监控",
+      "description": "内存管理、连接数、命令延迟、CloudWatch 指标、慢日志",
+      "levels": {
+        "L1": "能查看基本的缓存命中率和连接数指标",
+        "L2": "能分析慢日志定位热 key/大 key，优化 eviction 策略和内存碎片",
+        "L3": "可从 Redis 内部机制（事件循环、持久化 fork）角度优化延迟"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ec_connectivity",
+      "name": "网络与访问控制",
+      "description": "VPC 部署、安全组、加密传输、IAM 认证、Redis AUTH",
+      "levels": {
+        "L1": "能在 VPC 内部署并配置安全组允许应用访问",
+        "L2": "能配置 TLS 传输加密和 Redis AUTH 认证，排查连接超时问题",
+        "L3": "可设计企业级缓存安全方案（RBAC、审计、网络隔离）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

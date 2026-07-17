@@ -1,0 +1,35 @@
+{
+  "id": "glue-002-redshift-connection-sg-self-reference",
+  "service": "Glue",
+  "title": "Glue 建立 Redshift Connection 时报错，安全组缺少自引用入站规则",
+  "severity": "normal",
+  "tags": ["connection", "redshift", "security-group", "vpc", "networking", "eni"],
+  "summary": "客户在 Glue 中创建 Redshift Connection 时连接失败。排查发现 Glue Connection 绑定的安全组与 Redshift 集群使用同一个安全组，但该安全组缺少针对所有 TCP 端口的自引用入站规则。Glue 作业在 VPC 中以分布式方式运行，内部组件间需要通过随机端口互相通信，因此必须有自引用规则。添加自引用入站规则后问题解决。",
+  "customer_problem": "客户在 Glue 控制台建立 Redshift Connection 时报错，无法连通。Glue Connection 绑定了两个安全组，其中一个是 Redshift 集群绑定的安全组，但该安全组没有针对本身放开所有 TCP 端口的自引用入站规则。",
+  "conversation": [
+    {
+      "role": "customer",
+      "content": "我们在 Glue 建立 Redshift Connection 时报错，无法连通 Redshift 集群。Connection 配置中绑定了安全组，子网也选了和 Redshift 同一个子网，但是 Test Connection 一直失败。"
+    },
+    {
+      "role": "se",
+      "content": "我们一起排查了 Glue Connection 的配置、子网路由以及安全组。发现您给 Glue Connection 绑定的安全组和 Redshift 集群绑定的安全组相同，但该安全组没有针对所有 TCP 端口实现自引用入站。\n\nGlue 在 VPC 中运行的是分布式作业，内部组件之间需要用随机端口互相通信。要允许 Glue 组件进行通信并阻止来自其他网络的访问，至少必须有一个选定的安全组指定针对所有 TCP 端口的自引用入站规则。\n\n因为您的 Redshift 集群绑定的安全组和 Glue Connection 安全组相同，所以无需再为 Redshift 安全组额外添加允许来自 Glue 安全组的流量入站规则。\n\n请在安全组中添加一条入站规则：协议选 All TCP (0-65535)，来源选安全组自身（即自引用），保存后再次 Test Connection。"
+    },
+    {
+      "role": "customer",
+      "content": "添加了自引用入站规则后，Redshift Connection 已经可以连通了，谢谢。"
+    }
+  ],
+  "resolution": "根因：Glue Connection 绑定的安全组缺少自引用入站规则（All TCP, Source = 自身安全组 ID）。Glue 作业在 VPC 中以分布式方式运行，创建多个 ENI，组件之间需要通过随机端口通信，如果安全组不允许自身内部流量互通，Connection Test 和实际作业都会失败。\n\n解决方案：在 Glue Connection 绑定的安全组中添加一条入站规则 —— 协议: All TCP (端口 0-65535)，来源: 该安全组自身 ID。添加后 Redshift Connection 立即连通。\n\n注意点：由于 Glue Connection 和 Redshift 使用同一个安全组，添加自引用规则后同时满足了两个需求：(1) Glue 内部组件互通 (2) Glue ENI 到 Redshift 的访问。如果使用不同的安全组，则还需要在 Redshift 安全组中允许来自 Glue 安全组的入站流量。",
+  "key_skills": [
+    "Glue VPC 网络配置",
+    "安全组自引用规则理解",
+    "Glue Connection 排查",
+    "VPC ENI 与分布式作业网络模型",
+    "Glue 与 Redshift 集成",
+    "网络连通性排查思路"
+  ],
+  "references": [
+    "https://docs.amazonaws.cn/glue/latest/dg/connection-JDBC-VPC.html#connection-JDBC-VPC-ENI"
+  ]
+}

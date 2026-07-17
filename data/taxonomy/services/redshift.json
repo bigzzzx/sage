@@ -1,0 +1,53 @@
+{
+  "id": "redshift",
+  "name": "Amazon Redshift",
+  "track_id": "database",
+  "description": "云数据仓库服务，覆盖集群管理、查询优化、数据加载与 Serverless。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "rs_cluster_mgmt",
+      "name": "集群管理与 Serverless",
+      "description": "节点类型、RA3/DC2 选择、Serverless、弹性调整、快照",
+      "levels": {
+        "L1": "能创建 Redshift 集群，了解节点类型区别",
+        "L2": "能根据数据量和查询模式选型（RA3 vs Serverless），执行弹性调整和快照管理",
+        "L3": "可设计多集群/数据共享架构，评估 Serverless TCO 并制定容量规划"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "rs_query_perf",
+      "name": "查询性能优化",
+      "description": "分配键/排序键设计、WLM、查询计划分析、物化视图",
+      "levels": {
+        "L1": "能执行基本查询，了解分配键概念",
+        "L2": "能从查询计划中识别全表扫描和倾斜，优化分配键/排序键设计",
+        "L3": "可深度调优 WLM 队列配置、短查询加速，设计物化视图自动刷新策略"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "rs_data_loading",
+      "name": "数据加载与集成",
+      "description": "COPY 命令、Spectrum、数据共享、Federated Query、Zero-ETL",
+      "levels": {
+        "L1": "能使用 COPY 从 S3 加载数据",
+        "L2": "能配置 Spectrum 查询外部表，使用数据共享实现跨集群访问",
+        "L3": "可设计端到端数据集成方案（Zero-ETL、Federated Query 联邦查询）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "rs_security",
+      "name": "安全与访问控制",
+      "description": "VPC 部署、加密、IAM 角色、行级安全(RLS)、列级权限",
+      "levels": {
+        "L1": "能在 VPC 中部署 Redshift，配置基本的用户和权限",
+        "L2": "能配置 KMS 加密、IAM 角色链（COPY/UNLOAD），使用 RLS",
+        "L3": "可设计多租户安全架构（含列级权限、审计日志、密钥管理策略）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

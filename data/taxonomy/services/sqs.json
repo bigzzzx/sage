@@ -1,0 +1,53 @@
+{
+  "id": "sqs",
+  "name": "Amazon SQS",
+  "track_id": "dms",
+  "description": "消息队列服务，覆盖 Standard/FIFO 队列、消息处理与集成模式。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "sqs_queue_mgmt",
+      "name": "队列管理与配置",
+      "description": "Standard vs FIFO、可见性超时、长轮询、延迟队列",
+      "levels": {
+        "L1": "能创建队列并收发消息",
+        "L2": "能根据场景选择 Standard/FIFO，配置可见性超时和长轮询优化消费",
+        "L3": "可设计高可靠消息处理架构（含批处理优化、消息去重策略、吞吐量模式）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "sqs_dlq",
+      "name": "死信队列与错误处理",
+      "description": "DLQ 配置、重驱动(Redrive)、最大接收次数、消息生命周期",
+      "levels": {
+        "L1": "了解 DLQ 概念和作用",
+        "L2": "能配置 DLQ 和最大接收次数，使用 Redrive 功能重新处理失败消息",
+        "L3": "可设计完整的错误处理体系（含多级 DLQ、告警联动、自动修复工作流）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "sqs_integration",
+      "name": "与计算服务集成",
+      "description": "Lambda 事件源映射、EC2 消费者、批处理大小、并发控制",
+      "levels": {
+        "L1": "能配置 Lambda 从 SQS 触发",
+        "L2": "能优化批处理大小和并发，配置部分批处理失败报告",
+        "L3": "可设计高吞吐异步处理架构（含扩缩策略、背压处理、顺序处理保证）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "sqs_security",
+      "name": "安全与跨账号",
+      "description": "队列策略、SSE 加密、跨账号访问、VPC Endpoint",
+      "levels": {
+        "L1": "能配置基本的队列访问策略",
+        "L2": "能配置 SSE-KMS 加密、跨账号发送/接收权限",
+        "L3": "可设计多账号消息集成安全方案（含策略最小权限、加密密钥管理）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

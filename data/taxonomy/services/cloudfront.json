@@ -1,0 +1,53 @@
+{
+  "id": "cloudfront",
+  "name": "Amazon CloudFront",
+  "track_id": "scd",
+  "description": "CDN 内容分发网络，覆盖分发配置、缓存策略、源站保护与安全。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "cf_distribution",
+      "name": "分发配置与源站",
+      "description": "源站类型（S3/ALB/自定义）、行为(Behavior)、OAC/OAI",
+      "levels": {
+        "L1": "能创建 CloudFront 分发并配置 S3 源站",
+        "L2": "能配置多行为路由、OAC 保护 S3 源站、自定义源站(ALB/EC2)",
+        "L3": "可设计复杂的多源站架构（含源站组故障转移、Lambda@Edge、源站请求策略）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cf_cache",
+      "name": "缓存策略与失效",
+      "description": "缓存策略、TTL、缓存键(Cache Key)、失效(Invalidation)",
+      "levels": {
+        "L1": "了解 CDN 缓存基本概念，能执行缓存失效",
+        "L2": "能设计缓存键策略（按 Header/Cookie/Query String），优化缓存命中率",
+        "L3": "可设计高级缓存架构（含 Cache Policy vs Origin Request Policy 分离、实时日志分析优化）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cf_security",
+      "name": "安全与访问控制",
+      "description": "HTTPS/TLS、Signed URL/Cookie、地理限制、WAF 集成",
+      "levels": {
+        "L1": "能配置自定义域名和 HTTPS 证书",
+        "L2": "能配置 Signed URL/Cookie 限制私有内容访问，集成 WAF 防护",
+        "L3": "可设计端到端安全方案（含 Field-level Encryption、TLS 策略优化、DDoS 防护）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cf_troubleshooting",
+      "name": "故障排查与监控",
+      "description": "错误码分析(4xx/5xx)、实时日志、请求追踪、性能优化",
+      "levels": {
+        "L1": "能识别常见的 CloudFront 错误码（403/502/504）",
+        "L2": "能通过标准日志和实时日志排查回源失败和缓存未命中问题",
+        "L3": "可排查复杂的延迟问题（含 DNS 解析、TLS 协商、回源路径优化）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

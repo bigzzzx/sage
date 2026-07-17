@@ -1,0 +1,53 @@
+{
+  "id": "cloudformation",
+  "name": "AWS CloudFormation",
+  "track_id": "deployment",
+  "description": "基础设施即代码（IaC），模板编写、堆栈管理、变更集与漂移检测。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "cfn_template",
+      "name": "模板编写与资源建模",
+      "description": "YAML/JSON 模板、内置函数、条件、映射、嵌套栈",
+      "levels": {
+        "L1": "能读懂基本模板，使用现成模板部署资源",
+        "L2": "能独立编写含条件、映射、交叉引用的模板，使用嵌套栈组织大型项目",
+        "L3": "可设计模块化、可复用的模板体系（含自定义资源、宏），支持多环境多区域部署"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cfn_stack_ops",
+      "name": "堆栈操作与生命周期",
+      "description": "创建/更新/删除、变更集、回滚、导入/导出、保护策略",
+      "levels": {
+        "L1": "能执行基本的堆栈创建和删除",
+        "L2": "能使用变更集预览更新影响，处理回滚失败和资源导入场景",
+        "L3": "可设计安全的持续部署流水线（含堆栈策略、终止保护、自动回滚触发器）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cfn_troubleshooting",
+      "name": "故障排查与漂移检测",
+      "description": "事件日志分析、漂移检测、资源信号、WaitCondition",
+      "levels": {
+        "L1": "能从事件日志中识别失败原因",
+        "L2": "能排查常见失败场景（依赖循环、权限不足、资源限额），使用漂移检测定位手动变更",
+        "L3": "可处理复杂的堆栈故障恢复（UPDATE_ROLLBACK_FAILED），设计漂移修复策略"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cfn_advanced",
+      "name": "高级特性与最佳实践",
+      "description": "StackSets、自定义资源、CloudFormation Guard、Registry",
+      "levels": {
+        "L1": "了解 StackSets 概念和多账号部署场景",
+        "L2": "能使用 StackSets 做多账号/多区域部署，编写 CloudFormation Guard 规则做合规检查",
+        "L3": "可开发自定义资源类型（Registry），设计企业级 IaC 治理框架"
+      },
+      "doc_refs": []
+    }
+  ]
+}

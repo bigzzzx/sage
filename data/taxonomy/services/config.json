@@ -1,0 +1,42 @@
+{
+  "id": "config",
+  "name": "AWS Config",
+  "track_id": "scd",
+  "description": "资源配置审计与合规评估，覆盖配置记录、规则评估与修复。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "config_recording",
+      "name": "配置记录与资源清单",
+      "description": "记录器配置、资源类型选择、高级查询（SQL）",
+      "levels": {
+        "L1": "能启用 Config 记录器并查看资源清单",
+        "L2": "能配置记录范围（特定资源类型/区域），使用高级查询 SQL 检索资源配置",
+        "L3": "可设计多账号/组织级别的配置记录架构，优化存储成本"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "config_rules",
+      "name": "合规规则与评估",
+      "description": "托管规则、自定义规则（Lambda）、合规包、评估触发",
+      "levels": {
+        "L1": "能部署托管规则检查常见合规项",
+        "L2": "能编写自定义规则（Lambda），组织合规包批量部署规则",
+        "L3": "可设计企业级合规治理框架（组织规则、合规评分、例外管理）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "config_remediation",
+      "name": "自动修复与集成",
+      "description": "自动修复（SSM Automation）、聚合器、与 Security Hub 集成",
+      "levels": {
+        "L1": "了解自动修复概念",
+        "L2": "能配置 SSM Automation 文档做自动修复，使用聚合器汇总多账号数据",
+        "L3": "可设计端到端的合规闭环（检测→评估→通知→修复→验证）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

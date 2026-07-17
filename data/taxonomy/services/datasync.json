@@ -1,0 +1,42 @@
+{
+  "id": "datasync",
+  "name": "AWS DataSync",
+  "track_id": "scd",
+  "description": "数据传输服务，覆盖 NFS/SMB/S3/EFS 等存储间的在线数据迁移。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ds_task_config",
+      "name": "任务配置与调度",
+      "description": "Agent 部署、位置配置、任务选项（过滤/验证/带宽限制）、调度",
+      "levels": {
+        "L1": "能部署 Agent 并创建基本的传输任务",
+        "L2": "能配置增量传输、数据过滤规则、带宽限制和定时调度",
+        "L3": "可设计大规模数据迁移方案（多任务并行、进度跟踪、异常恢复策略）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ds_storage_integration",
+      "name": "存储系统集成",
+      "description": "NFS/SMB/HDFS/S3/EFS/FSx 等源端和目标配置",
+      "levels": {
+        "L1": "能配置 S3 和 NFS 之间的基本传输",
+        "L2": "能处理各存储系统的权限和网络配置（HDFS、FSx、跨账号 S3）",
+        "L3": "可设计混合云存储迁移架构，处理 PB 级数据传输的规划和执行"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ds_monitoring",
+      "name": "监控与故障排查",
+      "description": "任务执行日志、CloudWatch 指标、传输速度优化、常见错误处理",
+      "levels": {
+        "L1": "能查看任务执行状态和结果",
+        "L2": "能从日志中定位传输失败原因（网络、权限、存储），优化传输吞吐量",
+        "L3": "可排查复杂的性能瓶颈（Agent 资源限制、网络带宽竞争），设计 SLA 监控"
+      },
+      "doc_refs": []
+    }
+  ]
+}

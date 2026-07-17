@@ -1,0 +1,26 @@
+{
+  "title": "AWS Glue 建立 Redshift 连接因安全组缺失自引用规则导致测试失败",
+  "service": "AWS Glue",
+  "capability_area": "网络架构与VPC集成",
+  "difficulty": "L1",
+  "summary": "客户在 AWS Glue 中创建连接到 Amazon Redshift 的连接时测试报错。根因是该连接所使用的 Security Group 缺失了针对自身的入站自引用规则（Self-referencing rule），无法满足 Glue 在 VPC 中创建的多个弹性网络接口（ENI）之间相互通信所需的 TCP 端口放行要求。解决方案是在对应的 Security Group 入站规则中添加允许自身安全组 ID 访问所有 TCP 端口的规则，随后成功打通连接。",
+  "customer_symptom": "AWS Glue 建立 Redshift connection 时测试连接报错，无法成功连通。",
+  "root_cause": "AWS Glue 在连接 VPC 内的资源（如 Redshift）时，需在指定子网内创建内部网络接口（ENI）。其底层架构要求这些 ENI 之间能够无阻碍通信，若关联的 Security Group 缺少一条允许自身安全组 ID 作为源（Source）访问所有 TCP 端口的入站自引用规则（Self-referencing inbound rule），网络流量将会被安全组拦截，导致连接测试超时或失败。",
+  "resolution_steps": [
+    "步骤1：检查并确认该 AWS Glue Connection 配置中关联的 Subnet 和 Security Group 信息。",
+    "步骤2：登录 Amazon VPC 控制台，找到该网络连接所使用的目标 Security Group 并编辑其入站规则（Inbound Rules）。",
+    "步骤3：添加一条新的入站规则，将协议类型设置为'所有 TCP（All TCP）'，并将源（Source）设置为该安全组自身的 ID（实现自引用）。",
+    "步骤4：保存安全组规则后，返回 AWS Glue 控制台重新点击测试连接（Test connection）验证连通性。"
+  ],
+  "key_knowledge_points": [
+    "AWS Glue JDBC/VPC 数据连接机制与弹性网络接口（ENI）通信原理",
+    "Amazon VPC Security Group 的自引用（Self-referencing）规则工作机制",
+    "AWS Glue 与内网数据源（如 Amazon Redshift/RDS）安全网络互通的标准网络先决条件"
+  ],
+  "troubleshooting_clues": [
+    "配置项：检查连接关联的安全组，发现入站规则（Inbound Rules）中缺失以自身安全组 ID 为源的规则",
+    "文档参考：AWS Glue 官方文档明确指出 VPC 类型的连接必须配置安全组自引用以放行所有 TCP 端口"
+  ],
+  "related_services": ["AWS Glue", "Amazon Redshift", "Amazon VPC"],
+  "prevention_advice": "在创建 AWS Glue 的 VPC 或 JDBC 类型连接时，务必为关联的安全组配置允许自身所有 TCP 端口入站的自引用规则。"
+}

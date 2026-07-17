@@ -1,0 +1,53 @@
+{
+  "id": "eks",
+  "name": "Amazon EKS",
+  "track_id": "deployment",
+  "description": "托管 Kubernetes 服务，覆盖集群管理、节点组、网络插件与工作负载部署。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "eks_cluster",
+      "name": "集群管理与版本升级",
+      "description": "集群创建、版本升级、控制平面与数据平面、Add-on 管理",
+      "levels": {
+        "L1": "能创建基本 EKS 集群，部署简单工作负载",
+        "L2": "能管理集群升级路径，配置托管/自管节点组，管理核心 Add-on",
+        "L3": "可设计多集群/多租户架构，制定版本升级策略并处理兼容性问题"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "eks_networking",
+      "name": "网络与 CNI",
+      "description": "VPC CNI 插件、Pod 网络、Service Mesh、Ingress Controller",
+      "levels": {
+        "L1": "了解 Pod 网络基本概念，能部署 Service 和 Ingress",
+        "L2": "理解 VPC CNI 的 IP 分配机制，能排查 Pod IP 耗尽等网络问题",
+        "L3": "可设计大规模集群的网络方案（前缀委托、自定义 CNI、Service Mesh）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "eks_security",
+      "name": "安全与 IRSA",
+      "description": "IRSA（IAM Roles for Service Accounts）、Pod Security、Secrets 管理",
+      "levels": {
+        "L1": "能为 Pod 配置基本的 ServiceAccount",
+        "L2": "能配置 IRSA 实现最小权限，使用 Pod Security Standards",
+        "L3": "可设计零信任安全架构（OPA/Kyverno 策略、Secrets 外部化、网络策略）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "eks_observability",
+      "name": "可观测性与故障排查",
+      "description": "CloudWatch Container Insights、Prometheus、日志聚合、Pod 调度问题",
+      "levels": {
+        "L1": "能查看 Pod 日志和事件，识别基本的调度失败",
+        "L2": "能使用 Container Insights / Prometheus 定位性能瓶颈和资源争用",
+        "L3": "可建立 K8s 全栈可观测平台，快速定位集群/节点/Pod 各层问题"
+      },
+      "doc_refs": []
+    }
+  ]
+}

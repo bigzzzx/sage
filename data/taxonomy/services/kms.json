@@ -1,0 +1,42 @@
+{
+  "id": "kms",
+  "name": "AWS KMS",
+  "track_id": "scd",
+  "description": "密钥管理服务，覆盖加密密钥生命周期、信封加密与跨服务集成。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "kms_key_mgmt",
+      "name": "密钥管理与策略",
+      "description": "CMK 类型（对称/非对称）、密钥策略、Grant、密钥轮换",
+      "levels": {
+        "L1": "能创建 CMK 并用于基本加密操作",
+        "L2": "能编写密钥策略控制访问，配置自动轮换，使用 Grant 做临时授权",
+        "L3": "可设计多账号密钥管理策略（含跨账号共享、密钥层级、外部密钥存储）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "kms_encryption",
+      "name": "加密模式与信封加密",
+      "description": "直接加密 vs 信封加密、Data Key、加密上下文",
+      "levels": {
+        "L1": "了解 KMS 加密的基本工作方式",
+        "L2": "理解信封加密机制和加密上下文的安全价值，能排查解密失败",
+        "L3": "可设计大规模数据加密架构（含 Data Key Caching、加密上下文审计）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "kms_integration",
+      "name": "跨服务加密集成",
+      "description": "S3 SSE-KMS、EBS 加密、RDS 加密、跨账号密钥使用",
+      "levels": {
+        "L1": "能配置 S3 或 EBS 使用 KMS 加密",
+        "L2": "能排查跨服务加密链路中的权限问题（如 EBS 跨账号快照共享需要密钥授权）",
+        "L3": "可设计全面的静态加密方案（统一密钥策略、加密合规检查、成本优化）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

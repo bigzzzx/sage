@@ -1,0 +1,127 @@
+{
+  "version": "2.0",
+  "tracks": [
+    {
+      "id": "big_data",
+      "name": "Big Data",
+      "icon": "📊",
+      "description": "数据工程、数据湖、数据仓库与大数据分析方向",
+      "services": [
+        { "id": "glue",           "name": "AWS Glue",           "icon": "🔧", "is_real": true,  "summary": "Serverless ETL、数据目录、Crawler" },
+        { "id": "emr",            "name": "Amazon EMR",         "icon": "⚡", "is_real": false, "summary": "Hadoop / Spark 托管集群" },
+        { "id": "athena",         "name": "Amazon Athena",      "icon": "🔍", "is_real": false, "summary": "Serverless 交互式 SQL 查询" },
+        { "id": "mwaa",           "name": "Amazon MWAA",        "icon": "🌬️", "is_real": false, "summary": "托管 Apache Airflow 工作流编排" },
+        { "id": "lake_formation", "name": "Lake Formation",     "icon": "🌊", "is_real": false, "summary": "数据湖治理与精细化权限" },
+        { "id": "sagemaker",      "name": "Amazon SageMaker",   "icon": "🤖", "is_real": false, "summary": "端到端机器学习平台" },
+        { "id": "dynamodb",       "name": "Amazon DynamoDB",    "icon": "🗄️", "is_real": false, "summary": "Serverless NoSQL 数据库" }
+      ]
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics",
+      "icon": "📈",
+      "description": "实时流处理、数据可视化、搜索与分析方向",
+      "services": [
+        { "id": "kinesis",        "name": "Amazon Kinesis",           "icon": "🌊", "is_real": false, "summary": "实时数据流采集与处理" },
+        { "id": "quicksight",     "name": "Amazon QuickSight",       "icon": "📊", "is_real": false, "summary": "云原生 BI 可视化与仪表盘" },
+        { "id": "managed_flink",  "name": "Managed Apache Flink",    "icon": "⚡", "is_real": false, "summary": "托管实时流计算（原 Kinesis Data Analytics）" },
+        { "id": "msk",            "name": "Amazon MSK",              "icon": "📨", "is_real": false, "summary": "托管 Apache Kafka" },
+        { "id": "opensearch",     "name": "Amazon OpenSearch",       "icon": "🔎", "is_real": false, "summary": "搜索、日志分析与可观测性" }
+      ]
+    },
+    {
+      "id": "deployment",
+      "name": "Deployment",
+      "icon": "🚀",
+      "description": "容器编排、CI/CD、基础设施即代码与事件驱动方向",
+      "services": [
+        { "id": "ecs",            "name": "Amazon ECS",              "icon": "🐳", "is_real": true,  "summary": "容器编排（Fargate/EC2 启动类型）" },
+        { "id": "eks",            "name": "Amazon EKS",              "icon": "☸️", "is_real": true,  "summary": "托管 Kubernetes 服务" },
+        { "id": "ecr",            "name": "Amazon ECR",              "icon": "📦", "is_real": true,  "summary": "容器镜像仓库" },
+        { "id": "cloudformation", "name": "AWS CloudFormation",      "icon": "📜", "is_real": true,  "summary": "基础设施即代码（IaC）" },
+        { "id": "codepipeline",   "name": "AWS CodePipeline",        "icon": "🔄", "is_real": true,  "summary": "CI/CD 持续交付流水线" },
+        { "id": "eventbridge",    "name": "Amazon EventBridge",      "icon": "📡", "is_real": true,  "summary": "Serverless 事件总线" }
+      ]
+    },
+    {
+      "id": "database",
+      "name": "Database",
+      "icon": "🗄️",
+      "description": "关系型数据库、数据仓库、文档数据库与数据库迁移方向",
+      "services": [
+        { "id": "rds",            "name": "Amazon RDS",              "icon": "🐬", "is_real": true,  "summary": "托管关系型数据库（MySQL/PostgreSQL/Oracle）" },
+        { "id": "aurora",         "name": "Amazon Aurora",           "icon": "💫", "is_real": true,  "summary": "云原生关系型数据库" },
+        { "id": "redshift",       "name": "Amazon Redshift",         "icon": "🔴", "is_real": true,  "summary": "云数据仓库" },
+        { "id": "documentdb",     "name": "Amazon DocumentDB",       "icon": "📄", "is_real": true,  "summary": "兼容 MongoDB 的文档数据库" },
+        { "id": "dms",            "name": "AWS DMS",                 "icon": "🔄", "is_real": true,  "summary": "数据库迁移与持续复制" }
+      ]
+    },
+    {
+      "id": "dms",
+      "name": "DMS",
+      "icon": "🔄",
+      "description": "Serverless 计算、消息服务、IoT 与 API 管理方向",
+      "services": [
+        { "id": "lambda",         "name": "AWS Lambda",              "icon": "⚡", "is_real": true,  "summary": "Serverless 计算" },
+        { "id": "iot",            "name": "AWS IoT Core",            "icon": "📡", "is_real": true,  "summary": "物联网平台" },
+        { "id": "sns",            "name": "Amazon SNS",              "icon": "📢", "is_real": true,  "summary": "消息发布/订阅服务" },
+        { "id": "api_gateway",    "name": "Amazon API Gateway",      "icon": "🚪", "is_real": true,  "summary": "API 管理与发布" },
+        { "id": "sqs",            "name": "Amazon SQS",              "icon": "📬", "is_real": true,  "summary": "消息队列服务" }
+      ]
+    },
+    {
+      "id": "networking",
+      "name": "Networking & Security",
+      "icon": "🌐",
+      "description": "网络架构、负载均衡、DNS、身份安全与密钥管理方向",
+      "services": [
+        { "id": "vpc",            "name": "Amazon VPC",              "icon": "🏗️", "is_real": true,  "summary": "虚拟私有云与网络隔离" },
+        { "id": "elb",            "name": "Elastic Load Balancing",  "icon": "⚖️", "is_real": true,  "summary": "ALB/NLB/GLB 负载均衡" },
+        { "id": "route53",        "name": "Amazon Route 53",         "icon": "🌍", "is_real": true,  "summary": "DNS 与路由策略" },
+        { "id": "transit_gateway","name": "AWS Transit Gateway",     "icon": "🔀", "is_real": true,  "summary": "中心化网络枢纽" },
+        { "id": "direct_connect", "name": "AWS Direct Connect",      "icon": "🔌", "is_real": true,  "summary": "专线连接与混合网络" },
+        { "id": "iam",            "name": "AWS IAM",                 "icon": "🔑", "is_real": true,  "summary": "身份与访问管理" },
+        { "id": "organizations",  "name": "AWS Organizations",       "icon": "🏢", "is_real": true,  "summary": "多账号管理与 SCP" },
+        { "id": "kms",            "name": "AWS KMS",                 "icon": "🔐", "is_real": true,  "summary": "密钥管理与加密" },
+        { "id": "waf",            "name": "AWS WAF & Shield",        "icon": "🛡️", "is_real": true,  "summary": "Web 应用防火墙与 DDoS 防护" },
+        { "id": "cloudwatch",     "name": "Amazon CloudWatch",       "icon": "📊", "is_real": true,  "summary": "监控与可观测性" }
+      ]
+    },
+    {
+      "id": "scd",
+      "name": "SCD",
+      "icon": "🔒",
+      "description": "存储、备份、内容分发与数据传输方向",
+      "services": [
+        { "id": "s3",             "name": "Amazon S3",               "icon": "🪣", "is_real": true,  "summary": "对象存储服务" },
+        { "id": "backup",         "name": "AWS Backup",              "icon": "💾", "is_real": true,  "summary": "集中化备份管理" },
+        { "id": "cloudfront",     "name": "Amazon CloudFront",       "icon": "🌐", "is_real": true,  "summary": "CDN 内容分发网络" },
+        { "id": "datasync",       "name": "AWS DataSync",            "icon": "📦", "is_real": true,  "summary": "在线数据传输服务" }
+      ]
+    },
+    {
+      "id": "linux",
+      "name": "Linux",
+      "icon": "🐧",
+      "description": "Linux 运维、实例管理、内存数据库与块存储方向",
+      "services": [
+        { "id": "ec2_linux",      "name": "EC2 Linux",               "icon": "🐧", "is_real": true,  "summary": "Linux 实例管理与系统排障" },
+        { "id": "ssm",            "name": "AWS Systems Manager",     "icon": "🔧", "is_real": true,  "summary": "统一运维管理平台" },
+        { "id": "memorydb",       "name": "Amazon MemoryDB",         "icon": "⚡", "is_real": true,  "summary": "兼容 Redis 的持久化内存数据库" },
+        { "id": "ebs",            "name": "Amazon EBS",              "icon": "💿", "is_real": true,  "summary": "块存储服务" }
+      ]
+    },
+    {
+      "id": "windows",
+      "name": "Windows",
+      "icon": "🪟",
+      "description": "Windows 运维、文件系统、目录服务与虚拟桌面方向",
+      "services": [
+        { "id": "ec2_windows",    "name": "EC2 Windows",             "icon": "🪟", "is_real": true,  "summary": "Windows 实例管理与域集成" },
+        { "id": "fsx",            "name": "Amazon FSx",              "icon": "📂", "is_real": true,  "summary": "托管文件系统（Windows/ONTAP）" },
+        { "id": "directory_service","name": "AWS Directory Service",  "icon": "📒", "is_real": true,  "summary": "托管 Active Directory" },
+        { "id": "workspaces",     "name": "Amazon WorkSpaces",       "icon": "🖥️", "is_real": true,  "summary": "托管虚拟桌面（VDI）" }
+      ]
+    }
+  ]
+}

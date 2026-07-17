@@ -1,0 +1,42 @@
+{
+  "id": "transit_gateway",
+  "name": "AWS Transit Gateway",
+  "track_id": "networking",
+  "description": "中心化网络枢纽，覆盖多 VPC 互联、路由管理与网络分段。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "tgw_architecture",
+      "name": "架构设计与连接",
+      "description": "TGW 创建、VPC/VPN/DX Attachment、路由域、共享",
+      "levels": {
+        "L1": "了解 Transit Gateway 解决什么问题，能创建基本连接",
+        "L2": "能设计 Hub-Spoke 架构，配置多 VPC 和 VPN Attachment",
+        "L3": "可设计多区域、多账号的 TGW 互联架构（含 Inter-Region Peering、RAM 共享）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "tgw_routing",
+      "name": "路由表与网络分段",
+      "description": "TGW 路由表、关联/传播、黑洞路由、网络分段",
+      "levels": {
+        "L1": "了解 TGW 路由表与 VPC 路由表的关系",
+        "L2": "能通过多路由表实现网络分段（生产/开发隔离），配置路由传播",
+        "L3": "可设计复杂的路由策略（共享服务 VPC、Inspection VPC、南北/东西流量分离）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "tgw_monitoring",
+      "name": "监控与故障排查",
+      "description": "Flow Logs、CloudWatch 指标、路由不通排查",
+      "levels": {
+        "L1": "能查看 TGW 基本指标",
+        "L2": "能排查常见的路由黑洞和非对称路由问题",
+        "L3": "可设计 TGW 级别的流量可视化与异常检测方案"
+      },
+      "doc_refs": []
+    }
+  ]
+}

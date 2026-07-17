@@ -1,0 +1,42 @@
+{
+  "id": "workspaces",
+  "name": "Amazon WorkSpaces",
+  "track_id": "windows",
+  "description": "托管虚拟桌面服务（VDI），覆盖桌面管理、网络配置与用户体验优化。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ws_deployment",
+      "name": "桌面部署与管理",
+      "description": "Bundle 选择、目录集成、镜像自定义、批量部署",
+      "levels": {
+        "L1": "能创建 WorkSpace 并分配给用户",
+        "L2": "能自定义镜像（Bundle）、批量部署和管理 WorkSpace 生命周期",
+        "L3": "可设计大规模 VDI 部署方案（含镜像管理策略、Auto Stop、成本优化）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ws_networking",
+      "name": "网络与访问控制",
+      "description": "VPC 配置、IP 访问控制、MFA、证书认证、Web Access",
+      "levels": {
+        "L1": "了解 WorkSpaces 网络架构基本概念",
+        "L2": "能配置 IP 访问控制组、MFA 认证、Web/PCoIP/WSP 协议选择",
+        "L3": "可设计安全的远程桌面架构（含零信任访问、网络隔离、DLP 集成）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ws_troubleshooting",
+      "name": "故障排查与体验优化",
+      "description": "连接问题诊断、性能监控、打印/外设、协议优化",
+      "levels": {
+        "L1": "能识别 WorkSpace 不可用状态",
+        "L2": "能排查连接失败（网络/认证/客户端）、优化流媒体协议体验",
+        "L3": "可排查复杂的性能问题（延迟、带宽、GPU 渲染），设计 QoS 方案"
+      },
+      "doc_refs": []
+    }
+  ]
+}

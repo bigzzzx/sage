@@ -1,0 +1,175 @@
+{
+  "service": "Glue",
+  "version": "1.0",
+  "dimensions": [
+    {
+      "id": "dim_01",
+      "name": "Glue 运行时计算引擎调优与故障诊断",
+      "description": "聚焦 Glue Spark 作业在 JVM、内存、GC、并行度、Shuffle、S3 I/O 等运行时层面的性能瓶颈识别、根因分析与优化。",
+      "sub_skills": [
+        {
+          "id": "dim_01_sk_01",
+          "name": "Spark JVM 内存与 GC 问题诊断",
+          "description": "通过 Spark UI、driver/executor 日志、GC 日志分析 Full GC 频率、停顿时间及内存泄漏模式。",
+          "levels": {
+            "L1": "能识别日志中 GC 相关关键词（如 'Full GC'、'OutOfMemoryError'），知道需检查 executor memory 配置。",
+            "L2": "能结合 Spark UI 的 Executors 标签页、GC 时间占比指标，定位 GC 压力来源（如单 task 数据倾斜、序列化开销大），并调整 --executor-memory/--executor-cores/--conf spark.memory.* 参数。",
+            "L3": "能深入分析 GC 日志（-XX:+PrintGCDetails）判断 GC 算法瓶颈（如 CMS 失败转 Serial GC），结合对象分配速率、老年代晋升率推断代码级问题（如缓存未清理、长生命周期闭包），并协同客户重构数据处理逻辑。"
+          }
+        },
+        {
+          "id": "dim_01_sk_02",
+          "name": "S3 Multipart Upload 与 I/O 稳定性调优",
+          "description": "理解 Spark 向 S3 写入 Parquet/CSV 时的分块上传机制、超时行为、重试策略及与网络/JVM 的耦合影响。",
+          "levels": {
+            "L1": "知道 Glue 写 S3 使用 multipart upload，了解 404 NoSuchUpload 可能由连接中断引发。",
+            "L2": "能结合 S3 客户端配置（spark.hadoop.fs.s3a.aws.credentials.provider、fs.s3a.connection.timeout）、JVM GC 状态和 Spark Task 重试日志，复现并归因 multipart upload 中断（如 socket timeout >5s）。",
+            "L3": "能定制 S3A 高级参数（如 fs.s3a.multipart.size、fs.s3a.block.size、fs.s3a.fast.upload），设计基于 S3A Committer 的幂等写入方案，并评估 Iceberg/Hudi 表格式对 S3 I/O 稳定性的增强效果。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dim_02",
+      "name": "Glue 网络架构与 VPC 集成",
+      "description": "掌握 Glue 在不同网络模式（无 VPC / VPC 私有子网 / VPC 公有子网）下的 ENI 分配、流量路径、安全组模型及跨服务连通性保障。",
+      "sub_skills": [
+        {
+          "id": "dim_02_sk_01",
+          "name": "Glue VPC 网络拓扑与 ENI 行为建模",
+          "description": "理解 Glue Job 在 VPC 中动态创建多个 ENI 的分布式通信模型，及其对安全组、路由表、NAT 网关的依赖。",
+          "levels": {
+            "L1": "能区分 Glue 无 VPC 模式与 VPC 模式的基本区别，知道 ENI 是 Glue 在 VPC 中的网络接口。",
+            "L2": "能根据 Glue Job 日志中的 ENI IP 和 VPC 配置，绘制 Job 内部组件（Driver/Executor/Connection Manager）间通信路径，解释为何需安全组自引用规则。",
+            "L3": "能建模多 AZ 下 ENI 分布对跨 AZ 延迟的影响，设计高可用 VPC 架构（如双 NAT 网关+路由策略），并诊断 ENI IP 耗尽、流日志缺失等底层网络异常。"
+          }
+        },
+        {
+          "id": "dim_02_sk_02",
+          "name": "出口 IP 控制与白名单治理",
+          "description": "针对第三方系统白名单需求，设计可预测、可审计、符合合规要求的 Glue 出口流量固化方案。",
+          "levels": {
+            "L1": "知道无 VPC 模式下 Glue 出口 IP 不固定，VPC 模式下可通过 NAT 网关绑定 EIP 实现固定出口。",
+            "L2": "能根据客户 VPC 子网类型（公有/私有）、路由表、NAT 网关部署状态，准确推荐出口 IP 方案，并验证 curl -s http://169.254.169.254/latest/meta-data/public-ipv4 是否可达。",
+            "L3": "能设计跨账号/跨 Region 白名单联合治理方案（如 Transit Gateway + Prefix List），集成 AWS Network Firewall 日志审计出口流量，并应对 IPv6/IPv4 双栈场景下的白名单兼容性问题。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dim_03",
+      "name": "Glue 数据目录与元数据治理",
+      "description": "覆盖 Glue Catalog、Crawler、Classifier、Schema 推理、版本管理及与 Athena/EMR/Redshift 等下游服务的元数据协同。",
+      "sub_skills": [
+        {
+          "id": "dim_03_sk_01",
+          "name": "Crawler 分类器机制与 Schema 推理调优",
+          "description": "深入理解内置/自定义 Classifier 的匹配逻辑、启发式阈值、header 识别策略及常见失败模式。",
+          "levels": {
+            "L1": "能使用控制台创建 CSV 分类器并勾选 'Has Column headings'，知道 Crawler 可能跳过 header。",
+            "L2": "能通过 Crawler 日志分析 classifier 匹配失败原因（如分隔符误判、样本文件不足），编写正则表达式自定义分类器，并设置 schema resolution 策略（Merge/New version）。",
+            "L3": "能构建自动化 classifier 测试框架（基于 sample data + expected schema），实现 classifier 版本灰度发布；并解决嵌套 CSV、混合编码、schema drift 场景下的元数据一致性挑战。"
+          }
+        },
+        {
+          "id": "dim_03_sk_02",
+          "name": "Catalog 权限与跨账号元数据共享",
+          "description": "设计 Glue Catalog 资源级权限（Database/Table）、跨账号共享（Resource Policy + IAM）、ACID 表元数据同步方案。",
+          "levels": {
+            "L1": "能在控制台为 IAM Role 添加 glue:CreateTable、glue:GetTable 等基础 Catalog 权限。",
+            "L2": "能配置 Glue Resource Policy 允许跨账号访问特定 Database，并结合 Lake Formation 细粒度权限控制列级访问。",
+            "L3": "能设计跨账号 Iceberg 表元数据同步架构（如使用 Glue Workflow + EventBridge + Lambda），保障 ACID 事务隔离性，并解决跨账号 catalog version skew 导致的 snapshot 读取异常。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dim_04",
+      "name": "Glue 安全与权限模型深度实践",
+      "description": "涵盖 IAM Role 策略、S3 Bucket Policy、Lake Formation、KMS 加密、连接凭证安全及最小权限落地。",
+      "sub_skills": [
+        {
+          "id": "dim_04_sk_01",
+          "name": "跨账号 S3 访问授权联合诊断",
+          "description": "精准区分 IAM Role 权限缺失、Bucket Policy 拒绝、KMS 密钥权限不足三类 403 错误，并实施最小权限修复。",
+          "levels": {
+            "L1": "能识别 AccessDenied 错误并检查 IAM Role 是否含 s3:GetObject，知道需同时检查 Bucket Policy。",
+            "L2": "能使用 IAM Policy Simulator + S3 Access Analyzer 验证跨账号权限路径，定位是缺少 s3:ListBucket（目录遍历）还是 s3:GetObject（对象读取），并添加对应 Bucket Policy Statement。",
+            "L3": "能构建跨账号权限拓扑图（含 KMS:Decrypt 权限链），设计自动化的权限漂移检测（CloudTrail + Config Rules），并实现基于 Tag-based 的动态权限授予（如 s3:ResourceTag/team=${aws:PrincipalTag/team}）。"
+          }
+        },
+        {
+          "id": "dim_04_sk_02",
+          "name": "Glue Connection 安全与凭证管理",
+          "description": "安全配置 JDBC/ODBC/Redshift Connection，包括 VPC 网络隔离、密码加密存储、IAM DB Authentication 集成及凭证轮换。",
+          "levels": {
+            "L1": "能在控制台创建 Redshift Connection 并输入用户名/密码，知道密码被 KMS 加密存储。",
+            "L2": "能配置 Connection 使用 IAM Role 进行 Redshift IAM DB Auth，避免硬编码凭证；并为 Connection 关联 Secret Manager ARN 实现自动轮换。",
+            "L3": "能设计零信任 Connection 架构：强制启用 SSL/TLS、配置 Connection-level VPC endpoint policy、集成 AWS Private CA 签发证书，并审计所有 Connection 的凭证使用痕迹（CloudTrail eventName=GetConnection）。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dim_05",
+      "name": "Glue 作业生命周期与可观测性工程",
+      "description": "覆盖 Job 创建、启动、执行、重试、失败恢复、日志采集、指标监控及与 Step Functions/EventBridge 的编排集成。",
+      "sub_skills": [
+        {
+          "id": "dim_05_sk_01",
+          "name": "Spark Task 级故障传播与重试机制解析",
+          "description": "理解 Glue Spark 中 Task 失败、Stage 重试、Job abort 的触发条件、默认策略及可配置边界。",
+          "levels": {
+            "L1": "知道 Spark Task 失败会触发重试（默认 4 次），超过次数导致 Stage 失败。",
+            "L2": "能从 CloudWatch Logs 中提取 Task ID、Attempt ID、重试次数，结合 Spark History Server 判断是否因 shuffle fetch failure 或 OOM 导致级联失败，并调整 spark.task.maxFailures。",
+            "L3": "能定制 Failure Handler（如通过 SparkListener 监听 TaskEnd 事件），实现业务级失败降级（如跳过坏分区）、动态重试退避（Exponential Backoff），并与 Step Functions 构建 Saga 模式补偿流程。"
+          }
+        },
+        {
+          "id": "dim_05_sk_02",
+          "name": "Glue 作业可观测性体系构建",
+          "description": "整合 CloudWatch Metrics、Logs、Traces（X-Ray）、Spark UI、Glue Job Bookmarks 及自定义埋点，实现端到端诊断能力。",
+          "levels": {
+            "L1": "能查看 Glue 控制台的 Job 运行时长、状态、日志组链接，知道关键指标如 'DPU-Hours'。",
+            "L2": "能配置 CloudWatch Log Group 的结构化日志过滤（如 ERROR | 'AccessDenied'），创建自定义指标（如 failed_task_count），并关联 Spark UI URL 到 CloudWatch Dashboard。",
+            "L3": "能部署 OpenTelemetry Collector 收集 Spark JVM metrics（jvm.memory.used）与 Glue Job metrics（glue.job.bookmark.state），构建 AIOps 异常检测 pipeline（如使用 Lookout for Metrics），并实现基于 Trace ID 的全链路日志追踪（Glue → Lambda → S3）。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dim_06",
+      "name": "Glue 与数据湖生态协同架构",
+      "description": "掌握 Glue 与 Iceberg/Hudi/Delta Lake、Athena、EMR、Redshift Spectrum、MSK 的深度集成模式、最佳实践与反模式。",
+      "sub_skills": [
+        {
+          "id": "dim_06_sk_01",
+          "name": "Iceberg/Hudi 表格式在 Glue 中的生产化落地",
+          "description": "在 Glue Spark 作业中正确使用开源表格式进行 ACID 写入、Time Travel、Schema Evolution 及与 Athena/Redshift 的查询协同。",
+          "levels": {
+            "L1": "能在 Glue Job 中通过 spark.sql.catalog.glue_catalog 设置 Iceberg catalog，并执行 INSERT INTO iceberg_table。",
+            "L2": "能配置 Iceberg/Hudi 的 write options（如 write.distribution.mode='hash'）、compaction 策略，并解决 Glue Crawler 无法识别 Iceberg 表 schema 的问题（改用 Spark SQL REFRESH TABLE）。",
+            "L3": "能设计跨引擎一致性方案（如 Iceberg REST Catalog + Glue Metastore Adapter），实现 Glue Spark 与 Trino/Athena 的并发读写隔离，解决小文件爆炸、manifest 体积膨胀等生产级挑战。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dim_07",
+      "name": "Glue Serverless 架构演进与成本治理",
+      "description": "面向 Glue 4.0+ 的 Spark 3.3+、Ray Runtime、Job Command、Serverless Streaming 等新能力，以及 DPU 成本建模、弹性扩缩容策略。",
+      "sub_skills": [
+        {
+          "id": "dim_07_sk_01",
+          "name": "Glue Serverless Streaming 与实时处理",
+          "description": "使用 Glue Streaming ETL（基于 Spark Structured Streaming）消费 MSK/Kinesis，实现 Exactly-Once 语义、Checkpoint 管理与状态后端集成。",
+          "levels": {
+            "L1": "能创建 Glue Streaming Job，配置 MSK 作为 source，S3 作为 sink，并设置 checkpointLocation。",
+            "L2": "能调优 streaming query 参数（如 trigger.interval、foreachBatch 并发度），处理 late data（watermark），并监控 offset lag 和 state store size。",
+            "L3": "能构建端到端 exactly-once 架构：集成 DynamoDB 作为 offset store、S3+Hive Metastore 作为 streaming catalog、Lambda 触发 streaming job 自动扩缩容，并实现 streaming job 的蓝绿部署与回滚。"
+          }
+        }
+      ]
+    }
+  ]
+}

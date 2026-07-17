@@ -1,0 +1,28 @@
+{
+  "title": "AWS Glue Job 因运行子网可用 IP 地址不足导致 Spark 任务启动失败",
+  "service": "AWS Glue",
+  "capability_area": "网络架构与VPC集成",
+  "difficulty": "L1",
+  "summary": "客户在运行 AWS Glue 定时作业时报错 SparkContext 关闭而导致失败。根因是该作业配置了 10 个 DPU（Worker 类型为 G1.x），在启动与运行过程中需要消耗 10 个可用 IP 地址，而其指定的 VPC 子网（10.58.7.0/27）由于还运行了其他 AWS 服务，导致剩余可用 IP 数量不足。支持工程师指导客户通过调低作业的 DPU 分配数量或将子网网段扩容至 /24 来解决此问题。",
+  "customer_symptom": "Glue 中的定时任务报错：An error occurred while calling o115.count. Job 0 cancelled because SparkContext was shut down 导致执行失败。",
+  "root_cause": "AWS Glue 作业配置了 DPU=10 且 Worker 类型为 G1.x，启动时共需要 10 个空闲 IP 地址。然而其关联的 VPC 子网（10.58.7.0/27）由于存在其他服务占用了大量 IP，导致该子网内剩余空闲 IP 地址不足 10 个，从而触发了 'The specified subnet does not have enough free addresses to satisfy the request' 的底层错误，导致 Executor 无法创建，引发 SparkContext 关闭。",
+  "resolution_steps": [
+    "步骤1：通过后端排查工具及 CloudTrail 事件（ID: ff2cd92f-306a-4e0e-84bd-82b2de1faefe）检索底层运行报错，捕获 'The specified subnet does not have enough free addresses to satisfy the request' 关键信息。",
+    "步骤2：核对故障作业的运行时参数，确认其配置为 DPU=10，Worker 类型为 G1.x，并确认关联子网掩码为紧凑的 /27 网段。",
+    "步骤3：通过电话联系客户，阐明该 Glue 作业的 DPU 配置与子网可用 IP 数量的依赖关系，并指出当前子网因混用已被其他服务占满的现状。",
+    "步骤4：指导客户采取方案一：在作业配置中减少分配的 DPU 数量，以降低对可用 IP 地址的消耗。",
+    "步骤5：指导客户采取方案二：重新规划网络，将该作业关联子网的子网掩码修改为 /24 或更大的网段，以提供充足的 IP 地址空间。"
+  ],
+  "key_knowledge_points": [
+    "AWS Glue 作业配置中 DPU（Data Processing Units）及不同 Worker 类型与所需的 VPC 子网 IP 地址数量的映射计算关系",
+    "Amazon VPC 子网网段划分、可用 IP 地址计算（需扣除 AWS 固定的 5 个预留 IP）及混用子网的资源排他性影响",
+    "AWS Glue 通过 Glue Connection 与用户 VPC 进行集成时弹性网络接口（ENI）的拉起与释放机制"
+  ],
+  "troubleshooting_clues": [
+    "线索1：Glue 任务运行日志提示错误 'Job 0 cancelled because SparkContext was shut down' 且原因为 'Failed to create any executor tasks'",
+    "线索2：CloudTrail 事件或后端系统抛出明确异常 'The specified subnet does not have enough free addresses to satisfy the request. Please provide a connection with a subnet with ips available.'",
+    "线索3：故障作业配置为 DPU = 10，而所绑定的子网 CIDR 为 10.58.7.0/27"
+  ],
+  "related_services": ["AWS Glue", "Amazon VPC", "AWS CloudTrail"],
+  "prevention_advice": "在为 AWS Glue 作业规划 VPC 连接（Glue Connection）时，建议为其划分独立的、大网段（如 /24 或更大）的专用子网，避免与其他高并发或长期占用 IP 的 AWS 服务混用。"
+}

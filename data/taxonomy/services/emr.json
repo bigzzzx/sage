@@ -1,0 +1,79 @@
+{
+  "id": "emr",
+  "name": "Amazon EMR",
+  "track_id": "big_data",
+  "description": "托管的 Hadoop / Spark / Hive / HBase / Flink / Presto 集群，支持长期运行和瞬态作业。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "emr_network_provision",
+      "name": "网络与集群创建",
+      "description": "VPC/子网/安全组配置、public vs private 子网集群、集群启动流程与 provision 排查",
+      "levels": {
+        "L1": "能在控制台/CLI 启动标准 EMR 集群，了解 public/private 子网区别",
+        "L2": "理解集群启动顺序（provision → BA），能排查 NO Route、provision 失败等常见问题",
+        "L3": "能设计复杂网络架构（私网集群、跨 VPC），并深入排查 IC check-in、网络连通性疑难问题"
+      }
+    },
+    {
+      "id": "emr_components_ops",
+      "name": "集群组件与运维",
+      "description": "Instance Controller、Log Pusher、Bootstrap Action、Auto Scaling、Step 提交与运维",
+      "levels": {
+        "L1": "知道集群可加减节点，能提交 Step 作业",
+        "L2": "掌握 Instance Controller / Log Pusher 的作用与配置，能配置 Auto Scaling 与 Bootstrap",
+        "L3": "能排查 IC Step 提交失败、Auto Scaling 节点无法启动、节点 dead 等复杂运维问题"
+      }
+    },
+    {
+      "id": "emr_security",
+      "name": "安全与加密",
+      "description": "EBS 加密、传输加密、Kerberos 认证、EMRFS IAM Role、S3 访问权限",
+      "levels": {
+        "L1": "能基于模板配置集群 IAM 角色与基础加密",
+        "L2": "掌握 EBS/传输加密配置、Kerberos 集群搭建、EMRFS 角色映射",
+        "L3": "能排查 provision 加密报错、设计多租户安全模型与细粒度权限方案"
+      }
+    },
+    {
+      "id": "emr_compute_engine",
+      "name": "计算引擎（Spark/Hive/MR）",
+      "description": "Spark 组件/提交/调优/OOM、Hive 组件/执行引擎/分区分桶、MapReduce 流程/shuffle",
+      "levels": {
+        "L1": "了解 Spark/Hive/MR 的组件与作业提交流程，能识别基本报错",
+        "L2": "能排查 Spark OOM/数据倾斜、Hive metastore 慢、MR 作业卡住，掌握 shuffle&sort 原理",
+        "L3": "能做 Spark JVM/内存/并行度深度调优、Hive join 策略优化、MapReduce 源码级分析"
+      }
+    },
+    {
+      "id": "emr_storage_components",
+      "name": "存储与协调组件（HDFS/HBase/Flink/Oozie）",
+      "description": "HDFS 读写/平衡/安全模式、HBase region/合并分裂、Flink 流处理、Oozie 调度等组件",
+      "levels": {
+        "L1": "掌握 HDFS 基本概念命令、HBase 主从架构，了解 Flink/Oozie 用途",
+        "L2": "能排查 HDFS NN/DN 失联、HBase RIT/高水位、Flink 读取性能问题",
+        "L3": "能深入 HDFS 主从交互、HBase 合并/分裂策略优化、复杂组件故障恢复"
+      }
+    },
+    {
+      "id": "emr_serverless",
+      "name": "EMR Serverless",
+      "description": "Serverless 作业模型、worker / pre-initialized worker 概念、资源配置与作业排查",
+      "levels": {
+        "L1": "了解 EMR Serverless 概念，能提交简单作业",
+        "L2": "掌握作业启动原理与组件，能查看作业状态、排查无法提交问题",
+        "L3": "能深入排查 IAM/资源/managed 日志类问题，优化 Serverless 作业成本与性能"
+      }
+    },
+    {
+      "id": "emr_service_integration",
+      "name": "与其他 AWS 服务集成",
+      "description": "S3/EMRFS、Glue Data Catalog、MWAA 调度、Lake Formation 权限、Step Functions",
+      "levels": {
+        "L1": "了解 EMR 可对接 S3、Glue Catalog 等服务",
+        "L2": "能配置 EMR 使用 Glue Catalog 作为 metastore、用 MWAA/Step Functions 编排作业",
+        "L3": "能设计 EMR 与 Lake Formation 细粒度权限集成、跨服务数据湖架构"
+      }
+    }
+  ]
+}

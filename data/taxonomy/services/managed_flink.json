@@ -1,0 +1,49 @@
+{
+  "id": "managed_flink",
+  "name": "Managed Apache Flink",
+  "track_id": "analytics",
+  "description": "托管 Apache Flink 实时流计算服务（原 Kinesis Data Analytics），支持 SQL 和 Java/Python 应用。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "flink_app_dev",
+      "name": "应用开发与部署",
+      "description": "Flink SQL / DataStream API、应用打包、KPU 配置、部署与更新",
+      "levels": {
+        "L1": "能用 Flink SQL 编写简单流处理逻辑",
+        "L2": "能用 DataStream API 开发复杂应用，理解 KPU 与并行度配置",
+        "L3": "能优化应用性能（状态管理、Checkpoint 调优）并实现零停机更新"
+      }
+    },
+    {
+      "id": "flink_source_sink",
+      "name": "Source 与 Sink 集成",
+      "description": "Kinesis/MSK/S3 Source、S3/Firehose/OpenSearch Sink、Connector 配置",
+      "levels": {
+        "L1": "能配置 Kinesis 作为 Source",
+        "L2": "能配置多种 Sink 并处理序列化/反序列化问题",
+        "L3": "能开发自定义 Connector 并排查数据一致性问题"
+      }
+    },
+    {
+      "id": "flink_state_checkpoint",
+      "name": "状态管理与 Checkpoint",
+      "description": "State Backend、Checkpoint 配置、Savepoint、故障恢复",
+      "levels": {
+        "L1": "了解 Checkpoint 概念",
+        "L2": "能配置 Checkpoint 间隔与超时，理解 Savepoint 的使用场景",
+        "L3": "能排查 Checkpoint 失败、状态膨胀、背压等复杂问题"
+      }
+    },
+    {
+      "id": "flink_monitoring",
+      "name": "监控与故障排查",
+      "description": "CloudWatch 指标、Flink Dashboard、背压定位、OOM 排查",
+      "levels": {
+        "L1": "能查看应用运行状态",
+        "L2": "能用 CloudWatch 指标识别背压和延迟问题",
+        "L3": "能深入排查 TaskManager OOM、Checkpoint 超时、数据倾斜等问题"
+      }
+    }
+  ]
+}

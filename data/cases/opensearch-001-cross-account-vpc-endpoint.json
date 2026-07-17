@@ -1,0 +1,28 @@
+{
+  "title": "Amazon OpenSearch 跨账户 VPC 访问的托管 VPC 终端节点配置咨询",
+  "service": "Amazon OpenSearch Service",
+  "capability_area": "网络架构与VPC集成",
+  "difficulty": "L1",
+  "summary": "客户咨询如何实现跨账户访问部署在 VPC 内的 Amazon OpenSearch 集群。根因在于跨账户私网访问 VPC 域需要使用由 Amazon PrivateLink 支持的托管 VPC 终端节点，且需在域所有者账户中进行跨账户授权。支持工程师通过电话解答了配置逻辑，告知必须通过 443 端口进行 HTTPS 访问、需跨账户授权以及只能在相同区域连接，并提供了官方引导文档，顺利解决客户疑问。",
+  "customer_symptom": "跨账户访问 VPC 内的 OpenSearch 集群，需确认是否需要挂载 VPCE 终端节点以及是否需要开放 443 端口",
+  "root_cause": "跨账户私网访问部署在 VPC 中的 Amazon OpenSearch 集群时，必须依赖由 Amazon PrivateLink 驱动的托管 VPC 终端节点（Interface VPC Endpoint）。此外，架构上要求域所有者账户先向访问方账户授权，且流量仅支持相同 Region 内的 443 端口（HTTPS）通信。",
+  "resolution_steps": [
+    "步骤1：通过电话与客户沟通，确认其希望实现跨账户且基于 VPC 私网访问 Amazon OpenSearch 集群的具体网络诉求。",
+    "步骤2：向客户明确说明需要使用由 Amazon PrivateLink 支持的托管 VPC 终端节点来实现该私网连接。",
+    "步骤3：指导客户首先需要在 OpenSearch 域所有者账户中配置并授权允许另一个账户的 VPC 进行访问。",
+    "步骤4：告知客户在访问方账户中创建接口 VPC 终端节点，并强调必须使用 443 端口（HTTPS 协议）在相同 AWS 区域内进行访问。",
+    "步骤5：向客户提供官方关于配置 VPC 接口终端节点访问以及注意事项的说明文档作为实施参考。"
+  ],
+  "key_knowledge_points": [
+    "Amazon OpenSearch 托管 VPC 终端节点（Managed VPC Endpoints）的工作原理与限制",
+    "使用 Amazon PrivateLink 实现跨账户和跨 VPC 的私有网络互通机制",
+    "OpenSearch 集群的安全访问控制与跨账户授权策略配置",
+    "VPC 安全组及网络协议限制（如 OpenSearch 端点仅支持 443/HTTPS 端口）"
+  ],
+  "troubleshooting_clues": [
+    "线索1：客户明确提出的跨账户访问 VPC 内 OpenSearch 集群的网络架构设计诉求",
+    "线索2：客户对于是否需要挂载 VPCE 终端节点及开放 443 端口的技术疑问"
+  ],
+  "related_services": ["Amazon OpenSearch Service", "Amazon VPC", "AWS PrivateLink"],
+  "prevention_advice": "对于跨账户或跨 VPC 的私网资源互通场景，在方案设计初期应优先参考 AWS 官方网络集成指南，明确跨账户授权流程及所支持的协议端口限制。"
+}

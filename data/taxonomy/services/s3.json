@@ -1,0 +1,64 @@
+{
+  "id": "s3",
+  "name": "Amazon S3",
+  "track_id": "scd",
+  "description": "对象存储服务，覆盖存储管理、访问控制、生命周期、复制与安全。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "s3_storage_mgmt",
+      "name": "存储类与生命周期",
+      "description": "存储类（Standard/IA/Glacier）、生命周期策略、智能分层",
+      "levels": {
+        "L1": "了解常见存储类区别，能上传下载对象",
+        "L2": "能设计生命周期策略自动转换存储类，配置智能分层优化成本",
+        "L3": "可设计 PB 级存储成本优化方案（含 S3 Analytics、存储镜头、多策略组合）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "s3_access_control",
+      "name": "访问控制与安全",
+      "description": "Bucket Policy、ACL、Block Public Access、Access Point、Object Ownership",
+      "levels": {
+        "L1": "能配置 Bucket Policy 基本读写权限",
+        "L2": "能设计多账号访问方案（Access Point、跨账号 Policy），配置 Block Public Access",
+        "L3": "可设计企业级 S3 安全治理框架（含 Object Ownership、策略条件键、Access Analyzer）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "s3_replication",
+      "name": "复制与数据保护",
+      "description": "跨区域复制(CRR)、同区域复制(SRR)、版本控制、Object Lock",
+      "levels": {
+        "L1": "能开启版本控制，了解跨区域复制概念",
+        "L2": "能配置 CRR/SRR 规则（含过滤器、存储类转换），使用 Object Lock 防删",
+        "L3": "可设计多区域数据保护方案（含合规模式 Object Lock、复制时间控制、故障转移）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "s3_performance",
+      "name": "性能优化与事件",
+      "description": "前缀设计、Multipart Upload、S3 Transfer Acceleration、事件通知",
+      "levels": {
+        "L1": "能使用 Multipart Upload 上传大文件",
+        "L2": "能设计高吞吐前缀策略，配置事件通知触发下游处理",
+        "L3": "可优化超大规模 S3 工作负载（含 Transfer Acceleration、S3 Express One Zone）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "s3_troubleshooting",
+      "name": "故障排查",
+      "description": "403/404 错误、Server Access Log、CloudTrail 数据事件、请求付费人",
+      "levels": {
+        "L1": "能识别常见的 AccessDenied 和 NoSuchKey 错误",
+        "L2": "能通过 Server Access Log 和 CloudTrail 定位权限问题根因",
+        "L3": "可排查复杂的跨账号/跨服务权限链路问题（VPC Endpoint Policy + Bucket Policy + IAM）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

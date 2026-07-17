@@ -1,0 +1,53 @@
+{
+  "id": "ecs",
+  "name": "Amazon ECS",
+  "track_id": "deployment",
+  "description": "容器编排服务，覆盖 Fargate/EC2 启动类型、服务发现、负载均衡与部署策略。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "ecs_task_service",
+      "name": "任务定义与服务管理",
+      "description": "任务定义、容器配置、服务调度、Fargate vs EC2",
+      "levels": {
+        "L1": "能编写基本任务定义，创建 Fargate 服务",
+        "L2": "能配置多容器 sidecar 模式、资源限制、服务自动扩缩",
+        "L3": "可设计复杂的微服务架构（服务发现、负载均衡、蓝绿/金丝雀部署）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ecs_networking",
+      "name": "网络模式与服务发现",
+      "description": "awsvpc/bridge/host 网络模式、Cloud Map、ALB/NLB 集成",
+      "levels": {
+        "L1": "了解 awsvpc 网络模式基本概念",
+        "L2": "能配置 ALB 目标组、Cloud Map 服务发现，排查容器网络连通性问题",
+        "L3": "可设计多 VPC/跨账号的容器网络架构，优化服务间通信延迟"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ecs_deployment",
+      "name": "部署策略与滚动更新",
+      "description": "滚动更新、蓝绿部署、Circuit Breaker、容量提供程序",
+      "levels": {
+        "L1": "能执行基本的滚动更新",
+        "L2": "能配置部署断路器、最小健康百分比，实现蓝绿部署",
+        "L3": "可设计零停机部署方案，含金丝雀发布、自动回滚与流量切换"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "ecs_monitoring",
+      "name": "监控与日志",
+      "description": "CloudWatch Container Insights、日志驱动、健康检查",
+      "levels": {
+        "L1": "能配置 awslogs 日志驱动查看容器日志",
+        "L2": "能使用 Container Insights 监控 CPU/内存/网络，配置健康检查与告警",
+        "L3": "可建立容器化应用全链路可观测体系（分布式追踪、自定义指标、告警联动）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

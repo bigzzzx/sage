@@ -1,0 +1,42 @@
+{
+  "id": "waf",
+  "name": "AWS WAF & Shield",
+  "track_id": "scd",
+  "description": "Web 应用防火墙与 DDoS 防护，覆盖规则管理、Bot 控制与攻击缓解。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "waf_rules",
+      "name": "规则组与 Web ACL",
+      "description": "托管规则组、自定义规则、规则优先级、速率限制",
+      "levels": {
+        "L1": "能创建 Web ACL 并关联 ALB/CloudFront，启用托管规则组",
+        "L2": "能编写自定义规则（正则匹配、IP Set、地理限制），配置速率限制防暴力破解",
+        "L3": "可设计分层防护架构（多 Web ACL、自定义响应、规则优先级优化）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "waf_monitoring",
+      "name": "日志与攻击分析",
+      "description": "WAF 日志（S3/CloudWatch/Kinesis）、采样请求、Security Lake",
+      "levels": {
+        "L1": "能查看 WAF 采样请求了解拦截情况",
+        "L2": "能配置完整日志记录，分析攻击模式并调整规则减少误报",
+        "L3": "可建立 WAF 运营体系（自动化规则更新、攻击趋势分析、合规报告）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "waf_ddos",
+      "name": "DDoS 防护（Shield）",
+      "description": "Shield Standard vs Advanced、自动缓解、SRT 支持",
+      "levels": {
+        "L1": "了解 Shield Standard 自动防护范围",
+        "L2": "能评估 Shield Advanced 适用场景，配置自动化 DDoS 缓解",
+        "L3": "可设计完整的 DDoS 应急响应计划（含 SRT 协作、Runbook、演练）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

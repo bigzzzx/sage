@@ -1,0 +1,77 @@
+{
+  "service_id": "emr",
+  "modules": [
+    {
+      "name": "EMR + Hadoop",
+      "basic": {
+        "topics": ["YARN 概念/命令/scheduler", "HDFS 概念/命令/读写流程", "MR 原理/提交流程", "EMR 子网/安全组/集群启动流程/auto scaling", "EMR 加密(EBS/Kerberos)", "EMRFS/Aegir 工具"],
+        "resources": ["KNET 103-116", "Hadoop权威指南 第3-4章", "EMR Playbook"],
+        "labs": ["EMR-lab-Basic: lab1, lab3-lab5"]
+      },
+      "intermediate": {
+        "topics": ["HDFS NN/DN 交互/版本/平衡", "MapReduce 作业流程/shuffle&sort", "Instance Controller/Log Pusher", "EMR Serverless 作业启动原理"],
+        "resources": ["KNET 201-210,217", "Hadoop权威指南 第6-9章"],
+        "labs": ["EMR-lab-Intermediate: MapReduce lab2"]
+      },
+      "advanced": {
+        "topics": ["MapReduce Java coding: outputFormat/inputFormat/partitioner/combiner"],
+        "resources": ["KNET 301", "MR源码解析系列"],
+        "labs": []
+      }
+    },
+    {
+      "name": "Hive",
+      "basic": {
+        "topics": ["Hive 组件/提交方式/数据类型/外部表内部表"],
+        "resources": ["KNET 108", "Hive编程指南 第3章"],
+        "labs": ["EMR-lab-Basic(Hive)"]
+      },
+      "intermediate": {
+        "topics": ["Hive 作业提交流程/LLAP/外部metaStore/视图"],
+        "resources": ["KNET 203-204", "Hive编程指南 第7章"],
+        "labs": []
+      },
+      "advanced": {
+        "topics": ["作业调优原理/Common join/Map join/Skew join/explain HQL"],
+        "resources": ["Hive编程指南 第10/17章"],
+        "labs": ["Hive project"]
+      }
+    },
+    {
+      "name": "Spark",
+      "basic": {
+        "topics": ["Spark 组件(driver/executor)/提交流程/流处理/数据类型(DF/DS/RDD)/宽窄依赖"],
+        "resources": ["KNET 109", "Spark权威指南 第5/9/20章"],
+        "labs": ["EMR-lab-Intermediate(Spark)"]
+      },
+      "intermediate": {
+        "topics": ["Spark shuffle/executor与container关系/内存计算/数据倾斜"],
+        "resources": ["KNET 205-207", "Spark Performance Tuning Video"],
+        "labs": []
+      },
+      "advanced": {
+        "topics": ["JVM内存调优/堆外内存/并行度/数据本地性/BroadCast/Kryo/CheckPoint"],
+        "resources": ["Spark权威指南 第18-19/22-23章", "S3-optimized committer"],
+        "labs": ["Spark SME project"]
+      }
+    },
+    {
+      "name": "HBase",
+      "basic": {
+        "topics": ["Hmaster/RegionServer 原理/WAL/Hfile/主从架构/内存模型/缓存"],
+        "resources": ["KNET 112", "HBase权威指南 第8章"],
+        "labs": ["EMR-lab-Intermediate(HBase)"]
+      },
+      "intermediate": {
+        "topics": ["Hfile结构/Flush/Split/Compact 处理/RegionServer调参"],
+        "resources": ["KNET 208-209", "HBase权威指南 第6/12章"],
+        "labs": []
+      },
+      "advanced": {
+        "topics": ["HBase 合并策略/分裂策略/性能优化"],
+        "resources": ["KNET 302-303", "HBase权威指南 第11章"],
+        "labs": []
+      }
+    }
+  ]
+}

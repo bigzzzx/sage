@@ -1,0 +1,53 @@
+{
+  "id": "aurora",
+  "name": "Amazon Aurora",
+  "track_id": "database",
+  "description": "云原生关系型数据库，兼容 MySQL/PostgreSQL，覆盖存储架构、Global Database 与 Serverless。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "aurora_architecture",
+      "name": "存储架构与集群管理",
+      "description": "共享存储架构、读写实例、故障转移、集群端点",
+      "levels": {
+        "L1": "了解 Aurora 与标准 RDS 的区别，能创建集群",
+        "L2": "理解 6 副本存储架构、Quorum 写入机制，能管理读写端点和故障转移优先级",
+        "L3": "可深入解释存储层工作原理，设计大规模集群的可用性和性能方案"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "aurora_global",
+      "name": "Global Database 与跨区域",
+      "description": "Global Database、跨区域只读副本、RPO/RTO、计划切换与非计划故障转移",
+      "levels": {
+        "L1": "了解 Global Database 概念和使用场景",
+        "L2": "能配置 Global Database，执行计划中的区域切换，理解复制延迟影响",
+        "L3": "可设计多区域活跃架构，制定 RPO<1s 的容灾方案并验证故障转移流程"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "aurora_serverless",
+      "name": "Aurora Serverless",
+      "description": "Serverless v2 自动扩缩、ACU 配置、冷启动、适用场景",
+      "levels": {
+        "L1": "了解 Serverless v2 概念，能创建 Serverless 集群",
+        "L2": "能根据工作负载配置 ACU 范围，理解扩缩行为和冷启动影响",
+        "L3": "可评估 Serverless vs Provisioned 的 TCO，设计混合部署方案"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "aurora_performance",
+      "name": "性能与查询优化",
+      "description": "Performance Insights、并行查询、查询计划管理、IO 优化存储",
+      "levels": {
+        "L1": "能使用 Performance Insights 查看 Top SQL",
+        "L2": "能利用并行查询优化 OLAP 场景，配置查询计划管理(QPM)固定执行计划",
+        "L3": "可设计 Aurora I/O 优化存储方案，深度分析等待事件与锁争用"
+      },
+      "doc_refs": []
+    }
+  ]
+}

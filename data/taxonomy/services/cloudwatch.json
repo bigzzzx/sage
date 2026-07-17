@@ -1,0 +1,53 @@
+{
+  "id": "cloudwatch",
+  "name": "Amazon CloudWatch",
+  "track_id": "networking",
+  "description": "监控与可观测性平台，覆盖指标、日志、告警与 Dashboard。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "cw_metrics",
+      "name": "指标与自定义指标",
+      "description": "命名空间、维度、统计数据、自定义指标、高分辨率指标",
+      "levels": {
+        "L1": "能查看 EC2/RDS 等服务的默认指标",
+        "L2": "能推送自定义指标、配置指标数学表达式、理解指标聚合行为",
+        "L3": "可设计大规模指标体系（含 Embedded Metric Format、跨账号指标、成本优化）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cw_logs",
+      "name": "日志管理与分析",
+      "description": "日志组/流、过滤器模式、Logs Insights 查询、订阅筛选",
+      "levels": {
+        "L1": "能查看日志组中的日志事件",
+        "L2": "能使用 Logs Insights 编写复杂查询，配置指标过滤器和订阅筛选器",
+        "L3": "可设计集中式日志架构（跨账号汇聚、长期归档策略、实时分析管道）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cw_alarms",
+      "name": "告警与事件响应",
+      "description": "告警类型、复合告警、动作（SNS/Auto Scaling/EC2）、告警抑制",
+      "levels": {
+        "L1": "能创建基本的阈值告警并配置 SNS 通知",
+        "L2": "能配置复合告警减少噪音，使用告警触发 Auto Scaling 和 EC2 动作",
+        "L3": "可设计智能告警体系（异常检测告警、动态阈值、级联告警与升级策略）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "cw_agent",
+      "name": "CloudWatch Agent",
+      "description": "Agent 安装配置、OS 级指标采集、日志采集、SSM 集成",
+      "levels": {
+        "L1": "能在 EC2 上安装 Agent 采集基本指标",
+        "L2": "能配置 Agent 采集自定义日志和高级 OS 指标（磁盘/内存/进程）",
+        "L3": "可设计大规模 Agent 部署和配置管理方案（含 SSM 分发、配置版本控制）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

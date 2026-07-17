@@ -1,0 +1,30 @@
+{
+  "title": "Amazon QuickSight 数据集因底层 Athena 表字段缺失导致 SPICE 刷新失败",
+  "service": "Amazon QuickSight",
+  "capability_area": "数据准备与数据源集成",
+  "difficulty": "L1",
+  "summary": "客户在使用 QuickSight 刷新直接连接 Athena 的数据集时遭遇失败。根因是底层 Amazon S3 中的 Parquet 数据文件删除了某一字段，导致 Athena 执行查询时抛出 COLUMN_NOT_FOUND 异常，引发 QuickSight 刷新中断。支持工程师通过指导客户恢复 S3 文件中的缺失字段并同步更新 AWS Glue 表结构，成功恢复了数据集的正常刷新。",
+  "customer_symptom": "数据源是直接连接 Athena 的表，表中字段少了一个，导致 QuickSight 数据集刷新失败，询问如何解决。",
+  "root_cause": "底层 Amazon S3 中的 Parquet 数据文件删除了某个字段（如 'is_active'），而 Amazon Athena 表结构或 QuickSight 数据集元数据中仍保留对该字段的显式引用。当 QuickSight 触发 SPICE 刷新并向 Athena 发起 SQL 查询时，Athena 因无法解析该列而抛出 'COLUMN_NOT_FOUND' 错误，从而导致数据集刷新中断。",
+  "resolution_steps": [
+    "步骤1：通过会议确认客户 QuickSight 数据集基于 Athena 数据源且发生底层表结构变更的现状。",
+    "步骤2：在测试环境中通过删除 S3 Parquet 文件的特定字段来模拟底层数据源列缺失的场景。",
+    "步骤3：触发测试数据集刷新，成功复现并捕获 Athena 抛出的 'COLUMN_NOT_FOUND' 错误日志。",
+    "步骤4：指导客户在 S3 的 Parquet 数据文件中重新补齐被删除的字段。",
+    "步骤5：指导客户同步更新 AWS Glue Data Catalog 中的表结构（Table Schema）。",
+    "步骤6：重新触发 QuickSight 数据集刷新，验证数据成功导入 SPICE 并恢复正常。"
+  ],
+  "key_knowledge_points": [
+    "Amazon QuickSight 数据集（Dataset）与 Amazon Athena/AWS Glue 的元数据映射与同步机制",
+    "Amazon Athena 基于 S3 Parquet 文件查询时的模式演进（Schema Evolution）与校验机制",
+    "QuickSight SPICE 刷新故障排查方法与 Athena 错误日志（如 java.sql.SQLException）的分析能力",
+    "QuickSight 数据集版本控制与回滚发布机制（Reverting datasets back to previous published versions）"
+  ],
+  "troubleshooting_clues": [
+    "线索1：QuickSight 数据集刷新失败异常 'Pipeline retry loop exhausted'",
+    "线索2：Athena 查询底层报错 'java.sql.SQLException: Query execution [ID] failed or was cancelled'",
+    "线索3：明确的根因日志 'State: FAILED, Reason: COLUMN_NOT_FOUND: line X:Y: Column 'xxx' cannot be resolved'"
+  ],
+  "related_services": ["Amazon QuickSight", "Amazon Athena", "AWS Glue", "Amazon S3"],
+  "prevention_advice": "在对底层数据存储（如 S3）进行删减列等破坏性 Schema 变更前，应提前在 QuickSight 数据集中解绑或删除对该字段的引用，并及时同步更新 Glue Data Catalog。"
+}

@@ -1,0 +1,49 @@
+{
+  "id": "quicksight",
+  "name": "Amazon QuickSight",
+  "track_id": "analytics",
+  "description": "云原生 BI 服务，支持仪表盘、SPICE 引擎、嵌入式分析与 ML Insight。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "qs_dataset",
+      "name": "数据集与 SPICE",
+      "description": "数据源连接、SPICE 导入与刷新、计算字段、数据集权限",
+      "levels": {
+        "L1": "能连接数据源并创建数据集",
+        "L2": "理解 SPICE 容量管理、增量刷新、计算字段表达式",
+        "L3": "能优化大规模数据集性能，处理跨数据源 Join 与刷新故障"
+      }
+    },
+    {
+      "id": "qs_visual",
+      "name": "可视化与仪表盘",
+      "description": "图表类型选择、参数与控件、钻取、条件格式",
+      "levels": {
+        "L1": "能创建基本图表和仪表盘",
+        "L2": "能使用参数、控件、钻取实现交互式分析",
+        "L3": "能设计企业级仪表盘架构（模板化、多租户）"
+      }
+    },
+    {
+      "id": "qs_embedding",
+      "name": "嵌入式分析",
+      "description": "嵌入 URL 生成、匿名嵌入、注册用户嵌入、命名空间隔离",
+      "levels": {
+        "L1": "了解嵌入式分析概念",
+        "L2": "能实现注册用户嵌入，配置行级安全",
+        "L3": "能设计多租户 SaaS 嵌入方案（命名空间 + 模板）"
+      }
+    },
+    {
+      "id": "qs_security",
+      "name": "安全与权限",
+      "description": "行级安全(RLS)、列级安全(CLS)、IAM 策略、文件夹权限",
+      "levels": {
+        "L1": "能配置基本用户/组权限",
+        "L2": "能配置 RLS 规则实现数据隔离",
+        "L3": "能设计企业级多层权限体系（RLS + CLS + 文件夹 + 命名空间）"
+      }
+    }
+  ]
+}

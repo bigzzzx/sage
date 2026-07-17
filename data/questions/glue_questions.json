@@ -1,0 +1,132 @@
+{
+  "questions": [
+    {
+      "id": "q01",
+      "type": "choice",
+      "dimension_id": "Glue 运行时计算引擎调优与故障诊断",
+      "sub_skill_id": "Glue 运行时计算引擎调优与故障诊断_sk_01",
+      "difficulty": "L2",
+      "question": "某 Glue Spark Job 在写入 S3 Parquet 文件过程中频繁出现 'SocketException: Unexpected end of file from server'，同时 CloudWatch Logs 中观察到大量 Full GC 日志（GC 时间占比 >80%）。以下哪项最可能是根本原因？",
+      "options": [
+        "S3 Bucket Policy 显式拒绝了 Glue IAM Role 的 s3:PutObject 权限",
+        "Executor JVM 堆内存严重不足导致长时间 Full GC，使 S3 multipart upload 连接超时被服务端关闭",
+        "Glue Job 配置了过小的 --maxRetries 参数，导致上传失败后未触发重试机制",
+        "VPC 安全组未放行 443 端口出站流量，导致 HTTPS 请求被拦截"
+      ],
+      "correct_answer": "B",
+      "explanation": "SocketException + 高频 Full GC 是典型 JVM 内存压力导致连接中断的组合信号。S3 multipart upload 要求客户端持续发送 Part 数据流，若 Executor 因 GC STW 超过 5 秒，S3 服务端会主动关闭空闲连接并返回 EOF；而权限问题（A）或安全组（D）会导致连接建立失败而非中途断连；--maxRetries 控制的是整个 Job 重启次数，不干预 Task 级上传重试（C）。"
+    },
+    {
+      "id": "q02",
+      "type": "choice",
+      "dimension_id": "Glue 网络架构与 VPC 集成",
+      "sub_skill_id": "Glue 网络架构与 VPC 集成_sk_01",
+      "difficulty": "L2",
+      "question": "客户在 VPC 私有子网中为 Glue Job 配置了 Redshift Connection，但连接始终失败。经排查，Glue 和 Redshift 使用同一安全组，且该安全组已允许 Redshift 默认端口（5439）入站。以下哪项最可能遗漏？",
+      "options": [
+        "未在 Redshift 集群参数组中启用 'require_ssl' 参数",
+        "Glue Connection 缺少对 Redshift JDBC URL 的 'ssl=true' 查询参数配置",
+        "安全组缺少针对所有 TCP 端口（0-65535）的自引用入站规则",
+        "NAT 网关未关联弹性 IP，导致 Glue 无法访问 Redshift 公网终端节点"
+      ],
+      "correct_answer": "C",
+      "explanation": "Glue 在 VPC 中以分布式模式运行，Driver 和 Executors 通过多个 ENI 部署，彼此间需通过随机高阶端口通信（如 Spark shuffle、block manager 交互）。即使 Redshift 端口开放，缺失自引用规则将阻断 Glue 内部组件通信，导致 Connection 初始化失败。A/B 与 SSL 相关，但非连接失败主因；D 错误——Redshift 在私有子网无需公网访问，且 Glue ENI 不走 NAT 访问同 VPC 资源。"
+    },
+    {
+      "id": "q03",
+      "type": "choice",
+      "dimension_id": "Glue 网络架构与 VPC 集成",
+      "sub_skill_id": "Glue 网络架构与 VPC 集成_sk_02",
+      "difficulty": "L1",
+      "question": "客户需将 Glue Job 出口流量固定至一个可白名单的 IPv4 地址，用于访问第三方 API。以下哪种网络配置方案能稳定满足该需求？",
+      "options": [
+        "Glue Job 不绑定任何 VPC，使用 AWS 托管网络环境",
+        "Glue Job 绑定公有子网，并配置 Elastic IP 关联至 Glue 自动分配的 ENI",
+        "Glue Job 绑定私有子网，并配置 NAT 网关关联弹性 IP",
+        "Glue Job 绑定私有子网，并在子网路由表中添加 0.0.0.0/0 指向 Internet Gateway"
+      ],
+      "correct_answer": "C",
+      "explanation": "Glue 在私有子网中通过 NAT 网关出站时，所有流量统一使用 NAT 的弹性 IP，可稳定白名单。A 错误：托管网络出口 IP 不固定且不可预测；B 错误：Glue ENI 在公有子网仅分配私有 IP，无法直接绑定 EIP；D 错误：私有子网路由表不能直连 IGW，必须经 NAT 网关才能出公网。"
+    },
+    {
+      "id": "q04",
+      "type": "choice",
+      "dimension_id": "Glue 数据目录与元数据治理",
+      "sub_skill_id": "Glue 数据目录与元数据治理_sk_01",
+      "difficulty": "L2",
+      "question": "客户使用 Glue Crawler 扫描 CSV 数据集，但生成的表列名为 col1, col2, col3，而非实际文件首行的 'id,name,age'。以下哪项操作最直接有效解决该问题？",
+      "options": [
+        "在 Crawler 配置中启用 'Update all new and existing partitions with metadata from the table' 选项",
+        "修改 CSV 文件，将第一行列名改为全小写并去除空格和特殊字符",
+        "创建自定义 CSV 分类器，设置 'Has Column headings' = true，并在 Crawler 中指定该分类器",
+        "在 Glue Catalog 表属性中手动编辑 'columns' 字段，覆盖列名"
+      ],
+      "correct_answer": "C",
+      "explanation": "内置 CSV 分类器依赖启发式判断标头，可靠性低；自定义分类器显式声明 'Has Column headings' 可强制启用 header 解析，是 Glue 官方推荐的标准化修复方式。A 与分区元数据更新无关；B 不可靠且违背数据治理原则；D 属临时补救，下次 Crawler 运行将被覆盖。"
+    },
+    {
+      "id": "q05",
+      "type": "choice",
+      "dimension_id": "Glue 安全与权限模型深度实践",
+      "sub_skill_id": "Glue 安全与权限模型深度实践_sk_01",
+      "difficulty": "L3",
+      "question": "Glue Job 访问跨账号 S3 Bucket 时抛出 AccessDenied，CloudWatch Logs 显示 'no resource-based policy allows the s3:ListBucket action'，且后续出现 FileNotFoundException。以下关于权限根因与行为的描述，哪项正确？",
+      "options": [
+        "错误源于 Glue IAM Role 缺少 s3:GetObject 权限，应向 Role 添加该权限",
+        "错误源于目标 S3 Bucket 的 Bucket Policy 未授权 Glue Role 的 s3:ListBucket，且 S3 在权限缺失时返回 404 而非 403 导致日志混淆",
+        "错误源于 Glue Job 所用 KMS 密钥未授权 Glue Role 的 kms:Decrypt 权限，需更新密钥策略",
+        "错误源于 Glue Connection 配置中未启用 'Use SSL'，导致凭证传输被拦截"
+      ],
+      "correct_answer": "B",
+      "explanation": "S3 在资源策略（Bucket Policy）拒绝 ListBucket 时，为安全起见默认返回 404（而非 403），造成 'FileNotFoundException' 假象；日志中明确提示 'no resource-based policy allows...'，精准指向 Bucket Policy 缺失 s3:ListBucket 授权。A 错误：ListBucket 权限缺失即阻断目录遍历，GetObject 权限尚未到达执行阶段；C 错误：KMS 权限缺失会报 kms:Decrypt 相关错误；D 与 S3 访问无关。"
+    },
+    {
+      "id": "q06",
+      "type": "open",
+      "dimension_id": "Glue 运行时计算引擎调优与故障诊断",
+      "sub_skill_id": "Glue 运行时计算引擎调优与故障诊断_sk_01",
+      "difficulty": "L3",
+      "question": "客户 Glue Spark Job（Glue 4.0, Spark 3.3）在写入 S3 Parquet 时 Stage 失败率高，Spark UI 显示大量 Task 处于 'KILLED' 状态，Driver 日志中频繁出现 'java.lang.OutOfMemoryError: GC overhead limit exceeded'，GC 日志显示 Full GC 平均耗时 42s。请说明你的完整诊断路径、关键证据来源及至少两项具体优化措施。",
+      "scoring_rubric": [
+        "得分点1: 明确指出需优先检查 Driver/Executor GC 日志与 Spark UI 的 Executors 页面中的 GC Time 指标",
+        "得分点2: 正确识别 'GC overhead limit exceeded' 是 JVM 主动终止进程的保护机制，表明 GC 时间占比超 98% 或单次 Full GC >1min",
+        "得分点3: 提出至少一项内存调优措施（如：增大 --executor-memory/--driver-memory、调整 --executor-memoryOverhead、启用 G1GC 并配置 MaxGCPauseMillis）",
+        "得分点4: 提出至少一项数据处理层优化（如：增加 repartition() 减少单 Task 数据量、启用 spark.sql.adaptive.enabled=true 启用 AQE 动态合并小文件）",
+        "得分点5: 强调需验证优化后 GC 时间占比 <5% 且 Full GC 频率显著下降（如从每分钟 3 次降至每小时 <1 次）"
+      ],
+      "reference_answer": "诊断路径：① 从 CloudWatch Logs 提取 Driver/Executor 的 GC 日志，确认 'GC overhead limit exceeded' 报错及 Full GC 持续时间；② 在 Spark UI > Executors 页面查看各 Executor 的 'GC Time' 列，交叉验证 GC 占比；③ 检查 Spark UI > Stages 页面中失败 Task 的 Input Size 与 Records，识别数据倾斜或单 Task 负载过高。优化措施：① 将 --executor-memory 从 10GB 提升至 16GB，并设置 --executor-memoryOverhead=6144MB；② 在 Spark Conf 中添加 spark.sql.adaptive.enabled=true 和 spark.sql.adaptive.coalescePartitions.enabled=true；③ 在写入前执行 df.repartition(200) 均匀打散数据。验证标准：GC Time 占比降至 <3%，Full GC 频率低于 1 次/小时。"
+    },
+    {
+      "id": "q07",
+      "type": "open",
+      "dimension_id": "Glue 网络架构与 VPC 集成",
+      "sub_skill_id": "Glue 网络架构与 VPC 集成_sk_02",
+      "difficulty": "L2",
+      "question": "客户要求 Glue Job 出口 IP 必须固定且可审计，当前使用 VPC 公有子网配置 Connection，但发现 Glue ENI 仅分配私有 IP，无法访问公网。请设计一套符合合规要求的出口 IP 固化方案，包括网络拓扑、关键资源配置、安全组策略及验证方法。",
+      "scoring_rubric": [
+        "得分点1: 明确采用 '私有子网 + NAT 网关 + 弹性 IP' 架构，禁止使用公有子网直连",
+        "得分点2: 指出需为 NAT 网关显式关联弹性 IP（EIP），且 EIP 作为唯一出口 IP 加入第三方白名单",
+        "得分点3: 要求私有子网路由表配置 0.0.0.0/0 → NAT 网关 ID，且 NAT 网关所在子网为公有子网（含 IGW 路由）",
+        "得分点4: 安全组策略需允许 Glue ENI 出站至 NAT 网关（无需额外规则，因 NAT 无安全组），且 NAT 网关所在公有子网的安全组需允许来自私有子网 CIDR 的 0-65535 入站",
+        "得分点5: 验证方法需包含：① 在 Glue Job 中执行 curl ifconfig.me 获取出口 IP；② 对比该 IP 与 NAT 网关关联的 EIP 一致性；③ 检查 CloudTrail 中 CreateNatGateway 事件确保 EIP 绑定状态"
+      ],
+      "reference_answer": "方案：① 创建独立私有子网供 Glue Job 使用；② 在另一可用区部署公有子网，部署 NAT 网关并绑定弹性 IP；③ 配置私有子网路由表，将 0.0.0.0/0 指向该 NAT 网关；④ 确保 NAT 网关所在公有子网的安全组允许来自私有子网 CIDR 的全部 TCP/UDP 入站（端口 0-65535）；⑤ Glue Connection 绑定私有子网及对应安全组。验证：在 Job 中执行 import requests; print(requests.get('https://api.ipify.org').text) 输出应恒等于 NAT 网关 EIP；同时通过 CloudTrail 查看 'CreateNatGateway' 事件确认 EIP 已成功关联。"
+    },
+    {
+      "id": "q08",
+      "type": "open",
+      "dimension_id": "Glue 安全与权限模型深度实践",
+      "sub_skill_id": "Glue 安全与权限模型深度实践_sk_01",
+      "difficulty": "L3",
+      "question": "客户 Glue Job 访问跨账号 S3 Bucket 时持续报 AccessDenied，已确认 Glue IAM Role 具备 s3:GetObject/s3:ListBucket 权限，且目标 Bucket Policy 明确授予该 Role 相应权限，但问题仍未解决。请列出至少三项需进一步排查的维度，并说明每项对应的验证命令或检查路径。",
+      "scoring_rubric": [
+        "得分点1: 检查目标 S3 Bucket 是否启用了 Block Public Access 设置，需确认 'Block all public access' 为 disabled 或例外已添加",
+        "得分点2: 验证 Glue Job 所用 IAM Role 的信任策略（Trust Policy）是否允许 sts:AssumeRole 调用，且 Principal 匹配 Glue 服务主体（glue.amazonaws.com）",
+        "得分点3: 检查目标 S3 Bucket 是否启用 S3 Object Ownership（ACLs disabled），若启用则需在 Bucket Policy 中显式添加 's3:x-amz-acl': 'bucket-owner-full-control' 条件",
+        "得分点4: 核查是否存在权限边界（Permissions Boundary）或 SCP（Service Control Policy）限制了 IAM Role 的实际权限继承",
+        "得分点5: 检查 Glue Job 是否启用了 Lake Formation 权限控制，若启用则需在 LF 中为该 Role 授予对应 Database/Table 的 SELECT 权限"
+      ],
+      "reference_answer": "排查维度：① 登录目标账号 S3 控制台 → Bucket → Permissions → Block Public Access → 确认全部开关为 Off；② 在 IAM 控制台查看 Glue Role 的 Trust Policy，确认存在 'Service': 'glue.amazonaws.com' 且 Action 为 'sts:AssumeRole'；③ 在目标 Bucket 属性中检查 'Object Ownership'，若为 'ACLs disabled'，则需在 Bucket Policy 中为 s3:GetObject 添加 Condition: {\"StringEquals\":{\"s3:x-amz-acl\":\"bucket-owner-full-control\"}}；④ 在 IAM 角色详情页检查 'Permissions boundary' 字段，以及组织级 SCP 是否 deny s3:*；⑤ 若启用 Lake Formation，在 LF 控制台 → Data permissions → Grant → 选择该 Role、Database/Table、权限类型（SELECT）并提交。"
+    }
+  ]
+}

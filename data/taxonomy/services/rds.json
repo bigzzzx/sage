@@ -1,0 +1,64 @@
+{
+  "id": "rds",
+  "name": "Amazon RDS",
+  "track_id": "database",
+  "description": "托管关系型数据库服务，覆盖 MySQL/PostgreSQL/Oracle/SQL Server 的运维与优化。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "rds_instance_mgmt",
+      "name": "实例管理与高可用",
+      "description": "实例类型选择、Multi-AZ、只读副本、维护窗口、版本升级",
+      "levels": {
+        "L1": "能创建 RDS 实例，了解 Multi-AZ 基本概念",
+        "L2": "能规划 Multi-AZ 部署、配置只读副本实现读扩展，管理版本升级",
+        "L3": "可设计跨区域容灾架构，制定升级策略并处理复杂的高可用切换场景"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "rds_performance",
+      "name": "性能优化与监控",
+      "description": "Performance Insights、CloudWatch 指标、慢查询、参数组调优",
+      "levels": {
+        "L1": "能查看基本 CloudWatch 指标，识别 CPU/内存/存储告警",
+        "L2": "能使用 Performance Insights 定位慢查询，通过参数组优化数据库性能",
+        "L3": "可深度分析执行计划和等待事件，设计完整的数据库性能基线与调优方案"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "rds_backup_recovery",
+      "name": "备份与恢复",
+      "description": "自动备份、手动快照、PITR、跨区域复制、导出到 S3",
+      "levels": {
+        "L1": "了解自动备份策略，能从快照恢复",
+        "L2": "能配置 PITR 精确恢复到指定时间点，管理跨区域快照复制",
+        "L3": "可设计完整的备份恢复体系（含 RPO/RTO 指标），处理大规模数据库恢复"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "rds_security",
+      "name": "安全与网络",
+      "description": "VPC 部署、安全组、加密（静态/传输）、IAM 认证、审计",
+      "levels": {
+        "L1": "能在 VPC 中部署 RDS，配置安全组允许应用访问",
+        "L2": "能配置传输加密（SSL）、静态加密（KMS），使用 IAM 数据库认证",
+        "L3": "可设计企业级数据库安全方案（审计日志、密钥轮换、网络隔离、合规认证）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "rds_connectivity",
+      "name": "连接管理与故障排查",
+      "description": "连接数管理、RDS Proxy、DNS 故障转移、常见连接错误",
+      "levels": {
+        "L1": "能通过客户端连接 RDS，识别常见连接错误",
+        "L2": "能使用 RDS Proxy 管理连接池，排查连接超时和认证失败问题",
+        "L3": "可设计高并发场景的连接管理方案，排查复杂的网络路径问题"
+      },
+      "doc_refs": []
+    }
+  ]
+}

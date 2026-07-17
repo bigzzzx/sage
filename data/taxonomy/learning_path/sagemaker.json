@@ -1,0 +1,23 @@
+{
+  "service_id": "sagemaker",
+  "modules": [
+    {
+      "name": "SageMaker",
+      "basic": {
+        "topics": ["SageMaker概念/ML流程/框架(PyTorch/TF/MxNet)", "Notebook Instance: Jupyter/Python/Conda/生命周期/网络", "ProcessingJob概念/常用Processor", "TrainingJob概念/如何开始训练", "Inference概念/部署选项"],
+        "resources": ["KNET SM 101-105", "Public Doc: ML概述/训练/部署"],
+        "labs": ["SageMaker Lab - Notebook", "创建Notebook/安装包"]
+      },
+      "intermediate": {
+        "topics": ["Notebook 网络/存储/生命周期配置/TSC工具", "SDK创建ProcessingJob/TrainingJob/Endpoint", "内置算法/分布式训练/Spot训练/暖池/监控指标"],
+        "resources": ["KNET SM 201-210", "SageMaker Networking Blog", "Training & Deploying Video"],
+        "labs": ["SageMaker Lab - TrainingJob/Real-time Inference/Batch Transform"]
+      },
+      "advanced": {
+        "topics": ["BYOS & BYOC/Docker容器/模型并行/大模型推理"],
+        "resources": ["KNET SM 301/303", "Public Doc: Docker容器构建模型"],
+        "labs": ["BYOC/BYOS to train & inference", "Multi-model endpoint", "LMI Lab"]
+      }
+    }
+  ]
+}

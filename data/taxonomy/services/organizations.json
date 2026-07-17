@@ -1,0 +1,42 @@
+{
+  "id": "organizations",
+  "name": "AWS Organizations",
+  "track_id": "networking",
+  "description": "多账号管理服务，覆盖 OU 结构、SCP 策略、委托管理员与合规治理。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "org_structure",
+      "name": "组织结构与 OU 设计",
+      "description": "Root/OU/Account 层级、账号创建、OU 策略继承",
+      "levels": {
+        "L1": "了解 Organizations 基本概念，能查看组织结构",
+        "L2": "能设计 OU 层级（安全/基础设施/工作负载/沙箱），管理账号生命周期",
+        "L3": "可设计企业级多账号架构（含 Landing Zone、账号工厂、OU 策略继承模型）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "org_scp",
+      "name": "SCP 服务控制策略",
+      "description": "SCP 编写、Allow/Deny 策略、策略评估、guardrails",
+      "levels": {
+        "L1": "了解 SCP 限制权限的概念",
+        "L2": "能编写 SCP 实现区域限制、服务限制等 guardrails",
+        "L3": "可设计分层 SCP 策略体系（含白名单 vs 黑名单策略、条件键、例外管理）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "org_delegation",
+      "name": "委托管理与服务集成",
+      "description": "委托管理员账号、可信服务访问、CloudFormation StackSets",
+      "levels": {
+        "L1": "了解委托管理员概念",
+        "L2": "能配置安全服务的委托管理员（GuardDuty/Security Hub/Config），启用可信服务",
+        "L3": "可设计集中管理平台（含多服务委托、自动化合规检查、组织级 CloudTrail）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

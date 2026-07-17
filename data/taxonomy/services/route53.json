@@ -1,0 +1,42 @@
+{
+  "id": "route53",
+  "name": "Amazon Route 53",
+  "track_id": "networking",
+  "description": "DNS 服务，覆盖域名解析、路由策略、健康检查与私有托管区。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "r53_dns_mgmt",
+      "name": "DNS 记录与托管区管理",
+      "description": "托管区、记录类型（A/AAAA/CNAME/Alias）、TTL、私有托管区",
+      "levels": {
+        "L1": "能创建托管区和基本 DNS 记录",
+        "L2": "能配置 Alias 记录、私有托管区、跨账号关联 VPC",
+        "L3": "可设计大规模 DNS 架构（含子域委派、多账号集中管理、DNSSEC）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "r53_routing_policy",
+      "name": "路由策略",
+      "description": "简单/加权/延迟/故障转移/地理位置/多值路由",
+      "levels": {
+        "L1": "了解各路由策略的区别",
+        "L2": "能根据业务需求选择合适策略，配置故障转移和加权路由",
+        "L3": "可设计复杂的多层路由方案（组合策略实现区域+健康检查的智能流量分配）"
+      },
+      "doc_refs": []
+    },
+    {
+      "id": "r53_health_check",
+      "name": "健康检查与 DNS 故障转移",
+      "description": "健康检查配置、计算型健康检查、CloudWatch 集成",
+      "levels": {
+        "L1": "能创建基本的 HTTP 健康检查",
+        "L2": "能配置计算型健康检查、告警联动，实现 DNS 故障转移",
+        "L3": "可设计多层次健康检查体系（含第三方端点、跨区域检测、级联故障处理）"
+      },
+      "doc_refs": []
+    }
+  ]
+}

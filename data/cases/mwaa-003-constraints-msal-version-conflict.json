@@ -1,0 +1,26 @@
+{
+  "title": "Amazon MWAA (Airflow 3) 因第三方包与官方 Constraints 文件存在 msal 版本冲突导致依赖安装失败",
+  "service": "Amazon MWAA",
+  "capability_area": "运行时调优",
+  "difficulty": "L2",
+  "summary": "客户在 Amazon MWAA (Airflow 3) 环境中安装 PowerBI 依赖包时遭遇 Python 依赖版本冲突。根因是新引入的 PowerBI 包所需依赖（如 msal）与 Airflow 官方默认使用的 constraints 约束文件中锁定的版本不兼容，导致 pip 依赖解析冲突。解决方案是通过下载并修改官方约束文件中的 msal 版本，将自定义约束文件上传至 S3，并在安装时指定新的约束文件来解决冲突。",
+  "customer_symptom": "在 Airflow 3 (MWAA) 环境中安装 PowerBI 依赖包时提示 Python 依赖冲突，导致环境更新或自定义库安装失败。",
+  "root_cause": "Apache Airflow (MWAA) 默认使用官方的 constraints 约束文件来固定核心及主流 Provider 包的版本以确保环境稳定性。当客户通过 `requirements.txt` 安装 PowerBI 依赖包时，该包依赖的 `msal` 版本与官方 constraints 文件中强制锁定的 `msal` 版本发生冲突，触发了 `pip` 的版本不兼容拒绝机制。",
+  "resolution_steps": [
+    "步骤1：下载当前 MWAA 环境所对应 Airflow 版本的官方 constraints 约束文件。",
+    "步骤2：修改下载的约束文件，将其中导致冲突的 `msal` 库版本替换为能同时兼容 Airflow 和 PowerBI 包的目标版本。",
+    "步骤3：将修改后的自定义 constraints 约束文件上传至 Amazon S3 存储桶中。",
+    "步骤4：在 `requirements.txt` 中通过 `--constraint` 参数指定该自定义约束文件的 S3 路径，重新上传并触发 MWAA 环境更新。"
+  ],
+  "key_knowledge_points": [
+    "Apache Airflow 官方 Constraints（约束文件）的版本锁定与稳定运行机制",
+    "Amazon MWAA 运行时通过 requirements.txt 管理第三方 Python 库的生命周期",
+    "Pip 包管理器在约束文件限制下的依赖冲突（Dependency Conflict）排查与重载变通方案"
+  ],
+  "troubleshooting_clues": [
+    "线索1：MWAA 依赖安装日志中出现 Pip install 错误，提示某些基础库（如 msal）的版本与已有的 constraints 约束冲突",
+    "线索2：确认客户使用了 Airflow 3 环境，且在引入与 Azure/PowerBI 生态相关的认证库"
+  ],
+  "related_services": ["Amazon MWAA", "Amazon S3"],
+  "prevention_advice": "在 MWAA 中引入非标准或较新的 Provider 依赖时，应提前比对官方 Constraints 列表，必要时提前准备并指定自定义约束文件以绕过版本冲突。"
+}

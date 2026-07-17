@@ -1,0 +1,49 @@
+{
+  "id": "kinesis",
+  "name": "Amazon Kinesis",
+  "track_id": "analytics",
+  "description": "实时数据流采集（Data Streams）、消费（KCL）、投递（Firehose）的全链路服务。",
+  "is_real": false,
+  "capabilities": [
+    {
+      "id": "kinesis_streams",
+      "name": "Data Streams 核心概念与分区",
+      "description": "Shard 模型、Partition Key 设计、吞吐量计算、Resharding",
+      "levels": {
+        "L1": "了解 Stream / Shard / Record 基本概念",
+        "L2": "能设计 Partition Key 避免热分区，理解 Resharding 机制",
+        "L3": "能针对高吞吐场景做容量规划与成本优化"
+      }
+    },
+    {
+      "id": "kinesis_consumer",
+      "name": "消费者与 KCL",
+      "description": "KCL、Enhanced Fan-Out、Lambda Consumer、Checkpoint 机制",
+      "levels": {
+        "L1": "能用 Lambda 消费 Kinesis 记录",
+        "L2": "理解 KCL Checkpoint 机制和 Enhanced Fan-Out 的适用场景",
+        "L3": "能排查消费延迟、重复消费、Iterator Age 过高等问题"
+      }
+    },
+    {
+      "id": "kinesis_firehose",
+      "name": "Firehose 投递与转换",
+      "description": "投递目标（S3/Redshift/OpenSearch）、数据转换（Lambda）、缓冲配置",
+      "levels": {
+        "L1": "能配置 Firehose 投递到 S3",
+        "L2": "能配置 Lambda 转换、理解缓冲区对延迟的影响",
+        "L3": "能排查投递失败、数据丢失、格式转换错误等问题"
+      }
+    },
+    {
+      "id": "kinesis_security",
+      "name": "安全与监控",
+      "description": "IAM 策略、KMS 加密、CloudWatch 指标（Iterator Age / GetRecords.Latency）",
+      "levels": {
+        "L1": "能配置基本 IAM 权限",
+        "L2": "能用 CloudWatch 监控流健康状态，配置 KMS 加密",
+        "L3": "能设计跨账号安全访问方案并排查权限问题"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "glue-005-s3-listbucket-access-denied",
+  "service": "Glue",
+  "title": "Glue Job 访问跨账号 S3 Bucket 报 AccessDenied（缺少 s3:ListBucket 权限）",
+  "severity": "high",
+  "tags": ["iam", "s3", "access-denied", "bucket-policy", "cross-account", "permissions", "spark"],
+  "summary": "客户 Glue Job 运行时报 403 AccessDenied，错误信息为 Glue IAM Role 未被授权对目标 S3 Bucket 执行 s3:ListBucket 操作，提示 'no resource-based policy allows the s3:ListBucket action'。Task 141 重试 4 次后失败，导致整个 Job abort。根因是目标 S3 Bucket 的存储桶策略（Bucket Policy）没有允许 Glue Job 使用的 IAM Role 执行 s3:ListBucket 操作。在 Bucket Policy 中添加相应权限后问题解决。同时日志中还出现 FileNotFoundException 提示 parquet 文件不存在，这是因为 ListBucket 权限缺失导致 S3 返回 404 而非 403。",
+  "customer_problem": "我们的 Glue Job 运行失败，报错日志显示权限异常：User: arn:aws-cn:sts::<ACCOUNT_ID>:assumed-role/<ROLE_NAME>/GlueJobRunnerSession is not authorized to perform: s3:ListBucket on resource: arn:aws-cn:s3:::<BUCKET_NAME> because no resource-based policy allows the s3:ListBucket action。",
+  "conversation": [
+    {
+      "role": "customer",
+      "content": "我们的 Glue Job 运行报权限异常，日志见附件。Task 重试 4 次后作业失败。"
+    },
+    {
+      "role": "se",
+      "content": "根据日志分析，错误信息非常明确：\n\nUser: arn:aws-cn:sts::<ACCOUNT_ID>:assumed-role/<ROLE_NAME>/GlueJobRunnerSession is not authorized to perform: s3:ListBucket on resource: arn:aws-cn:s3:::<BUCKET_NAME> because no resource-based policy allows the s3:ListBucket action\n\n关键信息拆解：\n1. 报错动作：s3:ListBucket（列举存储桶内对象）\n2. 执行角色：<ROLE_NAME>（Glue Job 使用的 IAM Role）\n3. 目标资源：<BUCKET_NAME>（目标 S3 存储桶）\n4. 拒绝原因：'no resource-based policy allows' — 说明问题出在 Bucket Policy 侧，不是 IAM Policy 侧\n\n从报错信息 'no resource-based policy allows' 可以判断：IAM Role 自身的策略可能已经允许了该操作，但目标 Bucket 的 Bucket Policy 没有显式允许来自该 Role 的访问。这在跨账号访问场景中很常见——跨账号访问 S3 需要双向授权：IAM Policy 允许 + Bucket Policy 允许。\n\n另外日志中还出现了 FileNotFoundException，这是因为当缺少 s3:ListBucket 权限时，访问不存在的 Key 会返回 404 而非 403（S3 的安全行为），但根因还是权限问题。\n\n解决方案：在目标 S3 Bucket 的 Bucket Policy 中添加允许 Glue Job IAM Role 执行 s3:ListBucket 和 s3:GetObject 的语句。"
+    },
+    {
+      "role": "customer",
+      "content": "在 S3 存储桶策略中添加了允许 IAM Role 执行 ListBucket 的权限后问题解决了。"
+    }
+  ],
+  "resolution": "根因：Glue Job 使用的 IAM Role 对目标 S3 Bucket 执行 s3:ListBucket 操作时被拒绝。错误信息明确指出 'no resource-based policy allows'，说明目标 Bucket 的 Bucket Policy 缺少对该 Role 的授权。这在跨账号访问或 Bucket Policy 限制了访问来源的场景中很常见。\n\n解决方案：在目标 S3 Bucket 的 Bucket Policy 中添加 Statement，允许 Glue Job 的 IAM Role ARN 执行 s3:ListBucket（针对 arn:aws-cn:s3:::bucket-name）和 s3:GetObject（针对 arn:aws-cn:s3:::bucket-name/*）。\n\n排查思路要点：\n1. 看报错信息中的关键字 'resource-based policy' vs 'identity-based policy'，前者指 Bucket Policy，后者指 IAM Policy\n2. 跨账号 S3 访问需要双向授权\n3. 缺少 ListBucket 权限时，访问不存在的对象会返回 404（FileNotFoundException）而非 403，不要被误导",
+  "key_skills": [
+    "IAM 权限报错日志解读",
+    "S3 Bucket Policy vs IAM Policy 区分",
+    "跨账号 S3 访问授权模型",
+    "Glue Job IAM Role 权限配置",
+    "S3 403/404 行为差异理解",
+    "Spark Task 重试与 Job 失败机制"
+  ],
+  "references": [
+    "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic-cross-account.html",
+    "https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-bucket-policies.html"
+  ]
+}

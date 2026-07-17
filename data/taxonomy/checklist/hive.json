@@ -1,0 +1,32 @@
+{
+  "service_id": "emr",
+  "module": "Hive",
+  "questions": [
+    {"level": 100, "type": "概念", "question": "掌握DDL 与DML 使用，区分"},
+    {"level": 100, "type": "概念", "question": "掌握HIVE 组件与功能：client, HS2, HiveShell, MetaStore"},
+    {"level": 100, "type": "概念", "question": "掌握内部表与外部表区别"},
+    {"level": 100, "type": "概念", "question": "掌握HS 与 hive driver 区别"},
+    {"level": 100, "type": "排查", "question": "如何排查hive 作业提交报错"},
+    {"level": 100, "type": "排查", "question": "如何排查hive 日志找不到"},
+    {"level": 100, "type": "排查", "question": "如何排查表drop导致数据丢失的问题"},
+    {"level": 100, "type": "排查", "question": "如何排查主节点CPU 内存占用率高"},
+    {"level": 100, "type": "排查", "question": "如何排查文件读取失败"},
+    {"level": 100, "type": "操作", "question": "配置外部metaStore"},
+    {"level": 100, "type": "操作", "question": "掌握视图的建立与使用"},
+    {"level": 100, "type": "操作", "question": "掌握hive 堆内存调整"},
+    {"level": 100, "type": "概念", "question": "掌握hive 分区与分桶区别"},
+    {"level": 100, "type": "概念", "question": "TEZ和MR作为执行引擎的特点"},
+    {"level": 100, "type": "概念", "question": "Hive提交及执行流程"},
+    {"level": 100, "type": "排查", "question": "如何排查创建/读取视图失败"},
+    {"level": 100, "type": "排查", "question": "如何排查作业发生OOM"},
+    {"level": 200, "type": "概念", "question": "掌握LLAP原理"},
+    {"level": 200, "type": "调优", "question": "掌握hive读取小文件"},
+    {"level": 200, "type": "排查", "question": "如何排查表读取metastore 慢"},
+    {"level": 200, "type": "排查", "question": "如何排查作业读取文件慢"},
+    {"level": 200, "type": "排查", "question": "如何排查扫描全表导致作业变慢"},
+    {"level": 300, "type": "概念", "question": "掌握common join 流程"},
+    {"level": 300, "type": "概念", "question": "掌握Map join 流程"},
+    {"level": 300, "type": "概念", "question": "掌握Skew join 流程"},
+    {"level": 300, "type": "操作", "question": "如何排查在select指定了分区后仍然扫描全表的问题"}
+  ]
+}

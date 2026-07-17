@@ -1,0 +1,303 @@
+{
+  "id": "glue",
+  "name": "AWS Glue",
+  "track_id": "big_data",
+  "description": "Serverless ETL、数据目录、爬虫与作业编排，覆盖数据集成全流程。",
+  "is_real": true,
+  "capabilities": [
+    {
+      "id": "glue_runtime",
+      "name": "运行时计算引擎调优与故障诊断",
+      "description": "Spark JVM 内存管理、GC 行为分析、S3 I/O 调优、Iceberg/Hudi 写入稳定性",
+      "levels": {
+        "L1": "能识别基本错误日志，遇到 OOM / 上传失败时能联系支持",
+        "L2": "能从 Spark UI / Events Log 中定位 GC、Shuffle、Skew 类问题并给出常见调优手段",
+        "L3": "深入理解 JVM Tungsten / S3 Multipart Upload 等底层机制，能从指标推理根因并设计稳定方案"
+      },
+      "doc_refs": [
+        {
+          "title": "Enabling the Apache Spark web UI for Amazon Glue jobs",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/monitor-spark-ui-jobs.html",
+          "kind": "official",
+          "summary": "如何为 Glue Job 开启 Spark Web UI，定位 Stage、Task、内存与 Shuffle 行为"
+        },
+        {
+          "title": "Monitoring with Amazon Glue job run insights",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/monitor-job-insights.html",
+          "kind": "official",
+          "summary": "Glue 提供的作业运行洞察，简化失败任务的根因定位"
+        },
+        {
+          "title": "Workload partitioning with bounded execution",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/bounded-execution.html",
+          "kind": "official",
+          "summary": "用 bounded execution 解决 OOM 与大数据集场景下的稳定性问题"
+        },
+        {
+          "title": "Monitoring for DPU capacity planning",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/monitor-debug-capacity.html",
+          "kind": "official",
+          "summary": "用 Job Metrics 估算 DPU 容量，做扩缩容决策"
+        }
+      ]
+    },
+    {
+      "id": "glue_network",
+      "name": "网络架构与 VPC 集成",
+      "description": "Glue Connection、ENI 分布式行为、出口 IP、跨 VPC 访问、VPC Endpoint",
+      "levels": {
+        "L1": "知道 Glue Connection 配置位置，能照文档配私有子网",
+        "L2": "理解 Glue ENI 与 VPC 路由模型，能排查 SG 自引用、NAT、DNS 等常见连接问题",
+        "L3": "可设计跨账号 / 跨 VPC 出入口架构，权衡 NAT vs VPC Endpoint vs PrivateLink"
+      },
+      "doc_refs": [
+        {
+          "title": "Setting up network access to data stores",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/start-connecting.html",
+          "kind": "official",
+          "summary": "Glue 网络访问数据源的整体说明，含 ENI 与 SG 行为"
+        },
+        {
+          "title": "Connecting to a JDBC data store in a VPC",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/connection-JDBC-VPC.html",
+          "kind": "official",
+          "summary": "JDBC 类 Connection 的 VPC 配置：SG 自引用、子网选择"
+        },
+        {
+          "title": "Setting up Amazon VPC for JDBC connections from Amazon Glue",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/setup-vpc-for-glue-access.html",
+          "kind": "official",
+          "summary": "为 Glue 访问 RDS 等数据源准备 VPC、安全组与路由"
+        },
+        {
+          "title": "Configuring interface VPC endpoints (PrivateLink) for Amazon Glue",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/vpc-interface-endpoints.html",
+          "kind": "official",
+          "summary": "通过 PrivateLink 让 VPC 私有访问 Glue API"
+        },
+        {
+          "title": "Crawling an Amazon S3 data store using a VPC endpoint",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/connection-S3-VPC.html",
+          "kind": "official",
+          "summary": "通过 S3 Gateway Endpoint 从 VPC 内部爬取 S3 数据"
+        },
+        {
+          "title": "Troubleshooting connection issues in Amazon Glue",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/troubleshooting-connection.html",
+          "kind": "official",
+          "summary": "Connection 类故障的官方排查清单"
+        }
+      ]
+    },
+    {
+      "id": "glue_catalog",
+      "name": "数据目录与元数据治理",
+      "description": "Glue Catalog、Crawler 分类器、Schema 演进、分区索引、跨账号共享",
+      "levels": {
+        "L1": "会用 Crawler 创建表，知道分区概念",
+        "L2": "理解内置/自定义分类器机制，能处理 Schema 漂移、分区维护、Athena 兼容问题",
+        "L3": "可设计大规模 Catalog 治理方案，含分区索引、Schema 版本管理、跨账号共享"
+      },
+      "doc_refs": [
+        {
+          "title": "Defining and managing classifiers",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/add-classifier.html",
+          "kind": "official",
+          "summary": "Crawler 分类器（内置 + 自定义）机制与使用顺序"
+        },
+        {
+          "title": "Writing custom classifiers for diverse data formats",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/custom-classifier.html",
+          "kind": "official",
+          "summary": "为非标准数据格式写自定义分类器（Grok / XML / JSON / CSV）"
+        },
+        {
+          "title": "Creating partition indexes",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/partition-indexes.html",
+          "kind": "official",
+          "summary": "为高分区数表创建分区索引，加速 GetPartitions 查询"
+        },
+        {
+          "title": "How does a crawler determine when to create partitions",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/crawler-s3-folder-table-partition.html",
+          "kind": "official",
+          "summary": "Crawler 自动分区识别规则与目录结构推断"
+        },
+        {
+          "title": "Scheduling incremental crawls",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/incremental-crawls.html",
+          "kind": "official",
+          "summary": "增量爬取：只追加新分区，避免全表重扫"
+        }
+      ]
+    },
+    {
+      "id": "glue_security",
+      "name": "安全与权限模型",
+      "description": "IAM Role、Bucket Policy、KMS、跨账号权限、Resource-based Policy",
+      "levels": {
+        "L1": "能基于现成模板配置 Glue 执行角色",
+        "L2": "理解 Identity / Resource Policy 区别，能排查 AccessDenied 类报错并定位策略缺口",
+        "L3": "可设计跨账号、跨服务（含 KMS、Lake Formation）联合权限方案，并给出最小权限策略"
+      },
+      "doc_refs": [
+        {
+          "title": "Identity and access management for Amazon Glue",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/authentication-and-access-control.html",
+          "kind": "official",
+          "summary": "Glue IAM 体系总览：Identity Policy、Resource Policy、Role 怎么搭配"
+        },
+        {
+          "title": "Setting up IAM permissions for Amazon Glue",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/getting-started-access.html",
+          "kind": "official",
+          "summary": "Glue 服务角色与 ETL 角色的最小权限基础"
+        },
+        {
+          "title": "Review IAM permissions needed for ETL jobs",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/getting-started-min-privs-job.html",
+          "kind": "official",
+          "summary": "ETL Job 执行角色的最小权限清单（数据源、目的地、Glue API）"
+        },
+        {
+          "title": "Resource-based policy examples for Amazon Glue",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/security_iam_resource-based-policy-examples.html",
+          "kind": "official",
+          "summary": "Glue Catalog Resource Policy 实例（含跨账号示例）"
+        },
+        {
+          "title": "Granting cross-account access",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/cross-account-access.html",
+          "kind": "official",
+          "summary": "跨账号访问 Catalog 的两种方式（Glue Resource Policy / Lake Formation）"
+        }
+      ]
+    },
+    {
+      "id": "glue_observability",
+      "name": "作业生命周期与可观测性",
+      "description": "Job Bookmark、CloudWatch Logs / Metrics、Spark UI、重试机制、成本监控",
+      "levels": {
+        "L1": "知道在哪里看 Job 日志，能识别成功/失败状态",
+        "L2": "能用 CloudWatch + Spark UI 定位失败 Task、Stage 重试与瓶颈",
+        "L3": "可搭建端到端可观测性体系（指标、告警、成本），并优化作业 SLA"
+      },
+      "doc_refs": [
+        {
+          "title": "Monitoring Amazon Glue using CloudWatch metrics",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/monitoring-awsglue-with-cloudwatch-metrics.html",
+          "kind": "official",
+          "summary": "Glue 暴露的 CloudWatch 指标清单与典型用法"
+        },
+        {
+          "title": "Tracking processed data using job bookmarks",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/monitor-continuations.html",
+          "kind": "official",
+          "summary": "Job Bookmark 状态持久化机制，避免重复处理"
+        },
+        {
+          "title": "Monitoring Amazon Glue Spark jobs",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/monitor-spark.html",
+          "kind": "official",
+          "summary": "Spark 作业的内存、Shuffle、CPU 等指标解读"
+        },
+        {
+          "title": "Job monitoring and debugging",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/monitor-profile-glue-job-cloudwatch-metrics.html",
+          "kind": "official",
+          "summary": "用 Glue Observability metrics 做日常调试"
+        },
+        {
+          "title": "Automating Amazon Glue with EventBridge",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/automating-awsglue-with-cloudwatch-events.html",
+          "kind": "official",
+          "summary": "用 EventBridge 触发告警与下游编排（含超时通知）"
+        }
+      ]
+    },
+    {
+      "id": "glue_data_lake",
+      "name": "数据湖生态协同",
+      "description": "Iceberg / Hudi / Delta 表格式、Lake Formation 集成、Athena 查询联动",
+      "levels": {
+        "L1": "了解湖仓一体概念，知道 Iceberg/Hudi 大致区别",
+        "L2": "能在 Glue 中生产 Iceberg 表并解决常见兼容问题（snapshot、commit）",
+        "L3": "可设计基于湖仓的 Pipeline，含 ACID、时间旅行、跨引擎一致性"
+      },
+      "doc_refs": [
+        {
+          "title": "Using the Iceberg framework in Amazon Glue",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/aws-glue-programming-etl-format-iceberg.html",
+          "kind": "official",
+          "summary": "Glue 中读写 Iceberg 表的官方做法（含 catalog 配置）"
+        },
+        {
+          "title": "Populating and managing transactional tables",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/populate-otf.html",
+          "kind": "official",
+          "summary": "在 Glue 中维护 Iceberg / Hudi / Delta 等开放表格式"
+        },
+        {
+          "title": "Optimizing query performance for Iceberg tables",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/iceberg-column-statistics.html",
+          "kind": "official",
+          "summary": "用 Puffin 文件 + 列统计加速 Iceberg 查询"
+        },
+        {
+          "title": "Generating column statistics for Iceberg tables",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/iceberg-generate-column-stats.html",
+          "kind": "official",
+          "summary": "为 Iceberg 表生成列级统计信息（NDV）"
+        },
+        {
+          "title": "Cross-account data sharing in Lake Formation",
+          "url": "https://docs.amazonaws.cn/en_us/lake-formation/latest/dg/cross-account-permissions.html",
+          "kind": "official",
+          "summary": "湖仓场景跨账号共享 Catalog 与表的权限模型"
+        }
+      ]
+    },
+    {
+      "id": "glue_serverless_cost",
+      "name": "Serverless 架构演进与成本治理",
+      "description": "Worker 类型选择、Auto Scaling、DPU 与并行度、批/流处理选型",
+      "levels": {
+        "L1": "了解 G.1X / G.2X 等 Worker 区别",
+        "L2": "能根据数据量与延迟需求选择合适 Worker / DPU 配置",
+        "L3": "可结合业务场景做容量规划与成本优化（含 Streaming、Auto Scaling 决策）"
+      },
+      "doc_refs": [
+        {
+          "title": "Amazon Glue worker types",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/worker-types.html",
+          "kind": "official",
+          "summary": "G.1X / G.2X / R 系列 Worker 与 DPU 规格说明"
+        },
+        {
+          "title": "Using auto scaling for Amazon Glue",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/auto-scaling.html",
+          "kind": "official",
+          "summary": "Glue 批作业的 Auto Scaling 行为与启用方式"
+        },
+        {
+          "title": "Amazon Glue streaming autoscaling",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/glue-streaming-auto-scaling.html",
+          "kind": "official",
+          "summary": "流作业的弹性扩缩规则"
+        },
+        {
+          "title": "Monitoring for DPU capacity planning",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/monitor-debug-capacity.html",
+          "kind": "official",
+          "summary": "通过指标做 DPU 容量规划，避免过度配置"
+        },
+        {
+          "title": "Creating and managing usage profiles",
+          "url": "https://docs.amazonaws.cn/en_us/glue/latest/dg/start-usage-profiles-managing.html",
+          "kind": "official",
+          "summary": "用 Usage Profile 限制单作业的 DPU 上限与超时，控成本"
+        }
+      ]
+    }
+  ]
+}

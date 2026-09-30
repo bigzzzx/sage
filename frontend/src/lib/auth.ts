@@ -2,7 +2,9 @@
  * Auth utilities — localStorage-based, no context/provider needed.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8000";
+// Same-origin /api is proxied to FastAPI by next.config.ts. This also works in
+// browsers that intentionally block direct access to a second localhost port.
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 const TOKEN_KEY = "sage_token";
 const USER_KEY = "sage_user";
 
@@ -12,6 +14,7 @@ export interface UserInfo {
   display_name: string;
   role: string;
   current_profile?: string;
+  must_change_password?: boolean;
 }
 
 export interface Profile {
@@ -63,6 +66,12 @@ export function isLoggedIn(): boolean {
   return !!getToken() && !!getStoredUser();
 }
 
+export async function fetchRegistrationEnabled(): Promise<boolean> {
+  const response = await fetch(`${API_BASE}/api/auth/config`, { cache: "no-store" });
+  if (!response.ok) throw new Error("无法确认注册状态");
+  return (await response.json()).registration_enabled === true;
+}
+
 // ---------- API calls ----------
 
 export async function register(username: string, password: string, displayName?: string): Promise<UserInfo> {
@@ -83,6 +92,7 @@ export async function register(username: string, password: string, displayName?:
     display_name: data.display_name,
     role: data.role,
     current_profile: data.current_profile || "",
+    must_change_password: data.must_change_password === true,
   };
   setStoredUser(user);
   return user;
@@ -106,6 +116,7 @@ export async function login(username: string, password: string): Promise<UserInf
     display_name: data.display_name,
     role: data.role,
     current_profile: data.current_profile || "",
+    must_change_password: data.must_change_password === true,
   };
   setStoredUser(user);
   return user;
@@ -124,6 +135,7 @@ export async function fetchMe(): Promise<UserInfo> {
     display_name: data.display_name,
     role: data.role,
     current_profile: data.current_profile || "",
+    must_change_password: data.must_change_password === true,
   };
   setStoredUser(user);
   return user;

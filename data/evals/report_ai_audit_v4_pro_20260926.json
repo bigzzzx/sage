@@ -1,0 +1,37 @@
+{
+  "status": "single_ai_source_checked_provisional_not_human_blind_labels",
+  "source_run": "data/evals/runs/v4-pro-corrected-20260926.json",
+  "model": "deepseek-v4-pro",
+  "fixture_sha256": "eecf19e247adbc3fccaa711f990216b7e5e444835d083bd1bbbb515c6b07fc12",
+  "seed": 20260926,
+  "auditor": "Codex AI, one source-checked pass",
+  "scope": "Two corrected synthetic Glue cases, ten reports. This is not two independent human annotators, an AWS console execution, or a statistically powered comparison. Never pass this file to the human-blind score command.",
+  "rubric": "docs/REPORT_COMPARISON.md",
+  "label_meaning": "Distinct demonstrably false technical claims and answer-inconsistent diagnoses; citation_support and task_actionability each range from 0 to 2. Unsupported but not disproven claims are noted, not counted as factual errors.",
+  "sources": {
+    "network": "https://docs.aws.amazon.com/glue/latest/dg/start-connecting.html",
+    "network_china": "https://docs.amazonaws.cn/en_us/glue/latest/dg/start-connecting.html",
+    "troubleshooting_china": "https://docs.amazonaws.cn/en_us/glue/latest/dg/troubleshooting-connection.html",
+    "s3_endpoint": "https://docs.aws.amazon.com/glue/latest/dg/vpc-endpoints-s3.html",
+    "catalog": "https://docs.aws.amazon.com/glue/latest/dg/catalog-and-crawler.html",
+    "incremental": "https://docs.aws.amazon.com/glue/latest/dg/incremental-crawls.html"
+  },
+  "shared_findings": [
+    "The corrected NAT rubric now asks for same-target before/after connectivity, not an unasked S3 distinction. All five arms share the same diagnosis; diagnosis counts cannot identify a review-arm effect.",
+    "The fixture explicitly supplies overall_level L2 or L1. Reviewer objections that these levels are absent are false positives.",
+    "The AWS China network and troubleshooting pages are real official regional documentation. A domain mismatch with source_refs alone is not a factual or citation error; adjacent-claim support still needs checking.",
+    "The crawler diagnosis now says transformation can use a tool such as Glue ETL Job, not that Glue ETL Job is the only option."
+  ],
+  "reports": [
+    {"report_id":"edb133bf2a2a9007","case_id":"glue_nat_wrong_cause","arm":"rules","labels":{"factual_error_count":0,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"ENI/private-IP and NAT correction are supported by network and network_china. The regional troubleshooting page is valid but does not itself substantiate every NAT/route detail. Day 2 explicitly defers the same-target before/after validation; ENI creation and route change assume a prepared lab and omit a safe rollback."},
+    {"report_id":"9a5f7ee3101f7f54","case_id":"glue_nat_wrong_cause","arm":"single_review","labels":{"factual_error_count":0,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"The revision covers the previously deferred same-target check and avoids starting a new Glue job on Day 1. One concept URL is empty. A same-subnet EC2 probe is not equivalent to a Glue-job probe; actual NAT changes, prerequisites and rollback remain unspecified for 45 minutes."},
+    {"report_id":"c56f52fa26c08649","case_id":"glue_nat_wrong_cause","arm":"dual_review","labels":{"factual_error_count":1,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"The report says a NAT gateway or S3 VPC endpoint can fix access to the unspecified public API. The cited S3 endpoint page explicitly covers S3, not arbitrary public APIs: one material false alternative. Day 1 starts a Glue job; Day 2 creates NAT or endpoint within 45 minutes without isolated-lab/rollback/cost prerequisites."},
+    {"report_id":"86337614227faed8","case_id":"glue_nat_wrong_cause","arm":"debate","labels":{"factual_error_count":0,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"Core Glue ENI/NAT claim is sourced and S3 endpoint is only mentioned for S3. Two concept URLs are empty. The proposed example.com/api/health is illustrative, not a verified endpoint; a desktop simulation cannot supply actual before/after connectivity evidence, so the 45-minute task remains conditional."},
+    {"report_id":"9e72b6b0ef9de47d","case_id":"glue_nat_wrong_cause","arm":"budget_repeat","labels":{"factual_error_count":0,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"Correct core ENI/NAT explanation and same-target requirement. Two route/troubleshooting links are regional AWS documentation but do not prove every adjacent claim. The example.com/api/health endpoint, prerequisite Glue job, NAT change and rollback are not validated; the fallback explicitly delays evidence by three days."},
+    {"report_id":"cfd21fe982fd42c4","case_id":"glue_crawler_etl_confusion","arm":"rules","labels":{"factual_error_count":0,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"Crawler and Catalog definitions align with catalog. The plan assumes creating S3, IAM, crawler and possibly Athena within 45-minute blocks; partition step creates a folder without an object, which may not yield a partition. Some peripheral citation pages do not directly support the adjacent lesson."},
+    {"report_id":"a923d5f3e662bd95","case_id":"glue_crawler_etl_confusion","arm":"single_review","labels":{"factual_error_count":0,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"Crawler/Catalog and incremental-partition claims have official support. The revision includes an object in each partition prefix and observable checks. However, creating IAM, crawler and several partitioned objects plus confirming incremental behavior is unverified within 45 minutes; setup and cleanup are incomplete."},
+    {"report_id":"bc19251a6776e39f","case_id":"glue_crawler_etl_confusion","arm":"dual_review","labels":{"factual_error_count":0,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"Main crawler/Catalog role distinction is sourced. The extra CloudWatch log-group assertion and partition inference are not directly established by the cited catalog page. A new object is correctly placed in the partition prefix, but crawler/IAM setup and repeat-run timing are unverified."},
+    {"report_id":"56a5fe8a68e67dcb","case_id":"glue_crawler_etl_confusion","arm":"debate","labels":{"factual_error_count":0,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"The reviewer wrongly objected to calling the Catalog a centralized metadata repository; catalog explicitly uses that definition. The final plan omits the useful term but does not state a false fact. It correctly requires an object under a partition prefix. Creating bucket, IAM role and crawler inside 45 minutes lacks a verified prepared lab or cleanup."},
+    {"report_id":"468f937ef2dc7797","case_id":"glue_crawler_etl_confusion","arm":"budget_repeat","labels":{"factual_error_count":0,"diagnosis_error_count":0,"citation_support":1,"task_actionability":1},"evidence_notes":"Crawler/Catalog distinction is correct and cited. Several optional properties and partition claims are only loosely tied to the broad citation; the partition exercise relies on existing data. New bucket, IAM, crawler and post-test setup are not demonstrated within 45 minutes."}
+  ]
+}

@@ -98,7 +98,7 @@ pip install -r requirements.txt
 cat > .env << 'EOF'
 LLM_PROVIDER=openai
 LLM_API_KEY=<set-your-secret-in-the-server-environment>
-LLM_BASE_URL=http://internal-ai-tao-llm-apiserver-dev-1126944677.cn-northwest-1.elb.amazonaws.com.cn/v1
+LLM_BASE_URL=https://your-openai-compatible-endpoint.example/v1
 LLM_MODEL=Qwen3.6-27B
 APP_ENV=production
 EOF
@@ -219,7 +219,7 @@ sudo systemctl stop sage-frontend
 
 - 前端：`http://<EC2公网IP>:3000`
 - 后端 API：`http://<EC2公网IP>:8000/docs`
-- 登录账号：`demo` / `demo123`（员工）、`admin` / `admin123`（管理员）
+- 登录账号：由部署者使用 `python -m app.cli create-admin --username <管理员名>` 显式创建，再通过管理员页面添加成员；仓库不提供默认密码。
 
 ---
 

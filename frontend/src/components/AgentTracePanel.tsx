@@ -26,9 +26,9 @@ export default function AgentTracePanel({ trace }: { trace: AgentStep[] }) {
       >
         <div className="flex items-center gap-2">
           <span>🤖</span>
-          <span className="font-semibold">AI 思考过程</span>
+          <span className="font-semibold">AI 工作流记录</span>
           <span className="text-xs text-slate-500">
-            （多 Agent 协作 · {trace.length} 步 · 共 {(totalMs / 1000).toFixed(1)}s）
+            （自研固定流程 · {trace.length} 步 · 已记录步骤耗时 {(totalMs / 1000).toFixed(1)}s）
           </span>
         </div>
         <span className="text-slate-500 text-sm">{open ? "▾" : "▸"}</span>

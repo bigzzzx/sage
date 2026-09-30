@@ -45,10 +45,7 @@ export default function DiagnosisPanel({ gaps }: { gaps: KnowledgeGap[] }) {
     <section className="bg-slate-800 rounded-xl p-6 border border-emerald-700/40">
       <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
         <h2 className="text-lg font-semibold flex items-center gap-2">
-          🩺 知识盲区诊断
-          <span className="text-xs text-slate-400 font-normal">
-            （Diagnosis Agent · 像资深 SE 一样 review 了你的回答）
-          </span>
+          🩺 本次答题复习建议
         </h2>
         <div className="flex gap-2 text-xs">
           {counts.critical && (
@@ -69,7 +66,7 @@ export default function DiagnosisPanel({ gaps }: { gaps: KnowledgeGap[] }) {
         </div>
       </div>
       <p className="text-xs text-slate-500 mb-4">
-        下列盲区会精准对应到学习计划的每一天任务
+        根据本次作答整理；单题结果只提示需要复习的考点。
       </p>
 
       <div className="space-y-3">
@@ -94,14 +91,11 @@ export default function DiagnosisPanel({ gaps }: { gaps: KnowledgeGap[] }) {
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] text-slate-500 font-mono">
-                  {g.gap_id}
-                </span>
               </div>
 
               {g.evidence_quote && g.evidence_quote !== "未提及" && (
                 <div className="mb-2 text-xs text-slate-400 italic border-l-2 border-slate-700 pl-2">
-                  你的原话："{g.evidence_quote}"
+                  你的原话：&ldquo;{g.evidence_quote}&rdquo;
                 </div>
               )}
 

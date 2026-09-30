@@ -1,0 +1,26 @@
+{
+  "id": "glue-subnet-ip-exhaustion",
+  "service_id": "glue",
+  "title": "Glue 作业启动后 SparkContext 关闭",
+  "level": "L2",
+  "brief": "定时 Glue Job 启动失败，表面日志只看到 SparkContext 关闭。请通过作业配置、子网容量和底层事件定位真正原因。",
+  "objective": "说明表面错误与根因的区别，提出容量修复和复测方式。",
+  "source_case": "glue-006-subnet-ip-exhaustion.json",
+  "tools": [
+    {"id": "job_log", "label": "查看作业日志", "evidence": "An error occurred while calling o115.count. Job 0 cancelled because SparkContext was shut down. Failed to create any executor tasks。"},
+    {"id": "job_config", "label": "查看 Worker 配置", "evidence": "作业使用 G.1X Worker，数量为 10；通过 Glue Connection 接入 VPC 子网 subnet-training-small。"},
+    {"id": "subnet_status", "label": "查看子网可用地址", "evidence": "subnet-training-small 为 /27 网段，当前可用 IPv4 地址少于作业启动所需；同子网还有其他服务使用私有地址。"},
+    {"id": "cloudtrail", "label": "查看底层异常", "evidence": "The specified subnet does not have enough free addresses to satisfy the request. Please provide a connection with a subnet with ips available."}
+  ],
+  "expected": {
+    "root_cause": "SparkContext 关闭是后续表现。Glue 在 VPC 中为 Worker 创建网络接口时需要私有 IP，当前子网可用地址不足，Executor 无法正常启动。",
+    "remediation": "核对 Worker 数量与 Available IPv4 addresses，选择可用地址充足的更大子网，或在资源需求允许时减少 Worker 数量；不要把 SparkContext 关闭误判为首要根因。",
+    "verification": "调整配置后重新运行作业，确认底层 IP 不足错误消失、Executor 正常启动，并观察子网剩余地址。"
+  },
+  "rubric": [
+    {"name": "关键证据", "evidence_tool": "subnet_status", "all_of": [["ip", "地址"], ["不足", "不够", "少于", "free addresses"]]},
+    {"name": "定位根因", "all_of": [["子网", "subnet"], ["ip", "地址"], ["不足", "不够", "耗尽"]]},
+    {"name": "可执行修复", "all_of": [["减少 worker", "减少 dpu", "降低 worker", "降低 dpu", "更大子网", "扩容子网", "更换子网", "/24"]]},
+    {"name": "复测闭环", "all_of": [["重新运行", "重新执行", "复测", "重跑", "rerun"]]}
+  ]
+}

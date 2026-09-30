@@ -1,17 +1,20 @@
-"""动态出题服务（v2 - 基于 Service）。
-
-接收 Service ID + Capability ID + 难度，调用 LLM 实时生成题目。
-- Glue（is_real=true）：会附上真实 case 摘要作为素材
-- 其他服务（is_real=false）：仅基于 capability 定义和 LLM 自身知识出题
-"""
+"""Generate assessments using service-scoped knowledge and a model."""
 from __future__ import annotations
 
 import json
+import re
 import uuid
+from collections import Counter
+from difflib import SequenceMatcher
 from pathlib import Path
 
 from app.services.llm import get_llm
-from app.services.rag import format_retrieval_context, retrieve_resources
+from app.services.assessment_blueprint import FOCUS_LABELS, build_blueprint
+from app.services.glue_sources import load_glue_facts
+from app.services.assessment_fact_checks import false_g4x_explanation
+from app.services.rag import (curated_fact_documents, format_curated_fact_context,
+                              format_retrieval_context,
+                              retrieve_resources)
 from app.services.taxonomy import get_service
 
 DATA_DIR = Path(__file__).resolve().parents[3] / "data"
@@ -64,40 +67,185 @@ def _strip_code_fence(text: str) -> str:
     return s
 
 
-# 缓存：session_id -> {service_id, capability_ids, questions}
-_session_store: dict[str, dict] = {}
+PUBLIC_QUESTION_FIELDS = {"id", "type", "dimension_id", "difficulty", "question", "options", "multi_select"}
+
+# High-confidence source-to-capability guards. Facts not listed here keep the
+# existing flexible validation until their taxonomy mapping is reviewed.
+GLUE_FACT_CAPABILITIES = {
+    "crawler_catalog": {"glue_catalog"},
+    "classifier_order": {"glue_catalog"},
+    "g1x": {"glue_runtime", "glue_serverless_cost"},
+    "g2x": {"glue_runtime", "glue_serverless_cost"},
+    "g4x": {"glue_runtime", "glue_serverless_cost"},
+    "partition_index": {"glue_catalog", "glue_data_lake"},
+    "partition_projection": {"glue_catalog", "glue_data_lake"},
+}
 
 
-def get_session(session_id: str) -> dict | None:
-    return _session_store.get(session_id)
+def mismatched_glue_fact_ids(question: dict) -> list[str]:
+    return [source_id for source_id in question.get("source_ids", [])
+            if source_id in GLUE_FACT_CAPABILITIES
+            and question.get("dimension_id") not in GLUE_FACT_CAPABILITIES[source_id]]
 
 
-def get_session_questions(session_id: str) -> list[dict] | None:
-    s = _session_store.get(session_id)
-    return s["questions"] if s else None
+def public_questions(questions: list[dict]) -> list[dict]:
+    """Never send scoring keys, rubrics, or reference answers to a candidate."""
+    return [{key: value for key, value in question.items() if key in PUBLIC_QUESTION_FIELDS}
+            for question in questions]
+
+
+def _validate_questions(questions: list[dict], allowed_caps: set[str],
+                        allowed_fact_ids: set[str] | None = None,
+                        blueprint: dict | None = None,
+                        recent_stems: list[str] | None = None,
+                        required_caps: set[str] | None = None) -> None:
+    """Reject partial or malformed model output before it can become an assessment."""
+    blueprint = blueprint or build_blueprint()
+    count = blueprint["question_count"]
+    if len(questions) != count or len({q.get("id") for q in questions}) != count:
+        raise ValueError(f"出题数量或题目 ID 不符合 {count} 题要求")
+    distribution = Counter((q.get("type"), q.get("difficulty")) for q in questions)
+    if distribution != blueprint["expected"]:
+        raise ValueError("题目类型或难度分布不符合本次测评配置")
+    if required_caps and not required_caps.issubset({q.get("dimension_id") for q in questions}):
+        raise ValueError("题目未覆盖所选能力点")
+    stems = [_normalise_stem(str(q.get("question", ""))) for q in questions]
+    previous = [_normalise_stem(stem) for stem in (recent_stems or [])]
+    if any(not stem for stem in stems):
+        raise ValueError("题目缺少题干")
+    if recent_stems is not None and any(_near_duplicate(stem, other) for i, stem in enumerate(stems)
+                                        for other in stems[:i] + previous):
+        raise ValueError("本次题目与近期题目重复，请重新生成")
+    for question in questions:
+        if question.get("dimension_id") not in allowed_caps or not str(question.get("question", "")).strip():
+            raise ValueError("题目缺少有效能力点或题干")
+        if allowed_fact_ids is not None:
+            source_ids = question.get("source_ids")
+            if (not isinstance(source_ids, list) or not 1 <= len(source_ids) <= 3
+                    or any(not isinstance(source_id, str) or source_id not in allowed_fact_ids
+                           for source_id in source_ids)
+                    or len(set(source_ids)) != len(source_ids)):
+                raise ValueError("题目缺少有效的官方事实来源 ID")
+            mismatches = mismatched_glue_fact_ids(question)
+            if mismatches:
+                raise ValueError(f"题目 {question.get('id')} 的考点 {', '.join(mismatches)} 与能力点不匹配")
+        if question["type"] == "choice":
+            options = question.get("options")
+            answer = str(question.get("correct_answer", "")).strip().upper()
+            if (not isinstance(options, list) or len(options) != 4
+                    or any(not isinstance(option, str) or not option.strip() for option in options)
+                    or len(set(options)) != 4 or len(answer) != 1 or answer not in "ABCD"
+                    or question.get("multi_select") is True):
+                raise ValueError("选择题选项或标准答案无效")
+            question["correct_answer"] = answer
+            if false_g4x_explanation(question):
+                raise ValueError("题目解释把真实存在的 G.4X worker 误写为非 Glue 规格")
+        elif (not isinstance(question.get("scoring_rubric"), list)
+              or len(question["scoring_rubric"]) < 3
+              or not str(question.get("reference_answer", "")).strip()):
+            raise ValueError("开放题缺少评分要点或参考答案")
+
+
+def _normalise_stem(stem: str) -> str:
+    return re.sub(r"[\W_]+", "", stem.casefold())
+
+
+def _near_duplicate(left: str, right: str) -> bool:
+    return bool(left and right and (left == right or
+                min(len(left), len(right)) >= 16 and SequenceMatcher(None, left, right).ratio() >= 0.9))
+
+
+def _recent_question_stems(user_id: str, service_id: str, limit: int = 3) -> list[str]:
+    from app.db import SessionLocal
+    from app.models import QuestionSession
+
+    with SessionLocal() as db:
+        sessions = (db.query(QuestionSession).filter_by(user_id=user_id, service_id=service_id)
+                    .order_by(QuestionSession.created_at.desc()).limit(limit).all())
+        return [q.get("question", "") for session in sessions for q in (session.questions or [])]
+
+
+def get_session(session_id: str, user_id: str) -> dict | None:
+    from app.db import SessionLocal
+    from app.models import QuestionSession
+
+    with SessionLocal() as db:
+        session = db.get(QuestionSession, session_id)
+        if not session or session.user_id != user_id:
+            return None
+        from app.services.profile_scope import record_profile_id
+        return {"service_id": session.service_id, "user_id": session.user_id,
+                "profile_id": record_profile_id(session),
+                "model_id": session.model_id,
+                "study_days": session.study_days or 5,
+                "minutes_per_day": session.minutes_per_day or 90,
+                "kind": session.kind, "prev_assessment_id": session.prev_assessment_id,
+                "questions": session.questions, "blueprint": session.blueprint}
 
 
 def generate_questions(
     service_id: str,
     capability_ids: list[str] | None = None,
-    num_choice: int = 6,
-    num_open: int = 3,
-    difficulty: str = "",
+    question_count: int = 9,
+    difficulty_profile: str = "balanced",
+    focus: str = "comprehensive",
     post_test_gap_hints: list[str] | None = None,
+    user_id: str = "",
+    kind: str = "pre",
+    prev_assessment_id: str | None = None,
+    model_id: str | None = None,
+    study_days: int = 5,
+    minutes_per_day: int = 90,
+    session_id: str | None = None,
+    profile_id: str | None = None,
 ) -> tuple[str, list[dict]]:
-    """基于 Service 动态生成题目。固定 6 选择 + 3 开放（L1/L2/L3 均匀分布）。返回 (session_id, questions_list)。"""
+    """基于可验证的测评蓝图生成并保存题目。返回 (session_id, questions_list)。"""
+    blueprint = build_blueprint(question_count, difficulty_profile, focus)
+    from app.services.profile_scope import service_in_profile, service_profile_id
+    profile_id = profile_id or service_profile_id(service_id)
+    if not service_in_profile(service_id, profile_id):
+        raise ValueError("测评服务不属于指定 Profile")
+    if session_id:
+        existing = get_session(session_id, user_id)
+        if existing:
+            if (existing["profile_id"] != profile_id or existing["service_id"] != service_id or existing["kind"] != kind or
+                    existing["prev_assessment_id"] != prev_assessment_id or
+                    existing["model_id"] != model_id or
+                    existing["study_days"] != study_days or
+                    existing["minutes_per_day"] != minutes_per_day or
+                    (existing["blueprint"] is not None and
+                     any(existing["blueprint"].get(key) != blueprint[key]
+                         for key in ("question_count", "difficulty_profile", "focus")))):
+                raise ValueError("题目会话与原出题任务参数不一致")
+            return session_id, existing["questions"]
     svc = get_service(service_id)
     if not svc:
         raise ValueError(f"Unknown service: {service_id}")
 
     all_caps = svc.get("capabilities", [])
     if capability_ids:
+        if kind == "pre" and len(capability_ids) > 3:
+            raise ValueError("专项测评最多选择 3 个能力点")
         selected_caps = [c for c in all_caps if c["id"] in capability_ids or c["name"] in capability_ids]
+        if len(selected_caps) != len(set(capability_ids)):
+            raise ValueError("所选能力点不属于当前服务")
     else:
         selected_caps = all_caps
 
     if not selected_caps:
-        selected_caps = all_caps  # 兜底
+        raise ValueError("该服务暂无可测评能力点")
+
+    # 前测避免刷到近期原题；后测刻意复测盲区，不应被前测题干拦截。
+    recent_stems = _recent_question_stems(user_id, service_id) if kind == "pre" and user_id else None
+    choice_quota = blueprint["expected"]
+    quota_text = "\n".join(
+        f"- {kind} {level}: {choice_quota.get((kind, level), 0)} 道"
+        for kind in ("choice", "open") for level in ("L1", "L2", "L3")
+    )
+    recent_section = ("\n# 近期题目（只用于避重，不得复制题干或同义改写）\n" +
+                      "\n".join(f"- {stem[:180]}" for stem in recent_stems[:20])) if recent_stems else ""
+    coverage_rule = ("所选每个能力点至少出 1 道题。" if capability_ids and kind == "pre" else
+                     "尽量覆盖不同能力点；短测无法保证覆盖全部能力点，不要声称已全面评估。")
 
     cap_context = "\n".join(
         f"【{c['name']}】（id={c['id']}）{c['description']}"
@@ -115,19 +263,30 @@ def generate_questions(
         service_id=service_id,
         capability_ids=[cap["id"] for cap in selected_caps],
         limit=5,
+        source_types=["official_doc", "official_ref", "case", "learning_path"],
     )
-    retrieved_context = format_retrieval_context(retrieved)
-    case_section = (
-        "\n# RAG 检索素材（真实 case、学习路径与官方文档；用于设计题目，不要照抄）\n"
-        f"{retrieved_context}\n"
-    )
+    retrieved_context = format_retrieval_context(retrieved, query=retrieval_query)
+    if service_id == "glue":
+        case_section = (
+            "\n# 已核验的公开 AWS Glue 考点（优先且仅据此陈述可核验的技术事实）\n"
+            f"{format_curated_fact_context(service_id)}\n"
+            "# 同一 RAG 知识库检索的补充素材（案例不可作事实依据；仅有链接的资料也不能作事实依据）\n"
+            f"{retrieved_context}\n"
+            "开放题可构造场景，但参考答案不得把未证实的内部实现、IAM action、唯一根因写成事实。"
+            "若现象不足以定位唯一根因，应给出假设、验证步骤和条件化修复方案。\n"
+        )
+    else:
+        case_section = (
+            "\n# RAG 检索素材（案例与学习路径用于设计题目；只有官方正文能支持技术事实，不要照抄）\n"
+            f"{retrieved_context}\n"
+        )
 
     # 加载 checklist 考点池
-    checklist_text = _load_checklist(service_id)
+    checklist_text = _load_checklist(service_id) if service_id != "glue" else ""
     checklist_section = f"""
-# 考点范围（来自内部 Knowledge Check List，出题必须覆盖这些知识点）
+# 考点范围（来自内部 Knowledge Check List，按题量抽样）
 
-以下是该服务内部培训的考核要点，按 L1/L2/L3 分级。出题时请确保：
+以下是该服务内部培训的考核要点，按 L1/L2/L3 分级。仅选取与本次能力点、题量和难度配额相符的考点，不要声称全部覆盖。出题时请确保：
 - L1 题考 [L1] 标注的知识点
 - L2 题考 [L2] 标注的知识点
 - L3 题考 [L3] 标注的知识点
@@ -135,12 +294,27 @@ def generate_questions(
 
 {checklist_text}
 """ if checklist_text else ""
+    source_rule = ("每一道 Glue 题都必须有 source_ids 数组，引用上方已核验考点的 1~3 个 ID。"
+                   "题目、解释、参考答案只可陈述这些来源明确支持的技术事实；"
+                   "不要为凑题数引用不相关 ID。Worker 规格题归运行时或成本能力点，分区索引/投影题归数据目录或数据湖能力点，不得归作业可观测性。"
+                   "所选能力点若没有适合的公开考点，不要硬凑题，直接输出空题目数组。source_ids 是供交卷后审查的证据索引。"
+                   if service_id == "glue" else "")
+    source_example = load_glue_facts()[0]["id"] if service_id == "glue" else "optional"
 
     # 后测盲区注入
     gap_section = ""
     if post_test_gap_hints:
         gap_lines = "\n".join(post_test_gap_hints)
-        gap_section = f"""
+        if service_id == "glue":
+            gap_section = f"""
+# 后测盲区提示（不是事实来源）
+
+这些提示来自先前测评，其中可能包含未经核验的内部术语或错误标准答案。仅当盲区可由下方公开考点支持时，才据此设计后测题；否则忽略具体细节，改测相近的可核验能力点。不得把盲区文字直接当成标准答案或强制复述。
+
+{gap_lines}
+"""
+        else:
+            gap_section = f"""
 # ⚠️ 后测验证重点（本次是后测，必须针对以下盲区出题）
 
 以下是该用户在前测中暴露出的具体知识盲区。本次后测的核心目标是**验证用户是否已经掌握了这些盲区内容**。
@@ -154,16 +328,15 @@ def generate_questions(
 - 如果盲区提到"用户把 A 和 B 搞混了"，那就出一道区分 A 和 B 的题
 """
 
-    difficulty_hint = "难度分布固定：选择题 L1×2 + L2×2 + L3×2 = 6 道；开放题 L1×1 + L2×1 + L3×1 = 3 道。每个难度级别的题必须严格标注 difficulty 字段。"
-
     prompt = f"""你是 AWS {svc['name']} 培训专家。请生成一套测评题目。
 
 # 题目数量与难度（固定，不可更改）
-- 选择题 6 道：L1 难度 2 道、L2 难度 2 道、L3 难度 2 道
-- 开放题 3 道：L1 难度 1 道、L2 难度 1 道、L3 难度 1 道
-- 共 9 道题
+- 选择题 {blueprint['num_choice']} 道，开放题 {blueprint['num_open']} 道，共 {question_count} 道
+{quota_text}
 - 每道题必须设置 dimension_id（从下方能力点 id 中选取）和 difficulty（L1/L2/L3）
-- 选择题尽量覆盖不同的能力点，避免都聚焦在同一类
+- {coverage_rule}
+- 出题侧重点：{FOCUS_LABELS[focus]}。仅作为内容偏好，不能牺牲服务事实依据、题型规则和难度配额。
+{recent_section}
 
 # 出题原则（非常重要）
 
@@ -185,7 +358,7 @@ def generate_questions(
    - "X 的作用/工作原理是什么？"
    - "在以下场景下，最佳实践是哪种？"（场景必须是设计选型，而非问题诊断）
 
-**参考示例（AWS 内部考试选择题，注意区分单选与多选的出题风格差异）：**
+**参考示例（单选题风格）：**
 
 ### 单选题风格特征
 - 问的是"一个确定的事实/定义/行为"，答案唯一
@@ -208,60 +381,30 @@ def generate_questions(
   - JSON-formatted files in S3 that retain the metadata of the data source.
   分析：考"Crawler 产出什么"，只有一个正确答案
 
-示例 S3（L1 单选 - 配置陷阱）：
-  题干：When run an Athena query select * from glue_knet_111, did it return the values? If not, why?
+示例 S3（L2 单选 - 配置差异）：
+  题干：Athena partition projection 如何确定查询所需分区？
   选项：
-  - Partitions need to be added to the table manually.
-  - Include path does not end with "/".（正确）
-  - Crawler will fail to create a table in this configuration.
-  分析：考一个具体配置细节导致的唯一根因
+  - 根据表属性推算分区值与位置。（正确）
+  - 必须先由 crawler 枚举全部分区。
+  - 读取 Spark executor 缓存。
+  - 从 IAM policy 解析路径。
+  分析：题干和正确答案均可通过官方文档核验
 
-示例 S4（L3 单选 - 内部实现 / 架构细节）：
-  题干：Which crawler command accesses customer's resource (like RDS)?
+示例 S4（L3 单选 - 网络机制）：
+  题干：Glue Job 在 VPC 中需要访问公网 API，为什么仅把子网设为公有子网仍不够？
   选项：
-  - WORKER and FINALIZER need to access customer resources.
-  - All command access customer resources.
-  - Only WORKER access customer resources.（正确）
-  - START_CRAWL and WORKER access customer resources.
-  分析：考的是 Crawler 内部执行阶段（START_CRAWL / WORKER / FINALIZER）中哪个阶段真正碰客户数据。这属于 AWS 内部架构知识，只有深入理解底层才知道
-
-### 多选题风格特征（当前仅作为理解参考，本次只出单选题）
-- 问的是"有哪些方式/有哪些行为"，正确答案 2~3 个
-- 题干问法："Which of the following can be used to...?"、"What actions does X take?"（Choose all that apply）
-- 选项之间不互斥，多个可以同时成立
-
-示例 M1（L1 多选 - 支持范围）：
-  题干：What data sources does Crawler support?（Choose all that apply）
-  选项：Delta Lake（正确） / S3（正确） / DynamoDB（正确） / Microsoft Access（错误）
-
-示例 M2（L1 多选 - 行为机制）：
-  题干：When a Crawler runs, what action it takes to interrogate a data store?（Choose all that apply）
-  选项：
-  - Writes metadata to the AWS Glue Data Catalog（正确）
-  - Classifies the data（正确）
-  - Groups the data into tables or partitions（正确）
-  - Transfers the data into S3（错误 - 这是 Job 做的）
-
-示例 M3（L2 多选 - 安全最佳实践）：
-  题干：How can we prevent the exposure of credentials while reading data from JDBC data store in a Glue ETL job?（Choose all that apply）
-  选项：
-  - Use SecretManager to store the credentials（正确）
-  - Fetch the credentials using GetConnection API or extract_jdbc_conf() inside the job（正确）
-  - Populate Glue Data Catalog with help of crawler and use from_catalog() method in the Glue ETL job（正确）
-
-示例 M4（L2 多选 - API 配置方法）：
-  题干：Which of the following options can be used to enable parallel reads with JDBC tables?（Choose all that apply）
-  选项：
-  - Pass the parameter along with rest of the connection_options（正确）
-  - Pass parameters in additional_options while using from_catalog() method.（正确）
-  - Set parameters as key-value pairs in the parameters field of your table structure（正确）
+  - Glue ENI 没有公有 IP，通常需要 NAT 出口。（正确）
+  - 必须先关闭 job bookmark。
+  - 必须把 worker 改成 G.2X。
+  - 必须启用 Athena partition projection。
+  分析：考有官方文档支持的网络机制与配置
 
 **从以上示例中总结出的选择题设计模式（必须遵循）：**
 - **当前只出单选题**（multi_select 全部设为 false，correct_answer 只写一个字母）
 - 单选题的核心：**问的是一个唯一事实**，干扰项来自同维度不同对象的真实描述
 - L1 单选围绕"是什么 / 产出什么 / 某个具体事实"
 - L2 单选围绕"某个配置的正确做法 / 两种方式的核心区别 / 某个行为的唯一原因"
-- L3 单选围绕"AWS 内部架构细节（如 Crawler 的 command 阶段、Job 的 executor 生命周期）/ 性能调优的唯一最佳方案 / 故障排查思路中的关键判断点 / 极端场景下唯一可行方案"
+- L3 单选围绕可核验的复杂配置差异、机制或边界；不要把未经核验的内部架构和唯一根因写成标准答案
 - 干扰项用**容易混淆的相近概念**（如把 Crawler 的功能和 Job 的功能混、把 Data Catalog 和 Crawler 搞反），不是随便编
 - 选项可以涉及具体的 API 名、方法名、参数名（如 extract_jdbc_conf()、from_catalog()），这是 L2 级别的正常深度
 
@@ -294,11 +437,11 @@ def generate_questions(
 - 可以包含简单的故障场景，但重点在"理解机制"而非"排查定位"
 - 回答要求：描述流程/架构/差异，能说清楚"怎么工作的"
 - 示例：
-  - "Crawler 的执行过程是什么？（start_crawl → worker → finalizer → stop_crawl）"
+  - "Crawler 如何识别数据源并更新 Data Catalog 表元数据？"
   - "Dynamic Frame 与 Data Frame 的区别？"
   - "Spark 的提交流程（submit → driver → executor）"
-  - "Crawler 跑 worker 执行情况下数据是如何分发和处理的？"
-  - "Glue parquet 与 S3 原生 parquet 的区别，看看什么标记？"
+  - "Crawler 自定义 classifier 与内置 classifier 的尝试顺序是什么？"
+  - "Glue Job 通过 VPC endpoint 访问 S3 与通过 NAT 访问公网 API 有什么区别？"
   - "partition index 与 athena projection 的区别？加载分区的方式"
   - "Apply Mapping 有多少个 action，分别是什么？"
   - "启用 bookmark 后，job 的 concurrency 能否设置为 2，为什么？"
@@ -333,6 +476,7 @@ def generate_questions(
 {case_section}
 {gap_section}
 {checklist_section}
+{source_rule}
 # 输出格式（严格 JSON）
 {{
   "questions": [
@@ -340,17 +484,19 @@ def generate_questions(
       "id": "q01",
       "type": "choice",
       "dimension_id": "{selected_caps[0]['id']}",
+      "source_ids": ["{source_example}"],
       "difficulty": "L1/L2/L3",
       "question": "简洁的知识点提问",
       "multi_select": false,
       "options": ["选项内容（不要 A. 前缀）", "选项内容", "选项内容", "选项内容"],
-      "correct_answer": "A/B/C/D（单选写一个字母，多选写多个如 ABD）",
+      "correct_answer": "A（只能写 A/B/C/D 中的一个字母）",
       "explanation": "为什么这个答案对，干扰项错在哪"
     }},
     {{
       "id": "q05",
       "type": "open",
       "dimension_id": "{selected_caps[0]['id']}",
+      "source_ids": ["{source_example}"],
       "difficulty": "L2/L3",
       "question": "客户场景 + 现象 + 排查/建议要求",
       "scoring_rubric": ["得分点1", "得分点2", "得分点3"],
@@ -363,8 +509,7 @@ def generate_questions(
 - options 数组里不要带 A. B. C. D. 前缀
 - 中文出题
 - dimension_id 必须从能力点 id 中选取
-- 选择题可以是单选或多选：多选题设 multi_select=true，题干注明"Choose all that apply"或"选出所有正确项"，correct_answer 写多个字母如 "ABD"
-- 单选题设 multi_select=false，correct_answer 只写一个字母
+- {blueprint['num_choice']} 道选择题全部是单选题：multi_select=false，correct_answer 只写 A/B/C/D 中的一个字母
 - 直接输出 JSON，不要 markdown 代码块"""
 
     llm = get_llm()
@@ -374,37 +519,56 @@ def generate_questions(
             {"role": "user", "content": prompt},
         ],
         temperature=0.5,
+        model=model_id,
     )
 
     cleaned = _strip_code_fence(resp)
     try:
         data = json.loads(cleaned)
-        questions = data.get("questions", [])
+        questions = data.get("questions", []) if isinstance(data, dict) else []
     except json.JSONDecodeError:
         questions = []
 
-    if not questions:
-        # 兜底：极简题目（避免完全空白）
-        questions = [{
-            "id": "q01",
-            "type": "open",
-            "dimension_id": selected_caps[0]["id"],
-            "difficulty": "L2",
-            "question": f"请描述你对 AWS {svc['name']} 中【{selected_caps[0]['name']}】的理解，以及典型应用场景。",
-            "scoring_rubric": [f"覆盖 {selected_caps[0]['name']} 核心概念", "结合实际场景说明", "提及最佳实践"],
-            "reference_answer": selected_caps[0].get("description", ""),
-        }]
+    if not questions or not isinstance(questions, list):
+        raise ValueError("题目生成失败，请重试")
 
     # 标准化 id
     for i, q in enumerate(questions):
+        if not isinstance(q, dict):
+            raise ValueError("生成题目未通过结构校验，请重试")
         if not q.get("id"):
             q["id"] = f"q{i+1:02d}"
 
-    session_id = uuid.uuid4().hex[:12]
-    _session_store[session_id] = {
-        "service_id": service_id,
-        "capability_ids": [c["id"] for c in selected_caps],
-        "questions": questions,
-    }
+    if not user_id:
+        raise ValueError("缺少用户身份")
+    allowed_caps = {c["id"] for c in selected_caps}
+    fact_by_id = {item["id"]: item for item in load_glue_facts()} if service_id == "glue" else None
+    _validate_questions(questions, allowed_caps, set(fact_by_id) if fact_by_id else None,
+                        blueprint, recent_stems, allowed_caps if capability_ids and kind == "pre" else None)
+    if fact_by_id:
+        curated_urls = {doc.document_id.rsplit(":", 1)[-1]: doc.url
+                        for doc in curated_fact_documents(service_id)}
+        for question in questions:
+            question["source_refs"] = [
+                {"id": fact_id, "url": curated_urls.get(fact_id, fact_by_id[fact_id]["source"]),
+                 "fact": fact_by_id[fact_id]["fact"]}
+                for fact_id in question["source_ids"]
+            ]
+
+    from app.db import SessionLocal
+    from app.models import QuestionSession
+
+    session_id = session_id or uuid.uuid4().hex
+    with SessionLocal() as db:
+        db.add(QuestionSession(id=session_id, user_id=user_id, service_id=service_id,
+                               profile_id=profile_id,
+                               model_id=model_id,
+                               study_days=study_days, minutes_per_day=minutes_per_day,
+                               kind=kind, prev_assessment_id=prev_assessment_id,
+                               questions=questions,
+                               blueprint={key: value for key, value in blueprint.items() if key != "expected"} |
+                                         {"capability_ids": [c["id"] for c in selected_caps],
+                                          "scope": "focused" if capability_ids else "comprehensive"}))
+        db.commit()
 
     return session_id, questions

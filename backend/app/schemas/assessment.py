@@ -1,7 +1,8 @@
 """测评相关的数据模型（v2 - 三层结构）。"""
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 
 # ---------- 请求 ----------
@@ -13,23 +14,24 @@ class AnswerItem(BaseModel):
 
 class GenerateRequest(BaseModel):
     """动态出题请求（基于 Service）。"""
-    user_id: str = "demo_user"
     service_id: str  # 必填：考哪个服务
     capability_ids: list[str] = []  # 空=全部 capability
-    num_choice: int = 4
-    num_open: int = 2
-    difficulty: str = ""  # 空=混合
+    question_count: Literal[6, 9, 12, 18] = 9
+    difficulty_profile: Literal["foundation", "balanced", "advanced"] = "balanced"
+    focus: Literal["comprehensive", "configuration", "troubleshooting", "architecture"] = "comprehensive"
+    generation_model: str | None = Field(default=None, alias="model_id", max_length=128)
+    study_days: int = Field(default=5, ge=1, le=7)
+    minutes_per_day: int = Field(default=90, ge=30, le=180)
 
 
 class SubmitRequest(BaseModel):
-    user_id: str = "demo_user"
     session_id: str = ""
     answers: list[AnswerItem]
 
 
 class PostTestRequest(BaseModel):
-    user_id: str = "demo_user"
     prev_assessment_id: str
+    generation_model: str | None = Field(default=None, alias="model_id", max_length=128)
 
 
 # ---------- 响应 ----------
@@ -61,6 +63,7 @@ class QuestionResult(BaseModel):
     total_score: float = 0
     level: str = ""
     feedback: str = ""
+    scoring_version: str = "legacy"
 
 
 class CapabilityScore(BaseModel):
@@ -100,6 +103,9 @@ class LearningTask(BaseModel):
     # 核心概念，每条 LLM 给 search_query，后端拼成搜索 URL 后写入 url 字段
     concepts: list[dict] = []  # [{"point": "...", "search_query": "...", "url": "<auto>"}]
     hands_on: str = ""  # 实操步骤说明（多行）
+    preconditions: str = ""  # 实操所需账号、权限、资源和预置环境
+    verification_steps: str = ""  # 可观察的验收步骤；未实测时不得写成已通过
+    risk_and_cleanup: str = ""  # 费用/变更风险、回滚和资源清理
     hands_on_search: str = ""  # 实操参考的搜索关键词
     hands_on_url: str = ""  # 后端根据 hands_on_search 自动拼接的搜索 URL
     troubleshooting: str = ""  # 故障排查练习
@@ -118,6 +124,7 @@ class LearningPlan(BaseModel):
     plan_name: str = ""
     overall_assessment: str = ""
     priority_dimensions: list[str] = []
+    deferred_gap_ids: list[str] = []
     weekly_plan: list[WeekPlan] = []
     verification: str = ""
 
@@ -160,21 +167,32 @@ class AgentStep(BaseModel):
 
 
 class AssessmentResult(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     assessment_id: str = ""
     user_id: str
     kind: str = "pre"
+    record_origin: str = "user"
     service_id: str = ""
+    model_id: str | None = None
     service_name: str = ""
+    blueprint: dict | None = None
     overall_level: str
+    overall_avg: float = 0
+    rating_reliable: bool = False
+    rating_reason: str = ""
+    scoring_version: str = "legacy"
     choice_score: str
+    answers: list[AnswerItem] = []
     # 本次测评的 capability 级雷达（在该 service 内）
     capability_radar: list[CapabilityScore] = []
     capability_excluded: list[str] = []
     questions: list[dict] = []
     question_results: list[QuestionResult]
     learning_plan: LearningPlan | None = None
+    plan_review: dict | None = None
     # 后测对比
     prev_capability_radar: list[CapabilityScore] | None = None
+    comparison: dict | None = None
     # Agent 化新增
     diagnosis: list[KnowledgeGap] = []
     agent_trace: list[AgentStep] = []

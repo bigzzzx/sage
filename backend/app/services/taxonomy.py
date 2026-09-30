@@ -46,6 +46,16 @@ def list_services() -> list[dict[str, Any]]:
     return out
 
 
+def get_profile_services(profile_id: str) -> list[dict[str, Any]]:
+    """Return service summaries for one profile/track."""
+    track = next((item for item in get_tracks().get("tracks", [])
+                  if item.get("id") == profile_id), None)
+    if not track:
+        return []
+    return [{**service, "track_id": track["id"], "track_name": track["name"]}
+            for service in track.get("services", [])]
+
+
 def get_full_taxonomy() -> dict[str, Any]:
     """返回完整 taxonomy（Track + 每个 Service 的简要 + Capability 详情）。
 

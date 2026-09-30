@@ -1,0 +1,39 @@
+{
+  "method": "human-authored synthetic answers, source-checked; real deepseek-flash scoring",
+  "created_at": "2026-09-28T14:45:53.401447+00:00",
+  "model": "deepseek-flash",
+  "cases": [
+    {
+      "id": "crawler_partial",
+      "kind": "assessment",
+      "manual_label": "partial",
+      "question": "Glue Crawler 扫描 S3 CSV 后 Catalog 有表，但 S3 没有清洗后的文件。Crawler 是否负责清洗并输出新文件？应如何实现清洗？",
+      "answer": "Crawler 会创建 Data Catalog 表，可能还要检查 S3。",
+      "source_urls": [
+        "https://docs.aws.amazon.com/glue/latest/dg/catalog-and-crawler.html"
+      ],
+      "result": {
+        "scores": {
+          "accuracy": 5,
+          "completeness": 2,
+          "clarity": 3
+        },
+        "avg_score": 3.0,
+        "level": "L1",
+        "feedback": "回答仅提到 Crawler 创建 Data Catalog 表，未回答是否清洗/输出；也未说明 Crawler 只发现并更新元数据，且需另建 Glue ETL 等转换写目标 S3 前缀。",
+        "total_score": 15.0
+      },
+      "error": null,
+      "usage": [
+        {
+          "model": "deepseek-flash",
+          "elapsed_ms": 19218,
+          "prompt_tokens": 732,
+          "completion_tokens": 3940,
+          "status": "ok"
+        }
+      ],
+      "elapsed_ms": 19241
+    }
+  ]
+}

@@ -6,11 +6,13 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from typing import Any
 
 from app.schemas.assessment import AgentStep, KnowledgeGap
 from app.services.llm import get_llm
+from app.services.glue_sources import format_glue_facts
 
 from .common import build_doc_pool, enforce_url_whitelist, safe_json_loads
 
@@ -56,7 +58,7 @@ _DIAG_PROMPT = """你是 AWS {service_name} 的资深 SE 培训师，正在 revi
 # 该能力点对应的策展文档（白名单，挑选 suggested_doc_urls 只能从这里选）
 {doc_pool}
 
-# 该服务的内部培训考核要点（判断用户盲区时参考此清单精准定位缺失的知识点）
+# 该服务的考核资料（仅用于核对事实；若与题目参考答案冲突，不要把争议答案当成用户盲区）
 {checklist_section}
 
 # 题目信息
@@ -65,14 +67,18 @@ _DIAG_PROMPT = """你是 AWS {service_name} 的资深 SE 培训师，正在 revi
 - 题目内容：{question}
 - 评分要点（rubric）：{rubric}
 - 参考答案：{reference_answer}
+- 题目绑定的官方事实：{source_evidence}
 - 用户答案：{user_answer}
+- 用户选择的选项原文：{selected_option}
+- 正确选项原文：{correct_option}
 - 用户得分：{user_score}
 
 # 诊断策略（按题目类型区分）
 
 ## 如果是选择题（type=choice）
+只能据本题所选选项说明差异；一个错误选项不能证明用户长期持有某种观点，也不能推断选择动机。
 选择题答错暴露的盲区通常是**概念混淆或记忆偏差**。
-- 重点分析：用户为什么选了错误选项？是把 A 概念和 B 概念搞混了？还是对某个配置项的行为理解错了？
+- 只对照用户所选选项原文与正确选项原文，指出本题的知识差异；不要猜测选择原因。
 - 输出限制：**最多 1~2 条盲区**（一道选择题不可能暴露太多问题）
 - severity 一般是 major（概念混淆）或 minor（记忆模糊），极少出现 critical
 
@@ -103,7 +109,7 @@ _DIAG_PROMPT = """你是 AWS {service_name} 的资深 SE 培训师，正在 revi
 | **minor** | 表述不精确或遗漏次要点，但理解方向正确 | "没提到 recordCount 属性"、"流程描述少了一步但主干对" |
 
 **数量限制**：
-- 选择题：critical 最多 1 条，major 最多 1 条，minor 不输出 → 总共最多 2 条
+- 选择题：最多 1 条，可标为 minor；不要仅凭单题标记长期能力缺陷。
 - 开放题：critical 最多 1 条，major 最多 2 条，minor 最多 1 条 → 总共最多 4 条
 
 # 好诊断 vs 坏诊断（关键参考）
@@ -139,8 +145,51 @@ _DIAG_PROMPT = """你是 AWS {service_name} 的资深 SE 培训师，正在 revi
 - 如果用户答案完全正确，输出空数组 []
 - 选择题最多 2 条盲区，开放题最多 4 条
 - 每条盲区必须**具体到一个知识点**，不允许泛泛评价
+- 评分要点可能包含题干未要求的扩展知识。不要仅因用户没有主动提及扩展知识，就推断用户不懂；仅诊断题干或参考答案所要求、且该答案实际说错或遗漏的内容
+- 同一句错误若只是两种说法（例如“Crawler 会清洗数据”和“Crawler 产出清洗后文件”），应合并为一条盲区，避免重复计数
+- 纠正建议不要把一种实现方式写成唯一方式：例如 Crawler 不做清洗转换，但不能断言清洗只能由 Glue ETL Job 完成
 - evidence_quote 必须从用户答案里**原文截取**，不允许改写；用户没写相关内容就写"未提及"
 - suggested_doc_urls 必须严格来自上面"该能力点对应的策展文档"中的 URL，不许编造"""
+
+
+_TECHNICAL_ANCHORS = re.compile(
+    r"(?<![A-Za-z0-9])(?:S3|NAT|IGW|ENI|RDS|SG|NACL|STS|VPC|IAM|Athena|"
+    r"Crawler|Catalog|Spark|KMS|CloudWatch|DynamicFrame)(?![A-Za-z0-9])",
+    re.IGNORECASE,
+)
+
+
+def _anchors(value: str) -> set[str]:
+    return {match.group().lower() for match in _TECHNICAL_ANCHORS.finditer(value)}
+
+
+def _supported_gaps(raw_gaps: list, question: dict, user_answer: str) -> list[dict]:
+    """Reject invented quotes and omissions about topics outside the visible question/answer key."""
+    answer = (user_answer or "").strip()
+    requested = _anchors(str(question.get("question", "")) + " " +
+                         str(question.get("reference_answer", "")))
+    kept = []
+    for raw in raw_gaps:
+        if not isinstance(raw, dict):
+            continue
+        quote = str(raw.get("evidence_quote", "")).strip()
+        if quote == "未提及":
+            gap_terms = _anchors(" ".join(str(raw.get(key, "")) for key in
+                                          ("title", "misunderstanding", "correct_understanding")))
+            if gap_terms - requested:
+                continue
+        elif not quote or quote not in answer:
+            continue
+        kept.append(raw)
+    return kept
+
+
+def _normalize_glue_understanding(value: str) -> str:
+    """Do not present Glue ETL Job as the only possible data-transformation tool."""
+    return re.sub(
+        r"(?:必须|只能|仅能)由\s*(?:AWS\s*)?Glue\s*(?:ETL\s*)?Job\s*(?:来)?(?:完成|进行|实现)",
+        "可由转换工具（例如 Glue ETL Job）完成", value, flags=re.IGNORECASE,
+    )
 
 
 def _diagnose_one_question(
@@ -152,6 +201,7 @@ def _diagnose_one_question(
     doc_pool_text: str,
     allowed_urls: set[str],
     checklist_text: str = "",
+    model: str | None = None,
 ) -> tuple[list[dict], int]:
     """诊断单题，返回 (gaps_raw, elapsed_ms)。"""
     levels = capability.get("levels", {}) or {}
@@ -166,13 +216,19 @@ def _diagnose_one_question(
         level_l2=levels.get("L2", ""),
         level_l3=levels.get("L3", ""),
         doc_pool=doc_pool_text,
-        checklist_section=checklist_text or "（该服务暂无内部考核清单）",
+        checklist_section=checklist_text or "（该服务暂无审核考核资料）",
         question_type=question.get("type", "open"),
         question_difficulty=question.get("difficulty", "L2"),
         question=question.get("question", ""),
         rubric=json.dumps(rubric, ensure_ascii=False),
         reference_answer=question.get("reference_answer", "") or "（无）",
+        source_evidence="\n".join(
+            f"[{item.get('id', '')}] {item.get('fact', '')} ({item.get('url', '')})"
+            for item in (question.get("source_refs") or []) if isinstance(item, dict)
+        ) or "（无；不能把未经核验的参考答案当作绝对事实）",
         user_answer=(user_answer or "").strip() or "（未作答）",
+        selected_option=_choice_option(question, user_answer),
+        correct_option=_choice_option(question, question.get("correct_answer", "")),
         user_score=user_score,
     )
     content, elapsed_ms = get_llm().chat_traced(
@@ -181,15 +237,23 @@ def _diagnose_one_question(
             {"role": "user", "content": prompt},
         ],
         temperature=0.2,
+        model=model,
     )
     gaps = safe_json_loads(content, [])
     if not isinstance(gaps, list):
         gaps = []
     # 白名单兜底：每条 gap 的 suggested_doc_urls 只保留合法 URL
+    gaps = _supported_gaps(gaps, question, user_answer)
     for g in gaps:
         urls = g.get("suggested_doc_urls") or []
         g["suggested_doc_urls"] = [u for u in urls if isinstance(u, str) and u.strip() in allowed_urls]
     return gaps, elapsed_ms
+
+
+def _choice_option(question: dict, letter: str) -> str:
+    options = question.get("options") or []
+    index = ord(str(letter or " ").strip().upper()[:1] or " ") - ord("A")
+    return str(options[index]) if isinstance(options, list) and 0 <= index < len(options) else "（无有效选项）"
 
 
 def run_diagnosis(
@@ -199,6 +263,7 @@ def run_diagnosis(
     questions: list[dict],
     answers_map: dict[str, str],
     question_results: list[dict],
+    model: str | None = None,
 ) -> tuple[list[KnowledgeGap], list[AgentStep]]:
     """对所有"答得不够好"的题做诊断。
 
@@ -211,7 +276,8 @@ def run_diagnosis(
     pool_text_full, allowed_full, by_cap = build_doc_pool(svc)
 
     # 加载该 service 的 checklist（一次加载，所有题共用）
-    checklist_text = _load_checklist_for_diagnosis(service_id)
+    checklist_text = (format_glue_facts() if service_id == "glue"
+                      else _load_checklist_for_diagnosis(service_id))
 
     gaps: list[KnowledgeGap] = []
     trace: list[AgentStep] = []
@@ -236,6 +302,31 @@ def run_diagnosis(
         if not need:
             continue
 
+        if qtype == "choice":
+            selected = (answers_map.get(qid, "") or "").strip().upper()
+            correct = str(q.get("correct_answer", "")).strip().upper()
+            selected_text = _choice_option(q, selected)
+            correct_text = _choice_option(q, correct)
+            if selected_text == "（无有效选项）" or correct_text == "（无有效选项）":
+                continue
+            gaps.append(KnowledgeGap(
+                gap_id=f"gap_{qid}_0", capability_id=cap_id,
+                capability_name=capability.get("name", cap_id), question_id=qid,
+                severity="minor", title="本题选项辨析",
+                misunderstanding=f"本题选择 {selected}：{selected_text}"[:240],
+                correct_understanding=f"正确选项 {correct}：{correct_text}"[:240],
+                evidence_quote=selected,
+                suggested_doc_urls=[ref["url"] for ref in (q.get("source_refs") or [])
+                                    if isinstance(ref, dict) and ref.get("url") in allowed_full][:2],
+            ))
+            trace.append(AgentStep(
+                agent="diagnosis", label=f"诊断题目 {qid}",
+                input_summary=f"capability={cap_id}, score=0/5",
+                output_summary="根据所选与正确选项生成 1 条复习建议",
+                timestamp=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            ))
+            continue
+
         # 用 capability 自己的子文档池（缩短 prompt）
         cap_refs = by_cap.get(cap_id, [])
         cap_allowed = {r["url"].strip() for r in cap_refs if r.get("url")}
@@ -254,6 +345,7 @@ def run_diagnosis(
                 doc_pool_text=cap_pool_text,
                 allowed_urls=whitelist_for_question,
                 checklist_text=checklist_text,
+                model=model,
             )
         except Exception as e:  # noqa: BLE001
             trace.append(AgentStep(
@@ -277,8 +369,11 @@ def run_diagnosis(
                 question_id=qid,
                 severity=str(raw.get("severity", "minor")).lower() or "minor",
                 title=str(raw.get("title", ""))[:30],
-                misunderstanding=str(raw.get("misunderstanding", ""))[:120],
-                correct_understanding=str(raw.get("correct_understanding", ""))[:200],
+                misunderstanding=str(raw.get("misunderstanding", ""))[:240],
+                correct_understanding=(
+                    _normalize_glue_understanding(str(raw.get("correct_understanding", "")))
+                    if service_id == "glue" else str(raw.get("correct_understanding", ""))
+                )[:240],
                 evidence_quote=str(raw.get("evidence_quote", ""))[:120],
                 suggested_doc_urls=[u for u in (raw.get("suggested_doc_urls") or []) if isinstance(u, str)],
             ))

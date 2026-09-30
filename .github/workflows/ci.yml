@@ -24,6 +24,7 @@ jobs:
         env:
           APP_ENV: test
           LLM_DEBUG: '0'
+          RAG_BACKEND: keyword
         run: python -m unittest discover -s tests -t . -v
       - name: Retrieval relevance smoke gate
         working-directory: backend

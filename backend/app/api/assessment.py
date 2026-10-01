@@ -255,13 +255,13 @@ def assessment_result(assessment_id: str, current: dict = Depends(get_current_us
 @router.post("/results/{assessment_id}/retry-learning")
 def retry_learning_result(assessment_id: str, current: dict = Depends(get_current_user)):
     """Retry only the failed learning workflow; keep the saved score."""
-    _require_llm_ready()
     _require_record_profile(assessment_id, current["uid"])
     report = load_assessment_result(assessment_id, current["uid"])
     if not report or report.kind != "pre":
         raise HTTPException(404, "测评结果不存在")
     if report.plan_review:
         raise HTTPException(409, "学习计划已生成")
+    _require_llm_ready()
     task_id = enqueue_task("retry_learning", {"assessment_id": assessment_id,
                                               "profile_id": _current_profile(current["uid"])},
                            user_id=current["uid"], idempotency_key=assessment_id)

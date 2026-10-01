@@ -168,12 +168,6 @@ def create_ticket(req: StartTicketRequest, current: dict, ticket_id: str | None 
     if (req.category not in CATEGORIES or req.persona_id not in PERSONAS
             or req.impact not in IMPACTS or req.difficulty not in DIFFICULTIES):
         raise HTTPException(400, "暂不支持该服务、类别或客户画像")
-    if not get_settings().llm_api_key:
-        raise HTTPException(503, "工单对话需要先配置模型服务")
-    try:
-        model_id = resolve_generation_model(req.model_id)
-    except ValueError as exc:
-        raise HTTPException(400, str(exc)) from exc
     with SessionLocal() as db:
         user = db.get(User, current["uid"])
         if not user:
@@ -181,6 +175,12 @@ def create_ticket(req: StartTicketRequest, current: dict, ticket_id: str | None 
         selected_profile = profile_id or user.current_profile
         if not service_in_profile(req.service_id, selected_profile):
             raise HTTPException(400, "该服务不属于当前 Profile")
+        if not get_settings().llm_api_key:
+            raise HTTPException(503, "工单对话需要先配置模型服务")
+        try:
+            model_id = resolve_generation_model(req.model_id)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
         used = {((row.case_data or {}).get("seed_id") or row.case_id) for row in db.query(TicketSession)
                 .filter_by(user_id=current["uid"], service_id=req.service_id,
                            category=req.category).all()}

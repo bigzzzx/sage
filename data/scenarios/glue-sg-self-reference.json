@@ -1,0 +1,26 @@
+{
+  "id": "glue-sg-self-reference",
+  "service_id": "glue",
+  "title": "Glue 测试 Redshift 连接失败",
+  "level": "L3",
+  "brief": "客户在 VPC 中为 AWS Glue 配置 Amazon Redshift 连接，点击“测试连接”后失败。你需要选择证据、定位根因、提出修复方案并说明验证方式。",
+  "objective": "写出最关键的排查证据、根因、配置修改和复测步骤。",
+  "source_case": "glue-007-redshift-connection-sg-self-reference.json",
+  "tools": [
+    {"id": "job_log", "label": "查看连接测试日志", "evidence": "连接测试未能建立网络通信。没有看到数据库口令错误或 IAM 拒绝的证据；连接请求在 VPC 网络路径上超时。"},
+    {"id": "connection_config", "label": "查看 Glue 连接配置", "evidence": "连接类型：JDBC；目标：VPC 内的 Redshift；连接使用私有子网 subnet-training-a 和安全组 sg-training-glue。"},
+    {"id": "security_group", "label": "查看安全组入站规则", "evidence": "sg-training-glue 的入站规则仅允许来自应用安全组的 TCP 5439；没有来源为 sg-training-glue 自身、允许所有 TCP 的自引用规则。"},
+    {"id": "subnet_route", "label": "查看子网路由", "evidence": "子网使用本地 VPC 路由访问同 VPC 内的 Redshift 地址；本场景没有跨 VPC 或公网路由问题。"}
+  ],
+  "expected": {
+    "root_cause": "Glue 连接所用安全组缺少允许自身作为来源的入站自引用规则，导致相关网络接口之间的 TCP 通信被阻断。",
+    "remediation": "为 sg-training-glue 增加来源为该安全组自身、允许所有 TCP 的入站规则，并确认连接所用子网与安全组配置。",
+    "verification": "保存规则后重新执行 Glue 测试连接，确认连接成功；保留变更前后规则和测试结果。"
+  },
+  "rubric": [
+    {"name": "关键证据", "evidence_tool": "security_group", "all_of": [["安全组", "security group", "sg-"]]},
+    {"name": "定位根因", "all_of": [["自引用", "自身作为来源", "self-reference", "self reference"]]},
+    {"name": "可执行修复", "all_of": [["所有 tcp", "all tcp", "全部 tcp", "全 tcp"], ["入站", "inbound"]]},
+    {"name": "复测闭环", "all_of": [["重新测试", "重新执行", "复测", "retest", "test connection"]]}
+  ]
+}

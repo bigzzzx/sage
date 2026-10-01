@@ -22,6 +22,9 @@ _REFL_PROMPT = """你是 AWS 培训质检专家。你的任务是审核一份"�
 # 学习计划（来自规划 Agent）
 {plan}
 
+# 测评已给出的总体评级
+{overall_level}
+
 # 审核维度（逐条检查）
 
 ## 1. 盲区覆盖度
@@ -36,9 +39,10 @@ _REFL_PROMPT = """你是 AWS 培训质检专家。你的任务是审核一份"�
 
 ## 3. 计划质量
 - hands_on 是否具体可执行？（有编号步骤 + 具体配置项 + 验证环节 + 思考题）还是泛泛"做个实验"？
+- 创建/修改云资源的任务是否写明 preconditions、verification_steps、risk_and_cleanup？未实测的预期结果是否被误写成已完成？
 - troubleshooting 是否有具体场景 + 引导提问？还是空泛的"思考怎么排查"？
 - 是否由浅入深？（Day 1~2 概念 → Day 3~4 实操 → Day 5 复盘）
-- 时长是否合理？（每天 60~120 分钟）
+- 时长是否合理？（每天不超过 90 分钟，且任务步骤能在标注时间内完成）
 
 ## 4. 补强建议
 如果发现问题，给出具体可执行的改进建议：
@@ -87,13 +91,35 @@ _REFL_PROMPT = """你是 AWS 培训质检专家。你的任务是审核一份"�
 
 # 重要规则
 - 严格诚实：宁可挑刺，不要客气
+- 总体评级来自测评输入，不能批评其“无依据”；AWS 全球区和中国区的官方文档不能仅因域名不同就判无效，仍需核对相邻技术断言是否被页面支持。
+- S3 VPC Endpoint 只适用于 S3，不可把它作为任意公网 API 的 NAT 替代方案；缺少真实环境或前后对照时，不得认证“实操已验证”。
 - 如果全部满分，suggestions 可以写空数组 []
 - summary 要一针见血，不要客套话"""
+
+
+_FLEX_REVIEW_PROMPT = """你是独立的学习计划评审。只根据提供的数据审核，不推断未提供的事实。
+测评已给出的总体评级：{overall_level}
+知识缺口（含答题证据）：{gaps}
+学习任务（含实际操作、时长与资料）：{plan}
+用户预算：{study_days} 天，每天最多 {minutes_per_day} 分钟。
+检查 critical 缺口是否覆盖、major 缺口是否覆盖或明确延期、任务是否对准盲区、
+实操是否能执行和验证、时长是否合理、引用链接是否明确。
+创建或修改资源的任务须检查 preconditions、verification_steps、risk_and_cleanup，且不能把计划中的预期结果写成已执行结果。
+总体评级是输入事实，不要误报为缺证据；docs.aws.amazon.com 与 docs.amazonaws.cn 都可能是官方文档，不能仅凭域名不同判引用错误，须核查相邻断言。
+S3 VPC Endpoint 不能代替 NAT 让 Glue 访问任意公网 API；没有真实前后对照的任务仍是待实测。
+技术事实的真实性若缺少原文支持，应在 quality_issues 里提出核验需求。
+输出纯 JSON 对象，必须包含 1-5 的 coverage_score、alignment_score、quality_score、
+overall_score，数组 uncovered_gap_ids、weak_alignment_tasks、quality_issues、suggestions，
+以及简短 summary。具体问题给出 Day 与原因；不要凭空写已审核通过。"""
 
 
 def run_reflection(
     gaps: list[KnowledgeGap],
     plan: LearningPlan,
+    model: str | None = None,
+    study_days: int = 5,
+    minutes_per_day: int = 90,
+    overall_level: str | None = None,
 ) -> tuple[dict, AgentStep]:
     """返回 (critique_dict, trace_step)。"""
     if not plan.weekly_plan:
@@ -114,7 +140,14 @@ def run_reflection(
             "task_type": t.task_type,
             "targets_gap_ids": t.targets_gap_ids,
             "objective": t.objective,
-            "concept_points": [c.get("point", "") for c in (t.concepts or [])],
+            "concepts": t.concepts,
+            "hands_on": t.hands_on,
+            "preconditions": t.preconditions,
+            "verification_steps": t.verification_steps,
+            "risk_and_cleanup": t.risk_and_cleanup,
+            "troubleshooting": t.troubleshooting,
+            "deliverable": t.deliverable,
+            "time_minutes": t.time_minutes,
         })
     plan_text = json.dumps(tasks_brief, ensure_ascii=False, indent=2)
 
@@ -125,12 +158,19 @@ def run_reflection(
             "severity": g.severity,
             "capability_id": g.capability_id,
             "misunderstanding": g.misunderstanding,
+            "correct_understanding": g.correct_understanding,
+            "evidence_quote": g.evidence_quote,
+            "suggested_doc_urls": g.suggested_doc_urls,
         }
         for g in gaps
     ]
     gaps_text = json.dumps(gaps_brief, ensure_ascii=False, indent=2)
 
-    prompt = _REFL_PROMPT.format(gaps=gaps_text, plan=plan_text)
+    template = (_REFL_PROMPT if (study_days, minutes_per_day) == (5, 90)
+                else _FLEX_REVIEW_PROMPT)
+    prompt = template.format(gaps=gaps_text, plan=plan_text,
+                             study_days=study_days, minutes_per_day=minutes_per_day,
+                             overall_level=overall_level or "（未提供）")
 
     try:
         content, elapsed_ms = get_llm().chat_traced(
@@ -139,6 +179,7 @@ def run_reflection(
                 {"role": "user", "content": prompt},
             ],
             temperature=0.2,
+            model=model,
         )
         critique = safe_json_loads(content, {})
         if not isinstance(critique, dict):
@@ -151,6 +192,20 @@ def run_reflection(
             output_summary=f"失败：{e}",
             status="failed",
             error=str(e),
+            timestamp=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        )
+
+    score_keys = ("coverage_score", "alignment_score", "quality_score", "overall_score")
+    list_keys = ("uncovered_gap_ids", "weak_alignment_tasks", "quality_issues", "suggestions")
+    if (any(isinstance(critique.get(key), bool) or
+            not isinstance(critique.get(key), (int, float)) or
+            not 1 <= critique[key] <= 5 for key in score_keys)
+            or any(not isinstance(critique.get(key), list) for key in list_keys)):
+        return {}, AgentStep(
+            agent="reflection", label="计划质检",
+            input_summary=f"{len(gaps)} 个盲区 / {len(tasks_brief)} 个任务",
+            output_summary="审查输出结构不完整，不能视为通过",
+            status="failed", elapsed_ms=elapsed_ms,
             timestamp=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         )
 

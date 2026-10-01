@@ -1,12 +1,17 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getStoredUser } from "@/lib/auth";
 import {
   generatePostTest,
+  fetchQuestionSession,
+  getPendingTask,
+  resumeTask,
   submitPostTest,
   type AnswerItem,
+  type AssessmentResult,
+  type GenerateResponse,
   type Question,
 } from "@/lib/api";
 
@@ -38,20 +43,60 @@ function PostTestInner() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+  const started = useRef(false);
+  const draftKey = `sage_post_draft_${getStoredUser()?.user_id || "anonymous"}_${getStoredUser()?.current_profile || "unknown"}_${prevId}`;
 
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     if (!prevId) {
-      setError("缺少前测 ID，请从结果页进入后测");
+      queueMicrotask(() => setError("缺少前测 ID，请从结果页进入后测"));
       return;
     }
-    generatePostTest(prevId)
+    const savedTask = getPendingTask();
+    if (savedTask?.kind === "post-generate") {
+      resumeTask<GenerateResponse>(savedTask.taskId, savedTask.kind)
+        .then((response) => { setSessionId(response.session_id); setQuestions(response.questions); setPhase("answering"); })
+        .catch((reason) => setError(String(reason)));
+      return;
+    }
+    if (savedTask?.kind === "post-submit") {
+      queueMicrotask(() => setPhase("submitting"));
+      resumeTask<AssessmentResult>(savedTask.taskId, savedTask.kind)
+        .then((result) => { localStorage.removeItem(draftKey); router.push(`/result?id=${result.assessment_id}`); })
+        .catch((reason) => setError(String(reason)));
+      return;
+    }
+    const draft = localStorage.getItem(draftKey);
+    if (draft) {
+      try {
+        const saved = JSON.parse(draft);
+        fetchQuestionSession(saved.sessionId).then((session) => {
+          if (session.kind !== "post" || session.prev_assessment_id !== prevId) return;
+          setSessionId(saved.sessionId);
+          setQuestions(session.questions);
+          setAnswers(saved.answers || {});
+          setPhase("answering");
+        }).catch(() => localStorage.removeItem(draftKey));
+        return;
+      } catch { localStorage.removeItem(draftKey); }
+    }
+    const modelPreference = `sage_generation_model_${getStoredUser()?.user_id || "anonymous"}_${getStoredUser()?.current_profile || "unknown"}`;
+    const selectedModel = localStorage.getItem(modelPreference) || undefined;
+    generatePostTest(prevId, selectedModel)
       .then((resp) => {
         setSessionId(resp.session_id);
         setQuestions(resp.questions);
         setPhase("answering");
       })
       .catch((e) => setError(String(e)));
-  }, [prevId]);
+  }, [prevId, draftKey, router]);
+
+  useEffect(() => {
+    if (phase === "answering" && sessionId) {
+      localStorage.setItem(draftKey, JSON.stringify({ sessionId, answers }));
+    }
+  }, [phase, sessionId, answers, draftKey]);
 
   const choiceQs = questions.filter((q) => q.type === "choice");
   const openQs = questions.filter((q) => q.type === "open");
@@ -70,9 +115,9 @@ function PostTestInner() {
         question_id: q.id,
         answer: answers[q.id] || "",
       }));
-      const result = await submitPostTest("demo_user", items, sessionId, prevId);
-      sessionStorage.setItem("sage_result", JSON.stringify(result));
-      router.push("/result");
+      const result = await submitPostTest(items, sessionId, prevId);
+      localStorage.removeItem(draftKey);
+      router.push(`/result?id=${result.assessment_id}`);
     } catch (e) {
       setError(String(e));
       setPhase("answering");
@@ -98,7 +143,7 @@ function PostTestInner() {
         <div className="text-center space-y-4">
           <div className="text-5xl animate-bounce">📝</div>
           <div className="text-xl font-semibold">正在根据你的薄弱维度生成后测题目…</div>
-          <p className="text-slate-400">AI 会针对你之前测评的短板出题，约 15~30 秒</p>
+          <p className="text-slate-400">AI 会针对你之前测评的短板出题，通常需要 1～3 分钟</p>
           <div className="flex justify-center gap-1">
             <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
             <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse delay-75" />
@@ -123,13 +168,13 @@ function PostTestInner() {
 
   return (
     <main className="min-h-screen bg-slate-900 text-slate-100 py-10 px-4">
-      <div className="max-w-3xl mx-auto">
+      <div className="sage-content sage-content--reading mx-auto max-w-3xl">
         <header className="mb-8">
           <div className="inline-block px-3 py-1 mb-3 text-xs bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-full">
             后测验证
           </div>
-          <h1 className="text-3xl font-bold mb-2">📝 后测 — 验证学习成果</h1>
-          <p className="text-slate-400">
+          <h1 className="sage-page-title text-3xl font-bold mb-2">📝 后测 — 验证学习成果</h1>
+          <p className="sage-page-description text-slate-400">
             题目针对你之前测评中的薄弱维度生成 · 共 {questions.length} 题 · 已答{" "}
             {answeredCount}/{questions.length}
           </p>

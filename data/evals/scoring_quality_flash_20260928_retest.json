@@ -1,0 +1,324 @@
+{
+  "method": "human-authored synthetic answers, source-checked; real deepseek-flash scoring",
+  "created_at": "2026-09-28T14:43:34.334193+00:00",
+  "model": "deepseek-flash",
+  "cases": [
+    {
+      "id": "crawler_partial",
+      "kind": "assessment",
+      "manual_label": "partial",
+      "question": "Glue Crawler 扫描 S3 CSV 后 Catalog 有表，但 S3 没有清洗后的文件。Crawler 是否负责清洗并输出新文件？应如何实现清洗？",
+      "answer": "Crawler 会创建 Data Catalog 表，可能还要检查 S3。",
+      "source_urls": [
+        "https://docs.aws.amazon.com/glue/latest/dg/catalog-and-crawler.html"
+      ],
+      "result": {
+        "scores": {
+          "clarity": 4,
+          "accuracy": 5,
+          "completeness": 2
+        },
+        "avg_score": 3.8,
+        "level": "L1",
+        "feedback": "只说了 Crawler 创建 Data Catalog 表，未回答 Crawler 不清洗/不输出文件，也未给出用 Glue ETL Job 等转换流程写入目标 S3 前缀的做法。",
+        "total_score": 19.0
+      },
+      "error": null,
+      "usage": [
+        {
+          "model": "deepseek-flash",
+          "elapsed_ms": 10329,
+          "prompt_tokens": 732,
+          "completion_tokens": 2050,
+          "status": "ok"
+        }
+      ],
+      "elapsed_ms": 10348
+    },
+    {
+      "id": "bookmark_partial",
+      "kind": "assessment",
+      "manual_label": "partial",
+      "question": "Glue 作业启用了 job bookmark，脚本调用 job.init 后成功处理并写出，但结束时没有 job.commit()。为何可能反复处理旧输入？请说明检查和修复步骤。",
+      "answer": "先看一下作业运行日志和 bookmark 配置，可能跟脚本有关。",
+      "source_urls": [
+        "https://docs.aws.amazon.com/glue/latest/dg/monitor-continuations.html"
+      ],
+      "result": {
+        "scores": {
+          "logical_flow": 1,
+          "accuracy": 3,
+          "completeness": 1,
+          "technical_depth": 1
+        },
+        "avg_score": 1.8,
+        "level": "L2",
+        "feedback": "仅建议查日志和bookmark配置，未指出漏job.commit导致状态未保存；应说明job.init读状态、成功路径后commit保存，并连续运行对比验证。",
+        "total_score": 9.0
+      },
+      "error": null,
+      "usage": [
+        {
+          "model": "deepseek-flash",
+          "elapsed_ms": 15264,
+          "prompt_tokens": 832,
+          "completion_tokens": 3164,
+          "status": "ok"
+        }
+      ],
+      "elapsed_ms": 15264
+    },
+    {
+      "id": "nat_correct",
+      "kind": "assessment",
+      "manual_label": "strong",
+      "question": "Glue 作业在 VPC 中能读私有 RDS，却连接客户自建公网 HTTPS API 超时。日志显示连接超时，ENI 只有私有 IP、子网无 NAT 默认路由，安全组允许出站 443。请解释最可能根因、如何排除其他方向，给出安全的修复和验证步骤。",
+      "answer": "RDS 可达仅说明内网链路通。日志是公网 HTTPS 连接超时，ENI 只有私网 IP 且子网缺少 NAT 默认路由，所以优先怀疑公网出口。安全组已放行 443，仍核对 DNS、NACL、目标 API 与路由，不把 S3 Endpoint 当任意公网出口。经授权在隔离环境配置 NAT 出口，记录同一 Glue 环境对同一 API 的前后连接结果；先评估影响、留存路由备份，异常时回滚。",
+      "source_urls": [
+        "https://docs.aws.amazon.com/glue/latest/dg/connection-JDBC-VPC.html"
+      ],
+      "result": {
+        "scores": {
+          "systematic_approach": 4,
+          "before_after_clarity": 3,
+          "solution_feasibility": 4,
+          "accuracy": 5,
+          "root_cause_identification": 5
+        },
+        "avg_score": 4.5,
+        "level": "L3",
+        "feedback": "根因与排除正确。缺 NAT 网关需置于公有子网并经 IGW 出网、加 0.0.0.0/0 默认路由的具体配置；前后对比未点明 SNAT 使私网 IP 可访问公网的本质。",
+        "total_score": 22.5
+      },
+      "error": null,
+      "usage": [
+        {
+          "model": "deepseek-flash",
+          "elapsed_ms": 3664,
+          "prompt_tokens": 1432,
+          "completion_tokens": 699,
+          "status": "ok"
+        }
+      ],
+      "elapsed_ms": 3664
+    },
+    {
+      "id": "nat_strong",
+      "kind": "ticket",
+      "manual_label": "strong",
+      "case_id": "glue-public-api-nat",
+      "messages": [
+        {
+          "role": "customer",
+          "content": "我们的 Glue 作业能读到 VPC 内的 RDS，但调用一个外部 HTTPS API 一直超时。能帮我排查吗？"
+        },
+        {
+          "role": "user",
+          "content": "请确认影响范围、失败目标，并提供连接阶段的作业日志和所用子网路由；先不要修改生产网络。"
+        },
+        {
+          "role": "customer",
+          "content": "作业中的外部 HTTPS 请求在连接阶段超时；读取同 VPC 的 RDS 正常。失败目标是客户自建的公网 HTTPS API，不是 Amazon S3 服务地址。"
+        },
+        {
+          "role": "user",
+          "content": "日志指向公网连接失败。请核对 Glue ENI 是否只有私有 IP、默认路由是否经过 NAT，同时确认安全组 443 出站和 DNS。"
+        },
+        {
+          "role": "customer",
+          "content": "Glue Connection 使用 subnet-training-private，ENI 只有私有 IP；该子网默认路由没有指向 NAT 网关。Glue Connection 的安全组允许出站 TCP 443；目前没有发现安全组出站阻断。"
+        }
+      ],
+      "final_answer": "现有证据表明同 VPC RDS 可达、私有 ENI 无 NAT 默认路由，公网 API 超时优先指向缺少公网出口，不能靠 S3 Endpoint 或仅靠 IGW 解决。先在隔离环境核对 DNS、NACL 与目标条件，再经授权为作业子网配置可用 NAT 出口；记录路由变更和回滚条件。用相同 Glue 环境及同一公网 API 对比变更前超时与变更后连通结果；目前尚未执行或验证，不把建议当作已修复。",
+      "revealed_ids": [
+        "job_log",
+        "target",
+        "network",
+        "security_group"
+      ],
+      "result": {
+        "status": "ai_provisional",
+        "summary": "用户在两轮对话中完成了范围与目标澄清、针对性证据索取与根因定位，并在最终总结中给出隔离验证后再经授权配置 NAT 出口的可执行方案、回滚要求和明确的未执行声明。整体判断与工单真相一致：Glue VPC ENI 仅有私有 IP 且子网无 NAT 默认路由，导致公网 API 超时，S3 Endpoint/IGW 无法替代 NAT 出口。主要缺口在于未澄清业务优先级与变更窗口/授权人、未给出预期时间、验证环节缺少回滚触发条件和交接责任人。",
+        "problem": "Glue 作业在 VPC 中能访问私有 RDS，却无法访问公网 API。",
+        "user_answer": "现有证据表明同 VPC RDS 可达、私有 ENI 无 NAT 默认路由，公网 API 超时优先指向缺少公网出口，不能靠 S3 Endpoint 或仅靠 IGW 解决。先在隔离环境核对 DNS、NACL 与目标条件，再经授权为作业子网配置可用 NAT 出口；记录路由变更和回滚条件。用相同 Glue 环境及同一公网 API 对比变更前超时与变更后连通结果；目前尚未执行或验证，不把建议当作已修复。",
+        "reference": {
+          "problem": "Glue 作业在 VPC 中能访问私有 RDS，却无法访问公网 API。",
+          "root_cause": "Glue VPC ENI 只有私有 IP，所在子网缺少可用 NAT 出口；仅有 Internet Gateway 或 S3 Endpoint 不能让作业访问该公网 API。",
+          "resolution": "在隔离环境确认出口设计，为 Glue 使用的子网配置指向可用 NAT 网关的默认路由，并复核安全组、DNS 与目标 API 条件。",
+          "verification": "在同一 Glue 执行环境、同一公网 API 目标上记录变更前失败和变更后成功的连接结果；记录路由变更与回滚。"
+        },
+        "investigation_steps": [
+          "首轮澄清影响范围、失败目标（公网 HTTPS API 而非 S3）、失败阶段（连接超时）与同 VPC RDS 可达的对比事实，并声明先不动生产网络。",
+          "索取连接阶段作业日志与所用子网路由，确认 Glue Connection 的 ENI 仅私有 IP、子网默认路由未指向 NAT。",
+          "核对 Glue Connection 安全组 443 出站与 DNS，排除安全组出站阻断。",
+          "在最终总结中把根因收敛为缺少 NAT 公网出口，并列出隔离环境需进一步核对的 DNS/NACL/目标条件。",
+          "给出配置 NAT 出口的授权流程、路由变更与回滚记录要求，以及变更前后同环境同目标的对比复测计划，同时声明尚未执行或验证。"
+        ],
+        "strengths": [
+          "证据索取精准：直接指向 ENI 私有 IP、默认路由是否经 NAT、安全组 443 出站和 DNS，与工单四个已披露证据（job_log、target、network、security_group）一一对应。",
+          "技术判断正确且区分确定性与假设：明确排除 S3 Endpoint 与仅靠 IGW 的替代解释，并用“优先指向”保留 NACL/DNS/目标条件待验证空间。",
+          "风险控制到位：首轮即要求不要修改生产网络，方案要求先在隔离环境核对、经授权后再变更，并记录回滚条件。",
+          "如实声明状态：明确写出“目前尚未执行或验证，不把建议当作已修复”，未虚报完成度。"
+        ],
+        "improvements": [
+          "未澄清业务影响与优先级：没有询问该 API 调用对作业 SLA/下游业务的影响、是否有其他作业或子网同样受影响、是否需要临时缓解路径。",
+          "未明确变更授权链与时间预期：没有说明谁批准生产路由变更、期望的变更窗口与大致耗时，客户无法据此安排。",
+          "NAT 方案颗粒度可再细化：未说明 NAT 网关所处子网/可用区、路由表条目、弹性 IP、成本与配额等前置条件。",
+          "验证计划缺少回滚触发条件、责任人和证据留存方式（如连接测试日志或抓包快照）的交接说明。"
+        ],
+        "dimensions": [
+          {
+            "id": "clarification",
+            "label": "需求与影响澄清",
+            "score": 4,
+            "max_score": 5,
+            "weight": 15,
+            "not_observed": false,
+            "reason": "达到 4 档：一次提问即覆盖现象、失败目标、证据来源与环境约束，且未重复索取客户已给出的信息；客户回答后未再冗余追问。距 5 档差在未澄清业务目标与优先级、影响面（其他作业/子网）及是否存在恢复时间要求。",
+            "citations": [
+              {
+                "turn": 1,
+                "role": "user",
+                "quote": "请确认影响范围、失败目标，并提供连接阶段的作业日志和所用子网路由；先不要修改生产网络。"
+              },
+              {
+                "turn": 1,
+                "role": "customer",
+                "quote": "作业中的外部 HTTPS 请求在连接阶段超时；读取同 VPC 的 RDS 正常。失败目标是客户自建的公网 HTTPS API，不是 Amazon S3 服务地址。"
+              }
+            ],
+            "next_step": "追加一句：这个调用超时对作业产出/下游业务的影响和可接受恢复时间是多少？是否只有该作业、该子网受影响？以便确定是走紧急变更还是常规窗口。"
+          },
+          {
+            "id": "evidence",
+            "label": "信息和证据处理",
+            "score": 4,
+            "max_score": 5,
+            "weight": 20,
+            "not_observed": false,
+            "reason": "达到 4 档：索取的证据覆盖 job_log（连接阶段超时）、target（公网 HTTPS API 非 S3）、network（私有 ENI、无 NAT 默认路由）、security_group（443 出站未阻断），并解释了这些证据指向缺少公网出口、同时排除安全组出站阻断与 S3 Endpoint 路径。距 5 档差在未量化或补充日志时间点/连接目标 IP、NACL 与 DNS 解析结果仍未取得，替代解释尚未全部排除。",
+            "citations": [
+              {
+                "turn": 2,
+                "role": "user",
+                "quote": "日志指向公网连接失败。请核对 Glue ENI 是否只有私有 IP、默认路由是否经过 NAT，同时确认安全组 443 出站和 DNS。"
+              },
+              {
+                "turn": 2,
+                "role": "customer",
+                "quote": "Glue Connection 使用 subnet-training-private，ENI 只有私有 IP；该子网默认路由没有指向 NAT 网关。Glue Connection 的安全组允许出站 TCP 443；目前没有发现安全组出站阻断。"
+              }
+            ],
+            "next_step": "请客户补充连接阶段日志中的目标主机名/解析 IP 与超时时间戳，以及该子网 NACL 出入站规则和 DNS 解析结果，用以排除 NACL 阻断与 DNS 解析到私网地址的替代解释。"
+          },
+          {
+            "id": "technical_judgment",
+            "label": "技术判断",
+            "score": 4,
+            "max_score": 5,
+            "weight": 25,
+            "not_observed": false,
+            "reason": "达到 4 档：依据已展示证据正确定位为 Glue VPC ENI 无 NAT 公网出口，并明确排除 S3 Endpoint 与“仅靠 IGW”两条常见误判；同时区分已证实（私有 ENI、无 NAT 默认路由、安全组 443 放行）与待验证（DNS、NACL、目标侧条件）。距 5 档差在尚未实际排除 NACL/DNS/目标侧等替代解释，根因表述仍为“优先指向”。",
+            "citations": [
+              {
+                "turn": 0,
+                "role": "final",
+                "quote": "现有证据表明同 VPC RDS 可达、私有 ENI 无 NAT 默认路由，公网 API 超时优先指向缺少公网出口，不能靠 S3 Endpoint 或仅靠 IGW 解决。"
+              },
+              {
+                "turn": 2,
+                "role": "user",
+                "quote": "请核对 Glue ENI 是否只有私有 IP、默认路由是否经过 NAT，同时确认安全组 443 出站和 DNS。"
+              }
+            ],
+            "next_step": "在隔离环境用同一 Glue 配置分别验证：有 NAT 默认路由 vs 无 NAT（或改走已确认出口）时的连通性差异，并同时记录 NACL 放通与 DNS 解析结果，用对照结果把“优先指向”升级为已排除其他原因的结论。"
+          },
+          {
+            "id": "resolution",
+            "label": "方案质量与风险控制",
+            "score": 4,
+            "max_score": 5,
+            "weight": 20,
+            "not_observed": false,
+            "reason": "达到 4 档：给出可执行路径（隔离环境核对 DNS/NACL/目标 → 经授权为作业子网配置可用 NAT 出口）、影响控制（先不修改生产网络）与回滚要求（记录路由变更和回滚条件），且未把待执行写成已完成。距 5 档差在缺少 NAT 具体落位细节（NAT 所在子网/可用区、EIP、路由表条目、成本与配额）以及回滚触发条件与授权人的明确化。",
+            "citations": [
+              {
+                "turn": 0,
+                "role": "final",
+                "quote": "先在隔离环境核对 DNS、NACL 与目标条件，再经授权为作业子网配置可用 NAT 出口；记录路由变更和回滚条件。"
+              },
+              {
+                "turn": 1,
+                "role": "user",
+                "quote": "请确认影响范围、失败目标，并提供连接阶段的作业日志和所用子网路由；先不要修改生产网络。"
+              }
+            ],
+            "next_step": "补充变更方案细节：NAT 网关所在子网与可用区、EIP/路由表变更条目、配额与成本影响、回滚触发条件（如 NAT 不可用或影响 RDS 访问时立即回退路由表）以及变更审批人与窗口。"
+          },
+          {
+            "id": "communication",
+            "label": "客户沟通与预期管理",
+            "score": 3,
+            "max_score": 5,
+            "weight": 10,
+            "not_observed": false,
+            "reason": "达到 3 档：面向经验丰富的云工程师使用简洁、术语准确的问法并说明当前下一步（核对 ENI/路由/安全组/DNS），同时设置“先不要修改生产网络”的边界。明显缺口是全程未说明预期时间、变更授权路径与客户需配合的具体产出，也未确认优先级，客户难以据此安排工作。",
+            "citations": [
+              {
+                "turn": 1,
+                "role": "user",
+                "quote": "请确认影响范围、失败目标，并提供连接阶段的作业日志和所用子网路由；先不要修改生产网络。"
+              },
+              {
+                "turn": 2,
+                "role": "user",
+                "quote": "日志指向公网连接失败。请核对 Glue ENI 是否只有私有 IP、默认路由是否经过 NAT，同时确认安全组 443 出站和 DNS。"
+              }
+            ],
+            "next_step": "在下一条回复中明确：需要客户提供哪一项材料、预计核对与变更各需多长时间、生产路由变更由谁授权、以及在等待期间是否维持现状不提临时缓解。"
+          },
+          {
+            "id": "verification",
+            "label": "验证、总结与交接",
+            "score": 4,
+            "max_score": 5,
+            "weight": 10,
+            "not_observed": false,
+            "reason": "达到 4 档：给出可检查的成功标准与复测方式（相同 Glue 执行环境、同一公网 API，对比变更前超时与变更后连通），要求记录路由变更与回滚，并如实声明尚未执行或验证，符合“不得把建议当已修复”的要求。距 5 档差在未写明回滚触发条件、验证证据留存形式（日志/连接测试输出）与交接责任人/后续输入人。",
+            "citations": [
+              {
+                "turn": 0,
+                "role": "final",
+                "quote": "用相同 Glue 环境及同一公网 API 对比变更前超时与变更后连通结果；目前尚未执行或验证，不把建议当作已修复。"
+              }
+            ],
+            "next_step": "把验证计划补全为清单：变更前记录一次可复现的超时证据（含时间戳与目标主机），变更后在同一 Glue 作业与同一 API 上复测连通并留存日志；写明回滚触发条件、执行人与触发后恢复路由表的步骤。"
+          }
+        ],
+        "overall_score": 78,
+        "scoring_version": "ticket_v2",
+        "critical_gap": false,
+        "sources": [
+          "https://docs.aws.amazon.com/glue/latest/dg/start-connecting.html",
+          "https://docs.aws.amazon.com/glue/latest/dg/vpc-endpoints-s3.html"
+        ],
+        "case_quality": {},
+        "source_records": [],
+        "claim_basis": [],
+        "pending_actions": [],
+        "note": "AI 教学反馈，仅依据模拟工单与对话；引用已核对原文，技术判断仍需人工抽查。 本案例的技术资料支持尚不完整。"
+      },
+      "error": null,
+      "usage": [
+        {
+          "model": "deepseek-flash",
+          "elapsed_ms": 20301,
+          "prompt_tokens": 1823,
+          "completion_tokens": 4592,
+          "status": "ok"
+        }
+      ],
+      "elapsed_ms": 20301
+    }
+  ]
+}

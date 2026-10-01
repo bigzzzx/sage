@@ -15,9 +15,10 @@ class Settings(BaseSettings):
     llm_provider: str = Field(default="deepseek")
     llm_api_key: str = Field(default="")
     llm_base_url: str = Field(default="https://api.deepseek.com/v1")
-    llm_model: str = Field(default="deepseek-chat")
+    llm_model: str = Field(default="deepseek-flash")
+    auth_secret: str = Field(default="dev-only-change-me")
 
-    # Embedding（暂未启用）
+    # Embedding: openai-compatible, local, or remote_http (/embed).
     embedding_provider: str = Field(default="")
     embedding_api_key: str = Field(default="")
     embedding_base_url: str = Field(default="")
@@ -28,7 +29,11 @@ class Settings(BaseSettings):
     rag_chroma_path: str = Field(default="data/chroma")
     rag_collection: str = Field(default="sage_knowledge")
     rag_model_device: str = Field(default="cpu")
-    rag_reranker_enabled: bool = Field(default=True)
+    rag_embed_batch_size: int = Field(default=16)
+    rag_reranker_enabled: bool = Field(default=False)
+    rag_reranker_provider: str = Field(default="local")
+    rag_reranker_base_url: str = Field(default="")
+    rag_reranker_batch_size: int = Field(default=2)
     rag_reranker_model: str = Field(default="cross-encoder/mmarco-mMiniLMv2-L12-H384-v1")
     rag_retrieve_k: int = Field(default=12)
     rag_rerank_k: int = Field(default=5)
@@ -41,6 +46,8 @@ class Settings(BaseSettings):
     app_host: str = Field(default="0.0.0.0")
     app_port: int = Field(default=8000)
     log_level: str = Field(default="INFO")
+    cors_origins: str = Field(default="http://127.0.0.1:3000,http://localhost:3000")
+    public_registration: bool = Field(default=False)
 
 
 @lru_cache

@@ -6,6 +6,9 @@ from __future__ import annotations
 
 import json
 import os
+import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
@@ -17,9 +20,21 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from app.config import get_settings
 
 
-# 调试日志开关：默认开启。设环境变量 LLM_DEBUG=0 关闭
-_DEBUG = os.environ.get("LLM_DEBUG", "1") != "0"
+# Raw prompts may contain personal answers; logging is opt-in and disabled in production.
+_DEBUG = os.environ.get("LLM_DEBUG", "0") == "1" and get_settings().app_env.lower() != "production"
 _DEBUG_LOG_PATH = Path(__file__).resolve().parents[2] / "llm_debug.log"
+_usage_sink: ContextVar[list[dict] | None] = ContextVar("sage_llm_usage_sink", default=None)
+
+
+@contextmanager
+def capture_llm_usage():
+    """Collect per-attempt metadata without retaining prompts or model replies."""
+    records: list[dict] = []
+    token = _usage_sink.set(records)
+    try:
+        yield records
+    finally:
+        _usage_sink.reset(token)
 
 
 def _debug_log(role: str, content: str) -> None:
@@ -61,6 +76,7 @@ class LLMClient:
         *,
         temperature: float = 0.3,
         response_format: dict[str, Any] | None = None,
+        model: str | None = None,
     ) -> str:
         """普通对话调用，返回纯文本。"""
         msg_list = list(messages)
@@ -73,14 +89,27 @@ class LLMClient:
                 pass
 
         kwargs: dict[str, Any] = {
-            "model": self._model,
+            "model": model or self._model,
             "messages": msg_list,
             "temperature": temperature,
         }
         if response_format:
             kwargs["response_format"] = response_format
 
-        resp = self._client.chat.completions.create(**kwargs)
+        sink = _usage_sink.get()
+        started = time.perf_counter()
+        try:
+            resp = self._client.chat.completions.create(**kwargs)
+        except Exception:
+            if sink is not None:
+                sink.append({"model": kwargs["model"], "elapsed_ms": round((time.perf_counter() - started) * 1000),
+                             "prompt_tokens": None, "completion_tokens": None, "status": "failed"})
+            raise
+        if sink is not None:
+            usage = getattr(resp, "usage", None)
+            sink.append({"model": kwargs["model"], "elapsed_ms": round((time.perf_counter() - started) * 1000),
+                         "prompt_tokens": getattr(usage, "prompt_tokens", None),
+                         "completion_tokens": getattr(usage, "completion_tokens", None), "status": "ok"})
         content = resp.choices[0].message.content or ""
 
         # 调试日志：记录模型回复
@@ -95,25 +124,12 @@ class LLMClient:
         *,
         temperature: float = 0.3,
         response_format: dict[str, Any] | None = None,
-    ) -> tuple[str, int]:
-        """同 chat，但同时返回耗时（毫秒）。供 agent trace 使用。"""
-        import time
-        t0 = time.time()
-        content = self.chat(messages, temperature=temperature, response_format=response_format)
-        elapsed_ms = int((time.time() - t0) * 1000)
-        return content, elapsed_ms
-
-    def chat_traced(
-        self,
-        messages: Iterable[dict[str, str]],
-        *,
-        temperature: float = 0.3,
-        response_format: dict[str, Any] | None = None,
+        model: str | None = None,
     ) -> tuple[str, int]:
         """带耗时统计的 chat。返回 (content, elapsed_ms)。"""
         import time
         t0 = time.time()
-        content = self.chat(messages, temperature=temperature, response_format=response_format)
+        content = self.chat(messages, temperature=temperature, response_format=response_format, model=model)
         elapsed_ms = int((time.time() - t0) * 1000)
         return content, elapsed_ms
 
@@ -122,13 +138,23 @@ class LLMClient:
         messages: Iterable[dict[str, str]],
         *,
         temperature: float = 0.2,
+        model: str | None = None,
     ) -> str:
         """要求模型返回 JSON 字符串。调用方自行 json.loads。"""
         return self.chat(
             messages,
             temperature=temperature,
             response_format={"type": "json_object"},
+            model=model,
         )
+
+    def list_models(self) -> list[str]:
+        """通过 OpenAI 兼容的 /models 接口枚举当前凭据可用模型。"""
+        response = self._client.models.list(timeout=15.0)
+        return sorted({
+            model_id for item in response.data
+            if (model_id := str(getattr(item, "id", "")).strip()) and len(model_id) <= 128
+        })
 
 
 _singleton: LLMClient | None = None
@@ -139,3 +165,46 @@ def get_llm() -> LLMClient:
     if _singleton is None:
         _singleton = LLMClient()
     return _singleton
+
+
+def get_available_models() -> dict[str, Any]:
+    """Return safe model IDs; when discovery is unsupported, expose only the configured default."""
+    settings = get_settings()
+    default_model = settings.llm_model.strip()
+    if not settings.llm_api_key:
+        return {
+            "configured": False,
+            "default_model": default_model,
+            "models": [],
+            "discovery_available": False,
+            "warning": "服务端尚未配置模型密钥",
+        }
+
+    try:
+        discovered = get_llm().list_models()
+    except Exception:
+        discovered = []
+
+    discovery_available = bool(discovered)
+    models = sorted({model_id for model_id in discovered if model_id} | ({default_model} if default_model else set()))
+    return {
+        "configured": True,
+        "default_model": default_model,
+        "models": models,
+        "discovery_available": discovery_available,
+        "warning": None if discovery_available else "无法自动读取模型列表，当前仅显示服务端默认模型",
+    }
+
+
+def resolve_generation_model(model_id: str | None) -> str:
+    """Validate a UI-selected model against live discovery (or the configured fallback)."""
+    settings = get_settings()
+    default_model = settings.llm_model.strip()
+    if not model_id:
+        return default_model
+    if len(model_id) > 128:
+        raise ValueError("所选模型无效，请刷新模型列表后重试")
+    available = get_available_models()
+    if model_id not in available["models"]:
+        raise ValueError("所选模型当前不可用，请刷新模型列表后重试")
+    return model_id

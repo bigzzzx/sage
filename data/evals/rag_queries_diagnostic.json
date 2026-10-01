@@ -1,0 +1,12 @@
+[
+  {"id":"glue-csv-header-paraphrase","service_id":"glue","query":"爬虫生成的表列名是 col1 col2，首行明明有表头，该怎么定位？","expected_document_id":"case:glue-004-crawler-csv-column-header-not-recognized"},
+  {"id":"glue-s3-list-permission","service_id":"glue","query":"读取 S3 单个对象没问题，但列出桶中对象时 AccessDenied","expected_document_id":"case:glue-005-s3-listbucket-access-denied"},
+  {"id":"glue-network-paraphrase","service_id":"glue","query":"Glue 在公有子网里仍然不能访问互联网，网络出口怎么配置？","expected_document_id":"fact:glue:vpc_nat"},
+  {"id":"mwaa-startup-script","service_id":"mwaa","query":"Airflow 托管环境清空启动脚本路径后旧脚本仍执行","expected_document_id":"case:mwaa-002-patch-api-cannot-clear-startup-script"},
+  {"id":"mwaa-python-dependencies","service_id":"mwaa","query":"升级依赖之后 Airflow 环境安装包时出现 msal 版本冲突","expected_document_id":"case:mwaa-003-constraints-msal-version-conflict"},
+  {"id":"quicksight-missing-column","service_id":"quicksight","query":"BI 仪表板的数据集刷新中断，Athena 报 COLUMN_NOT_FOUND","expected_document_id":"case:quicksight-001-spice-refresh-column-not-found"},
+  {"id":"msk-version-config","service_id":"msk","query":"Kafka 集群升级到 3.9 后原配置不兼容，升级前要检查什么","expected_document_id":"case:msk-001-upgrade-351-to-39x-config-compatibility"},
+  {"id":"emr-master-load","service_id":"emr","query":"Hadoop 集群主节点负载太高，能否用边缘节点提交任务","expected_document_id":"case:emr-001-master-overload-edge-node"},
+  {"id":"opensearch-cross-account","service_id":"opensearch","query":"另一个 AWS 账号通过私网终端节点访问搜索域失败","expected_document_id":"case:opensearch-001-cross-account-vpc-endpoint"},
+  {"id":"athena-concurrent-writes","service_id":"athena","query":"多个写入查询同时操作同一张表时达到并发限制","expected_document_id":"case:athena-001-concurrent-dml-query-limit"}
+]

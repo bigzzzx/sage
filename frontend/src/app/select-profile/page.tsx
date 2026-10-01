@@ -38,11 +38,11 @@ export default function SelectProfilePage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex flex-col items-center justify-center px-6 py-12">
-      <div className="w-full max-w-3xl">
-        <h1 className="text-3xl font-bold text-slate-100 text-center mb-2">
+      <div className="sage-content sage-content--narrow w-full max-w-3xl">
+        <h1 className="sage-page-title text-3xl font-bold text-slate-100 text-center mb-2">
           选择你的专业方向
         </h1>
-        <p className="text-slate-400 text-center mb-10 text-sm">
+        <p className="sage-page-description mx-auto text-slate-400 text-center mb-10 text-sm">
           选择一个方向开始你的能力成长之旅
         </p>
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { register } from "@/lib/auth";
+import { fetchRegistrationEnabled, register } from "@/lib/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -13,10 +13,16 @@ export default function RegisterPage() {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [registrationEnabled, setRegistrationEnabled] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetchRegistrationEnabled().then(setRegistrationEnabled).catch(() => setRegistrationEnabled(null));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (registrationEnabled !== true) { setError("当前不开放自助注册，请联系管理员"); return; }
 
     if (password !== confirmPassword) {
       setError("两次输入的密码不一致");
@@ -40,7 +46,7 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+      <div className="sage-content sage-content--auth w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
@@ -121,10 +127,11 @@ export default function RegisterPage() {
           {error && (
             <p className="text-rose-400 text-sm text-center">{error}</p>
           )}
+          {registrationEnabled === false && <p className="text-amber-300 text-sm text-center">当前由管理员统一创建账号</p>}
 
           <button
             type="submit"
-            disabled={loading || !username || !password || !confirmPassword}
+            disabled={registrationEnabled !== true || loading || !username || !password || !confirmPassword}
             className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold rounded-lg transition-colors"
           >
             {loading ? "注册中…" : "注册"}

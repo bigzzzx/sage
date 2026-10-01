@@ -1,0 +1,93 @@
+{
+  "status": "superseded_fixture_mismatch_single_ai_audit_not_two_independent_humans",
+  "source_run": "data/evals/runs/trial-20260926.json",
+  "source_run_model": "deepseek-flash",
+  "fixture_sha256": "bdbd170ef6c382d2bc019b8ceb24784f5f5da38c05a8f108dec07cd88d3a5481",
+  "seed": 20260926,
+  "auditor": "Codex AI, one source-checked pass",
+  "rubric": "docs/REPORT_COMPARISON.md",
+  "scope": "Historical trial only. The NAT question did not ask about S3, but its hidden rubric did; its quality labels are unsuitable for strategy comparison. The fixture has since been corrected, so this audit is superseded. This file must not be fed into the two-human score command.",
+  "label_meaning": "Error counts are distinct material claims, not repeated mentions. Citation support and task actionability use 0-2 rubric. Scores are provisional judgments, not observed AWS console executions.",
+  "sources": {
+    "glue_network": "https://docs.aws.amazon.com/glue/latest/dg/start-connecting.html",
+    "glue_jdbc_vpc": "https://docs.aws.amazon.com/glue/latest/dg/connection-JDBC-VPC.html",
+    "s3_endpoint": "https://docs.aws.amazon.com/glue/latest/dg/vpc-endpoints-s3.html",
+    "sts_endpoint": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sts_vpc_endpoint_create.html",
+    "catalog_crawler": "https://docs.aws.amazon.com/glue/latest/dg/catalog-and-crawler.html",
+    "glue_concepts": "https://docs.aws.amazon.com/glue/latest/dg/components-key-concepts.html",
+    "athena_ctas": "https://docs.aws.amazon.com/athena/latest/ug/ctas-insert-into-etl.html",
+    "databrew_recipe": "https://docs.aws.amazon.com/databrew/latest/dg/jobs.recipe.html",
+    "incremental_crawls": "https://docs.aws.amazon.com/glue/latest/dg/incremental-crawls.html"
+  },
+  "shared_findings": [
+    {
+      "case_id": "glue_nat_wrong_cause",
+      "dimension": "diagnosis",
+      "finding": "The visible nat_q1 asked about a public API, but its old hidden rubric required an S3 Endpoint distinction. A learner could not know this was required. The model's S3 omission followed the rubric, so it should not be counted as a diagnosis error within that historical fixture; the fixture itself was invalid for fair quality comparison.",
+      "impact": "All five arms shared this flawed input. The corrected fixture has a new hash and requires a new run before comparing strategies."
+    },
+    {
+      "case_id": "glue_crawler_etl_confusion",
+      "dimension": "fact",
+      "finding": "Shared gap_crawler_q1_0 says cleaning/transformation must be done by a Glue ETL Job. Crawlers do not perform ETL, but Athena CTAS and DataBrew recipe jobs are documented alternative transformations. Say 'a transformation job/tool, for example a Glue ETL Job'.",
+      "impact": "One distinct overbroad fact claim in every arm, even when a revised plan qualifies it."
+    },
+    {
+      "case_id": "glue_crawler_etl_confusion",
+      "dimension": "diagnosis",
+      "finding": "gap_crawler_q1_0 and gap_crawler_q1_2 overlap substantially, but both describe an error actually present in the answer. Deduplicate in future; not counted as a contradiction or unsupported diagnosis here."
+    }
+  ],
+  "reports": [
+    {
+      "report_id": "edb133bf2a2a9007", "case_id": "glue_nat_wrong_cause", "arm": "rules",
+      "labels": {"factual_error_count": 0, "diagnosis_error_count": 0, "citation_support": 1, "task_actionability": 1},
+      "evidence_notes": "Core ENI/NAT/S3 statements match Glue docs, but 'UnknownHost' is offered as a no-NAT symptom without separating DNS failure; some route/SG detail is only loosely supported by adjacent URLs. Day 2 proposes removing a NAT route without an explicit isolated VPC or rollback; 45 minutes assumes existing jobs and endpoints. See glue_network, glue_jdbc_vpc, s3_endpoint."
+    },
+    {
+      "report_id": "9a5f7ee3101f7f54", "case_id": "glue_nat_wrong_cause", "arm": "single_review",
+      "labels": {"factual_error_count": 0, "diagnosis_error_count": 0, "citation_support": 1, "task_actionability": 1},
+      "evidence_notes": "Core claims supported by glue_network and s3_endpoint; two concept URLs are empty despite naming official guidance. Day 1 requires a no-NAT baseline and later changing the default route; Day 2 temporarily disconnects NAT. No isolated lab/rollback or concrete public endpoint is specified, so it is not safely repeatable in 45 minutes."
+    },
+    {
+      "report_id": "c56f52fa26c08649", "case_id": "glue_nat_wrong_cause", "arm": "dual_review",
+      "labels": {"factual_error_count": 1, "diagnosis_error_count": 0, "citation_support": 1, "task_actionability": 1},
+      "evidence_notes": "Day 1 offers sts.get_caller_identity as a public-internet connectivity check; STS can use an interface VPC endpoint, so success would not prove NAT/public internet. See sts_endpoint. Other core ENI/S3 claims are sourced. Creating a job, public NAT gateway/EIP and route changes plus verification in 45 minutes is fragile and may incur AWS charges; no teardown instruction."
+    },
+    {
+      "report_id": "86337614227faed8", "case_id": "glue_nat_wrong_cause", "arm": "debate",
+      "labels": {"factual_error_count": 0, "diagnosis_error_count": 0, "citation_support": 1, "task_actionability": 1},
+      "evidence_notes": "ENI has only private IP and S3 can use a VPC endpoint, supported by glue_network and s3_endpoint. The route/SG/NACL checklist and non-S3 public API claim cite broader pages that do not directly establish every adjacent detail. Inspection steps are useful but no exact test endpoint, preconditions or teardown; 45-minute feasibility depends on a prepared VPC."
+    },
+    {
+      "report_id": "9e72b6b0ef9de47d", "case_id": "glue_nat_wrong_cause", "arm": "budget_repeat",
+      "labels": {"factual_error_count": 0, "diagnosis_error_count": 0, "citation_support": 1, "task_actionability": 1},
+      "evidence_notes": "Primary ENI/IGW/S3 claims are backed by glue_network and s3_endpoint; two route/mechanism concepts have empty URLs and are marked for later verification. Day 1 says 'any public API' and requires creating/running a Glue job; Day 2 assumes an S3 endpoint and contrasting failure paths without giving a reproducible endpoint, IAM setup or cleanup."
+    },
+    {
+      "report_id": "cfd21fe982fd42c4", "case_id": "glue_crawler_etl_confusion", "arm": "rules",
+      "labels": {"factual_error_count": 1, "diagnosis_error_count": 0, "citation_support": 1, "task_actionability": 1},
+      "evidence_notes": "The shared gap and Day 1 say a Glue ETL Job is mandatory for cleaning; Athena CTAS and DataBrew refute the exclusivity (athena_ctas, databrew_recipe). Catalog/crawler basics are sourced, but extended Catalog/partition claims cite pages that do not directly support all neighboring assertions. Lab assumes a preexisting crawler, S3 access and Athena query permissions; not fully specified for a new learner."
+    },
+    {
+      "report_id": "a923d5f3e662bd95", "case_id": "glue_crawler_etl_confusion", "arm": "single_review",
+      "labels": {"factual_error_count": 1, "diagnosis_error_count": 0, "citation_support": 2, "task_actionability": 2},
+      "evidence_notes": "Shared gap retains the exclusive Glue ETL Job claim (athena_ctas, databrew_recipe), although revised tasks use 'Glue ETL etc'. Key crawler, Catalog and incremental-crawl claims have corresponding official URLs (catalog_crawler, incremental_crawls). The 45-minute exercises include sample path, commands, time allocations, observable outputs, permission fallback and checks for interfering writers. Actual AWS execution was not observed."
+    },
+    {
+      "report_id": "bc19251a6776e39f", "case_id": "glue_crawler_etl_confusion", "arm": "dual_review",
+      "labels": {"factual_error_count": 1, "diagnosis_error_count": 0, "citation_support": 1, "task_actionability": 1},
+      "evidence_notes": "Shared exclusive Glue ETL Job statement persists and Day 2 scenario repeats it (athena_ctas, databrew_recipe). A broad Catalog/Athena/EMR claim is paired with a crawler S3-folder URL rather than catalog_crawler; the plan itself marks it unverified. Lab has a concrete CSV and observable table/source-file checks, but crawler creation plus IAM/debugging in 45 minutes lacks prerequisites and cleanup."
+    },
+    {
+      "report_id": "56a5fe8a68e67dcb", "case_id": "glue_crawler_etl_confusion", "arm": "debate",
+      "labels": {"factual_error_count": 1, "diagnosis_error_count": 0, "citation_support": 1, "task_actionability": 1},
+      "evidence_notes": "The plan softens the exclusive-transform claim, but unchanged gap_crawler_q1_0 still says 'must Glue ETL Job' (athena_ctas, databrew_recipe). Three important concept URLs are empty; the S3 folder and incremental-crawl pages support narrower adjacent claims, not the main uncited definition. Public example S3 path and Athena query require access/permissions not established, and the 45-minute lab lacks concrete setup and cleanup."
+    },
+    {
+      "report_id": "468f937ef2dc7797", "case_id": "glue_crawler_etl_confusion", "arm": "budget_repeat",
+      "labels": {"factual_error_count": 1, "diagnosis_error_count": 0, "citation_support": 1, "task_actionability": 1},
+      "evidence_notes": "Shared diagnosis still uses exclusive Glue ETL Job wording (athena_ctas, databrew_recipe). Main crawler claim cites catalog_crawler, but classifier order and partition-index limits are peripheral to this learner's error and crowd the small budget; they need their own adjacent support check. Exercise has observable Catalog/S3 results but lacks a concrete CSV fixture, exact IAM prerequisites and cleanup."
+    }
+  ]
+}

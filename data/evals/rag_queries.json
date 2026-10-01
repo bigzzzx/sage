@@ -1,0 +1,32 @@
+[
+  {
+    "id": "glue-security-group",
+    "service_id": "glue",
+    "query": "Glue Redshift VPC connection 安全组缺少自身来源的所有 TCP 入站规则",
+    "expected_document_id": "case:glue-007-redshift-connection-sg-self-reference"
+  },
+  {
+    "id": "glue-subnet-addresses",
+    "service_id": "glue",
+    "query": "Glue Job SparkContext shut down 子网可用 IP 地址不足 /27 Worker",
+    "expected_document_id": "case:glue-006-subnet-ip-exhaustion"
+  },
+  {
+    "id": "dynamodb-endpoint-policy",
+    "service_id": "dynamodb",
+    "query": "EC2 访问 DynamoDB IAM 已授权但 Gateway Endpoint Policy Resource 未包含表 ARN",
+    "expected_document_id": "case:dynamodb-001-vpc-endpoint-policy-resource-missing"
+  },
+  {
+    "id": "athena-lake-formation-role",
+    "service_id": "athena",
+    "query": "Athena 换 IAM 角色后看不到 Glue 数据目录库表 Lake Formation 缺少新角色授权",
+    "expected_document_id": "case:athena-003-lake-formation-role-grant-missing"
+  },
+  {
+    "id": "sagemaker-vpc-dns",
+    "service_id": "sagemaker",
+    "query": "SageMaker VPC 中域名解析失败 DNS resolution 私有网络",
+    "expected_document_id": "case:sagemaker-001-vpc-dns-resolution-failure"
+  }
+]

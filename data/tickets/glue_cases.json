@@ -1,0 +1,140 @@
+[
+  {
+    "id": "glue-public-api-nat",
+    "difficulty": "intermediate",
+    "cross_service": true,
+    "impacts": ["development", "production_degraded", "production_down"],
+    "service_id": "glue",
+    "category": "troubleshooting",
+    "title": "VPC 内作业调用公网 API 超时",
+    "opening": "我们的 Glue 作业能读到 VPC 内的 RDS，但调用一个外部 HTTPS API 一直超时。能帮我排查吗？",
+    "evidence": [
+      {"id": "job_log", "label": "作业日志", "content": "作业中的外部 HTTPS 请求在连接阶段超时；读取同 VPC 的 RDS 正常。"},
+      {"id": "network", "label": "网络配置", "content": "Glue Connection 使用 subnet-training-private，ENI 只有私有 IP；该子网默认路由没有指向 NAT 网关。"},
+      {"id": "security_group", "label": "安全组", "content": "Glue Connection 的安全组允许出站 TCP 443；目前没有发现安全组出站阻断。"},
+      {"id": "target", "label": "目标地址", "content": "失败目标是客户自建的公网 HTTPS API，不是 Amazon S3 服务地址。"}
+    ],
+    "expected": {
+      "problem": "Glue 作业在 VPC 中能访问私有 RDS，却无法访问公网 API。",
+      "root_cause": "Glue VPC ENI 只有私有 IP，所在子网缺少可用 NAT 出口；仅有 Internet Gateway 或 S3 Endpoint 不能让作业访问该公网 API。",
+      "resolution": "在隔离环境确认出口设计，为 Glue 使用的子网配置指向可用 NAT 网关的默认路由，并复核安全组、DNS 与目标 API 条件。",
+      "verification": "在同一 Glue 执行环境、同一公网 API 目标上记录变更前失败和变更后成功的连接结果；记录路由变更与回滚。"
+    },
+    "sources": ["https://docs.aws.amazon.com/glue/latest/dg/start-connecting.html", "https://docs.aws.amazon.com/glue/latest/dg/vpc-endpoints-s3.html"]
+  },
+  {
+    "id": "glue-redshift-sg",
+    "difficulty": "intermediate",
+    "cross_service": true,
+    "impacts": ["development", "production_degraded"],
+    "service_id": "glue",
+    "category": "troubleshooting",
+    "title": "Glue 测试 Redshift 连接失败",
+    "opening": "Glue 连接指向 VPC 内的 Redshift，测试连接总是超时。数据库账号确认无误，还需要看什么？",
+    "evidence": [
+      {"id": "connection", "label": "连接配置", "content": "这是 VPC 内的 JDBC Redshift 连接，Glue 和目标 Redshift 位于可互通的子网。"},
+      {"id": "log", "label": "连接测试日志", "content": "连接测试超时，没有密码错误或 IAM 拒绝的证据。"},
+      {"id": "security_group", "label": "安全组规则", "content": "Glue Connection 使用 sg-training-glue；它允许到 Redshift 5439 的出站流量，但缺少来源为 sg-training-glue 自身、允许所有 TCP 的入站自引用规则。"},
+      {"id": "route", "label": "子网路由", "content": "到同 VPC 内 Redshift 的本地路由存在；本场景不是公网出口问题。"}
+    ],
+    "expected": {
+      "problem": "Glue 与 VPC 内 Redshift 的测试连接超时。",
+      "root_cause": "Glue Connection 安全组缺少供 Spark 组件通信使用的 TCP 入站自引用规则。",
+      "resolution": "在经过授权的隔离环境为该安全组添加来源为自身的所有 TCP 入站规则，同时确认 Redshift 端口和连接配置。",
+      "verification": "重跑同一 Glue 测试连接，对比修改前后状态，并保留安全组变更记录。"
+    },
+    "sources": ["https://docs.aws.amazon.com/glue/latest/dg/connection-JDBC-VPC.html"]
+  },
+  {
+    "id": "glue-bookmark-commit",
+    "difficulty": "basic",
+    "cross_service": false,
+    "impacts": ["development", "production_degraded"],
+    "service_id": "glue",
+    "category": "troubleshooting",
+    "title": "增量作业反复处理旧数据",
+    "opening": "我们启用了 Glue job bookmark，但每天运行时好像仍在重新处理前一天的数据。你建议先检查什么？",
+    "evidence": [
+      {"id": "job_settings", "label": "作业设置", "content": "该 Glue Job 已启用 job bookmark；使用相同作业名重复运行。"},
+      {"id": "script", "label": "脚本片段", "content": "脚本调用了 job.init(args['JOB_NAME'], args)，正常读取并写出数据后直接结束，没有调用 job.commit()。"},
+      {"id": "runs", "label": "运行记录", "content": "最近几次运行都是成功状态；用户观察到相同输入文件被多次处理。没有并发运行同一作业的记录。"},
+      {"id": "source", "label": "数据源", "content": "输入是同一 S3 路径下按日期增加的对象；客户希望每次只处理新增对象。"}
+    ],
+    "expected": {
+      "problem": "启用 bookmark 的 Glue 作业仍重复处理旧输入。",
+      "root_cause": "脚本初始化了 job bookmark，但结束前遗漏 job.commit()，bookmark 状态没有按预期持久化。",
+      "resolution": "在成功处理完成路径调用 job.commit()，核对输入读取方式与 bookmark 支持条件；避免同一作业并发运行。",
+      "verification": "在测试数据上连续运行两次，比较第二次读取范围、输出和 bookmark 状态，确保不重复处理旧输入。"
+    },
+    "sources": ["https://docs.aws.amazon.com/glue/latest/dg/programming-etl-connect-bookmarks.html"]
+  },
+  {
+    "id": "glue-crawler-vs-etl",
+    "difficulty": "basic",
+    "cross_service": false,
+    "impacts": ["development"],
+    "service_id": "glue",
+    "category": "configuration",
+    "title": "Crawler 能否自动清洗 CSV？",
+    "opening": "我把 CSV 放到 S3 并运行了 Glue Crawler，Catalog 里有新表，但 S3 里没有清洗后的文件。是不是我少配了一个选项？",
+    "evidence": [
+      {"id": "crawler", "label": "Crawler 配置", "content": "Crawler 指向 S3 的 raw/ 前缀，运行成功并在 Data Catalog 创建了表元数据。"},
+      {"id": "s3", "label": "S3 对象", "content": "raw/ 下仍是原始 CSV；没有配置任何负责数据转换的作业。"},
+      {"id": "desired", "label": "业务需求", "content": "客户希望去重、清理空值，并把处理结果输出到另一个 S3 前缀。"},
+      {"id": "catalog", "label": "Catalog 表", "content": "Catalog 表记录了 CSV 推断出的列、类型和数据位置；它不是转换后文件的存储位置。"}
+    ],
+    "expected": {
+      "problem": "客户误以为 Crawler 会把 S3 CSV 清洗并输出新数据。",
+      "root_cause": "Crawler 负责扫描并更新 Data Catalog 元数据，不承担 ETL 数据清洗。",
+      "resolution": "保留 Crawler 用于发现元数据，另设计可执行的数据转换作业或工具（例如 Glue ETL Job）写入目标 S3 前缀。",
+      "verification": "运行转换流程后检查目标 S3 对象与数据质量；另检查 Catalog 表元数据是否对应预期数据位置。"
+    },
+    "sources": ["https://docs.aws.amazon.com/glue/latest/dg/catalog-and-crawler.html"]
+  },
+  {
+    "id": "glue-s3-private-access",
+    "difficulty": "intermediate",
+    "cross_service": true,
+    "impacts": ["development", "production_degraded"],
+    "service_id": "glue",
+    "category": "configuration",
+    "title": "不经过公网访问 S3",
+    "opening": "我们希望 VPC 中的 Glue 作业读取 S3，但安全要求是不走公网，也不想为了 S3 流量创建 NAT。应该怎么设计？",
+    "evidence": [
+      {"id": "network", "label": "网络现状", "content": "Glue 作业在 VPC 子网内运行，ENI 只有私有 IP；当前没有 NAT 网关。"},
+      {"id": "s3", "label": "数据源", "content": "目标是同区域 Amazon S3 bucket，客户要读入对象并输出到另一个 S3 前缀。"},
+      {"id": "route", "label": "端点和路由", "content": "目前 VPC 没有用于 S3 的 Gateway Endpoint；作业子网路由表也没有关联这类端点。"},
+      {"id": "policy", "label": "权限条件", "content": "客户允许配置 S3 VPC Endpoint 和 endpoint policy；S3 bucket/IAM 权限仍需单独确认。"}
+    ],
+    "expected": {
+      "problem": "VPC 内 Glue 作业需要不经公网访问 S3。",
+      "root_cause": "当前缺少可供 Glue 私网访问 S3 的 S3 VPC Endpoint 路径。",
+      "resolution": "在测试 VPC 创建并关联 S3 Gateway Endpoint 到相应路由表，核对 endpoint policy、bucket policy、IAM 与区域；不要把它当成任意公网 API 的替代出口。",
+      "verification": "从同一 Glue 作业环境测试读写目标 S3 对象，核对路由与权限，不把其他公网目标可达性作为 S3 Endpoint 的验收。"
+    },
+    "sources": ["https://docs.aws.amazon.com/glue/latest/dg/vpc-endpoints-s3.html"]
+  },
+  {
+    "id": "glue-bookmark-concurrency",
+    "difficulty": "intermediate",
+    "cross_service": false,
+    "impacts": ["development", "production_degraded"],
+    "service_id": "glue",
+    "category": "configuration",
+    "title": "同一增量作业能否并发运行？",
+    "opening": "我们用 Glue job bookmark 做增量处理，业务想把同一个作业的最大并发数调到 3 来缩短等待。这样会有风险吗？",
+    "evidence": [
+      {"id": "settings", "label": "当前设置", "content": "同一个 Glue Job 启用了 job bookmark，目前最大并发数为 1。"},
+      {"id": "request", "label": "变更需求", "content": "业务准备把同一作业最大并发数提高到 3；上游有可能在上一轮未完成时触发下一轮。"},
+      {"id": "history", "label": "历史记录", "content": "目前没有真实并发执行记录，也没有足够证据声称 bookmark 已损坏。"},
+      {"id": "goal", "label": "业务目标", "content": "客户想缩短等待时间，同时保持每批新增数据只处理一次的预期。"}
+    ],
+    "expected": {
+      "problem": "客户计划并发运行启用 bookmark 的同一个 Glue Job。",
+      "root_cause": "并发运行同一 bookmark 作业可能干扰状态管理，不能直接承诺安全或已发生数据错误。",
+      "resolution": "保留单作业不重叠运行，评估调度排队与作业性能；若要提高吞吐量，应设计独立分片/作业并验证增量边界。",
+      "verification": "在隔离环境进行小规模调度测试，检查运行重叠、bookmark 状态和输入/输出去重情况。"
+    },
+    "sources": ["https://docs.aws.amazon.com/glue/latest/dg/glue-troubleshooting-errors.html"]
+  }
+]

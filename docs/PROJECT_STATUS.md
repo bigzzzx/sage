@@ -1,5 +1,11 @@
 # SAGE 项目当前状态（接续工作请先读这份）
 
+> 2026-09-30 本地更新：报告到针对性再测/同服务工单的入口、用户纠错与管理员复核、学习任务状态与人工验收、知识条目重复发布拦截/版本替换/增量向量索引、培训任务、运行指标、历史筛选和报告目录已接入。内置浏览器已用普通成员和管理员实际登录，验收首页、档案、历史筛选、测评/实战入口、管理页及一条真实纠错的提交→采纳→成员可见闭环；修复同源 API 转发、两处水合问题和管理页 Profile 选项。隔离数据库自动测试 116 项及 TypeScript/ESLint 通过。隔离临时库的 DeepSeek Flash 真实测评闭环成功，复测仍发现来源、盲区映射和时间预算问题，质量门禁保持 `needs_review`，不可宣称计划均可直接执行。生产上线前仍需备份、部署环境验收和更大样本的专业内容评审。下文旧架构、部署和“当前状态”均为历史快照。
+
+> 2026-09-26 更新：前测评分后的诊断、规划、审查链路已接入 LangGraph SQLite 检查点；异步测评请求改为保存可重放负载，报告页支持失败后继续生成计划。工作范围及生产限制见 [评估工作流迁移记录](./WORKFLOW_MIGRATION.md)。下文旧技术栈、部署和任务机制为历史描述，不应视为当前验收结论。
+
+> 2026-09-23 本地代码更新：新增服务端鉴权隔离、题目会话与任务结果持久化、两种 Glue 练习场景、学习完成证据、历史报告、管理员/成员初始化、SQLite 在线备份和 CI 配置。本机已通过 17 项后端验收测试、前端生产构建及浏览器练习闭环；CI 尚未推送验证，真实 LLM 测评端到端和历史 EC2 部署状态未在本轮复验。详见 [发布就绪清单](./RELEASE_READINESS.md)。以下 2026-06-16 内容为历史快照，涉及服务数量、模型和云端状态的描述不可视为当前事实。
+
 > 最后更新：2026-06-16
 > 用途：在新对话窗口快速接续工作。读完这份就能进入工作状态。
 
@@ -25,7 +31,7 @@
 | 后端 | Python 3.11 + FastAPI + Pydantic v2 + SQLAlchemy 2 |
 | 数据库 | SQLite（`backend/sage.db`） |
 | LLM | 内部部署 Qwen3.6-27B（OpenAI 兼容协议） |
-| 部署 | EC2 (52.81.190.108) + Nginx 反向代理 |
+| 部署 | 历史试验环境：EC2 + Nginx 反向代理；当前部署状态需重新核实 |
 | LLM 通路 | SSH 反向隧道（EC2:9000 → 本地 → 内部 ELB） |
 
 ### Multi-Agent 流水线
@@ -99,7 +105,7 @@ sage/
 │       │   ├── HeatmapChart.tsx
 │       │   ├── LearningPlanCard.tsx # 学习计划卡片（含盲区标签+预期产出）
 │       │   ├── DiagnosisPanel.tsx   # 知识盲区诊断展示
-│       │   └── AgentTracePanel.tsx  # AI 思考过程时间线
+│       │   └── AgentTracePanel.tsx  # 工作流步骤记录
 │       └── app/
 │           ├── login/page.tsx
 │           ├── select-profile/page.tsx
@@ -134,7 +140,7 @@ sage/
 - [x] 雷达图：Track 级（hover 弹 capability 级）+ 单 service 级
 - [x] 进行中的学习计划（按 Profile 过滤，后测完自动归档）
 - [x] 团队看板（按 Profile 过滤服务，只有管理员可见）
-- [x] Agent Trace 展示（AI 思考过程时间线）
+- [x] Agent Trace 展示（工作流步骤记录，不是模型思维链）
 - [x] 异步任务+轮询（避免 504 超时）
 - [x] URL 白名单文档池（Glue 34 条已策展，其他服务暂空）
 - [x] 自动加列迁移（schema 变了不用删 DB）
@@ -150,24 +156,14 @@ sage/
 
 ## 4. 部署状态
 
-### EC2 (52.81.190.108)
+### 历史 EC2 试验环境（配置已脱敏，不能作为现行部署说明）
 - Nginx 反向代理：80 端口（`/api/*` → 后端 8000，其他 → 前端 3000）
 - 后端：Python 3.11 + uvicorn，监听 127.0.0.1:8000
 - 前端：Next.js 生产模式，监听 3000
-- LLM：通过 SSH 反向隧道（EC2 localhost:9000 → 本地 → 内部 ELB）
-- **隧道命令**（需在本地保持运行）：
-  ```
-  ssh -R 9000:internal-ai-tao-llm-apiserver-dev-1126944677.cn-northwest-1.elb.amazonaws.com.cn:80 -N -o ServerAliveInterval=30 ec2-zangxuan-linux1
-  ```
+- LLM：曾通过 SSH 反向隧道接入内部推理服务；真实主机名和连接信息不在仓库公开。
 
-### 预置账号
-| 用户名 | 密码 | 角色 |
-|---|---|---|
-| admin | admin123 | manager |
-| demo | demo123 | member |
-| alice | alice123 | member |
-| bob | bob123 | member |
-| carol | carol123 | member |
+### 演示账号
+新安装不会自动创建演示账号；开发和生产环境都应通过管理命令创建管理员并设置独立强密码。已有本地数据库中的历史账号不受此变更影响。
 
 ### LLM 配置
 ```
@@ -181,10 +177,10 @@ LLM_MODEL=Qwen3.6-27B
 
 | 决策 | 为什么 |
 |---|---|
-| 多 Agent 流水线 | 比单次大 prompt 更准：诊断→规划→反思，各司其职 |
+| 自研角色分工工作流 | 诊断→规划→反思→最多一次修订，可追踪；尚未证明比单次提示词更准确 |
 | 按题目级别分评分维度 | L1 不该被"排查思路"维度拖累，L3 需要"前后对比"维度 |
-| Checklist 注入出题 | 确保出题对齐内部培训标准，不跑偏 |
-| Learning Path 注入规划 | 学习计划参考内部培训路径，不乱推荐 |
+| Glue 官方考点出题 | 默认使用已策展的公开事实并绑定来源 ID；旧内部 Checklist 不再进入 Glue 出题 |
+| Glue 官方资料规划 | 公开事实与官方文档优先；其他服务仍可使用内部 Learning Path |
 | URL 白名单 | LLM 不能编造 URL，只能从策展池选 |
 | 异步任务+轮询 | LLM 慢（100s+），避免中间层 504 |
 | SSH 反向隧道 | EC2 不在 LLM 内部 ELB 的 VPC，通过本地中转 |
@@ -214,63 +210,8 @@ LLM_MODEL=Qwen3.6-27B
 
 ---
 
-## 7. 常用命令
+## 7. 开发与部署
 
-### EC2 操作
-```bash
-# SSH 连接
-ssh ec2-zangxuan-linux1
-
-# 重启后端
-cd sage/backend && source venv/bin/activate
-pkill -f uvicorn
-nohup python3.11 -m uvicorn app.main:app --host 127.0.0.1 --port 8000 >> /home/ec2-user/sage/logs/backend.log 2>&1 &
-
-# 重启前端
-fuser -k 3000/tcp
-cd sage/frontend && nohup npm start >> /home/ec2-user/sage/logs/frontend.log 2>&1 &
-
-# 重启 nginx
-sudo systemctl restart nginx
-
-# 查看日志
-tail -50 sage/logs/backend.log
-tail -50 sage/logs/frontend.log
-```
-
-### 本地操作
-```powershell
-# 启动 SSH 隧道（必须保持开着！）
-ssh -R 9000:internal-ai-tao-llm-apiserver-dev-1126944677.cn-northwest-1.elb.amazonaws.com.cn:80 -N -o ServerAliveInterval=30 ec2-zangxuan-linux1
-
-# 本地开发
-cd backend && conda activate sage && python -m uvicorn app.main:app --reload --port 8000
-cd frontend && npm run dev
-```
-
-### 更新代码到 EC2
-```powershell
-# 本地提交推送
-git add -A && git commit -m "xxx" && git push origin main
-
-# EC2 上（如果 GitHub 网络通）
-cd sage && git pull origin main
-
-# EC2 上（如果 GitHub 不通，用 scp）
-scp backend/app/xxx.py ec2-zangxuan-linux1:/home/ec2-user/sage/backend/app/xxx.py
-```
-
----
-
-## 8. 给新对话窗口的指引
-
-1. 读这份 `docs/PROJECT_STATUS.md`
-2. 读 `docs/PROMPTS.md` 了解 5 个 prompt 设计
-3. 不需要重读 case 文件 / checklist / learning path（除非要改）
-4. 环境：Windows 本地开发 + EC2 部署，Python 用 conda env `sage`
-
-**用户工作风格**：
-- 直接、不绕弯，中文沟通
-- 重大决策"先问后做"，不喜欢自作主张大改
+本地开发命令见项目根目录的 `README.md`；远端部署前需重新确认环境、密钥、数据库备份与迁移方式。本文件中的旧部署快照不能直接作为上线操作手册。
 - 重视细节体验
 - 时间紧，倾向于"先动起来再调"

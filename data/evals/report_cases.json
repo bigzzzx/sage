@@ -1,0 +1,28 @@
+[
+  {
+    "id": "glue_nat_wrong_cause",
+    "service_id": "glue",
+    "overall_level": "L2",
+    "study_days": 2,
+    "minutes_per_day": 45,
+    "questions": [
+      {"id": "nat_q1", "type": "open", "dimension_id": "glue_network", "difficulty": "L3", "question": "Glue Job 在 VPC 中能访问私有 RDS，却不能调用公网 API。解释原因并给出验证和修复步骤。", "scoring_rubric": ["区分 ENI 私有 IP 和公有 IP", "说明 IGW 本身不足以提供 Glue 公网出口", "检查 NAT、子网路由和安全组", "对同一个公网目标验证修复前后连通性"], "reference_answer": "VPC 内 Glue ENI 使用私有 IP；公网 API 通常需要 NAT 等出口。检查子网路由、安全组和 NAT 路由，再对同一公网目标验证连接。", "source_refs": [{"id": "vpc_nat", "fact": "Glue VPC ENI 只有私有 IP，访问公网 API 通常需 NAT 出口。", "url": "https://docs.aws.amazon.com/glue/latest/dg/start-connecting.html"}]}
+    ],
+    "answers": {"nat_q1": "把 Glue Job 放到公有子网并加 Internet Gateway 就够了，因为 ENI 会自动获得公网 IP。"},
+    "question_results": [{"question_id": "nat_q1", "type": "open", "total_score": 5}],
+    "reference_review": "合成样本：应核查公网 IP 假设、NAT/路由诊断以及任务可执行性；这不是专家标注。"
+  },
+  {
+    "id": "glue_crawler_etl_confusion",
+    "service_id": "glue",
+    "overall_level": "L1",
+    "study_days": 2,
+    "minutes_per_day": 45,
+    "questions": [
+      {"id": "crawler_q1", "type": "open", "dimension_id": "glue_catalog", "difficulty": "L1", "question": "Crawler 扫描 S3 CSV 后主要产出什么？是否会把源文件自动转换为清洗后的业务数据？", "scoring_rubric": ["指出 Data Catalog 表元数据", "区分 Crawler 与 ETL 转换"], "reference_answer": "Crawler 发现数据结构并创建或更新 Catalog 元数据，不承担 ETL 转换。", "source_refs": [{"id": "crawler_catalog", "fact": "Crawler 扫描数据源并在 Glue Data Catalog 创建或更新表元数据；它不是 ETL 转换作业。", "url": "https://docs.aws.amazon.com/glue/latest/dg/catalog-and-crawler.html"}]}
+    ],
+    "answers": {"crawler_q1": "Crawler 会把 CSV 自动清洗并输出转换后的业务数据，Catalog 只是运行日志。"},
+    "question_results": [{"question_id": "crawler_q1", "type": "open", "total_score": 5}],
+    "reference_review": "合成样本：应核查 Crawler/ETL 混淆、诊断是否过度推断以及引用支持；这不是专家标注。"
+  }
+]
